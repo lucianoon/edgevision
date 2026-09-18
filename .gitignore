@@ -9,4 +9,5 @@ videos/*
 !videos/.gitkeep
 benchmarks/results/*
 !benchmarks/results/.gitkeep
+!benchmarks/results/*.json
 runs/

@@ -1,0 +1,45 @@
+{
+  "timestamp_utc": "20260918T172718Z",
+  "backend": "pytorch",
+  "model_path": "models/pytorch/yolo26n.pt",
+  "image_size": 640,
+  "confidence": 0.5,
+  "source": "videos/sample.mp4",
+  "frames": 100,
+  "warmup": 20,
+  "fps": 20.73838609312489,
+  "stages": {
+    "decode": {
+      "mean_ms": 2.7975920168682933,
+      "p50_ms": 2.7040501590818167,
+      "p95_ms": 3.361400216817856,
+      "max_ms": 12.522600125521421,
+      "samples": 100
+    },
+    "inference": {
+      "mean_ms": 47.82140295486897,
+      "p50_ms": 47.31284989975393,
+      "p95_ms": 52.26359982043505,
+      "max_ms": 54.485800210386515,
+      "samples": 100
+    },
+    "end_to_end": {
+      "mean_ms": 48.21975999046117,
+      "p50_ms": 47.726199962198734,
+      "p95_ms": 52.66289971768856,
+      "max_ms": 54.838599637150764,
+      "samples": 100
+    }
+  },
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+    "numpy": "2.5.3",
+    "torch": "2.14.0+cpu",
+    "cuda_available": false,
+    "onnxruntime": "1.30.0",
+    "ort_providers": null,
+    "ultralytics": "8.4.155"
+  }
+}

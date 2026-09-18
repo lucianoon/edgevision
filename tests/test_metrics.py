@@ -36,3 +36,27 @@ def test_window_keeps_only_latest_samples():
 
     assert len(metrics.latencies) == 2
     assert metrics.frame_count == 3
+
+
+def test_stage_context_manager_records_named_latency():
+    metrics = PerformanceMetrics()
+
+    with metrics.stage("preprocess"):
+        pass
+
+    summary = metrics.summary()
+    assert set(summary) == {"preprocess"}
+    assert summary["preprocess"]["samples"] == 1
+    assert summary["preprocess"]["mean_ms"] >= 0.0
+
+
+def test_summary_percentiles():
+    metrics = PerformanceMetrics()
+    for value in [10.0, 20.0, 30.0, 40.0, 100.0]:
+        metrics.record("inference", value)
+
+    stats = metrics.summary()["inference"]
+    assert stats["mean_ms"] == 40.0
+    assert stats["p50_ms"] == 30.0
+    assert stats["p95_ms"] == 100.0
+    assert stats["max_ms"] == 100.0

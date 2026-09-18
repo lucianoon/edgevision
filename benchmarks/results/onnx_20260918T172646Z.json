@@ -1,0 +1,61 @@
+{
+  "timestamp_utc": "20260918T172646Z",
+  "backend": "onnx",
+  "model_path": "models/onnx/yolo26n.onnx",
+  "image_size": 640,
+  "confidence": 0.5,
+  "source": "videos/sample.mp4",
+  "frames": 100,
+  "warmup": 10,
+  "fps": 22.197564672981613,
+  "stages": {
+    "decode": {
+      "mean_ms": 2.6210060296580195,
+      "p50_ms": 2.48810020275414,
+      "p95_ms": 3.0117002315819263,
+      "max_ms": 11.639900039881468,
+      "samples": 100
+    },
+    "preprocess": {
+      "mean_ms": 5.222810003906488,
+      "p50_ms": 5.095200147479773,
+      "p95_ms": 6.560700014233589,
+      "max_ms": 7.319299969822168,
+      "samples": 100
+    },
+    "inference": {
+      "mean_ms": 36.9149950100109,
+      "p50_ms": 36.85160027816892,
+      "p95_ms": 43.639099691063166,
+      "max_ms": 45.19360000267625,
+      "samples": 100
+    },
+    "postprocess": {
+      "mean_ms": 2.513840994797647,
+      "p50_ms": 2.4679501075297594,
+      "p95_ms": 3.30030033364892,
+      "max_ms": 4.552999977022409,
+      "samples": 100
+    },
+    "end_to_end": {
+      "mean_ms": 45.049987002275884,
+      "p50_ms": 45.07810017094016,
+      "p95_ms": 52.626500371843576,
+      "max_ms": 53.433900233358145,
+      "samples": 100
+    }
+  },
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+    "numpy": "2.5.3",
+    "torch": "2.14.0+cpu",
+    "cuda_available": false,
+    "onnxruntime": "1.30.0",
+    "ort_providers": [
+      "CPUExecutionProvider"
+    ],
+    "ultralytics": "8.4.155"
+  }
+}

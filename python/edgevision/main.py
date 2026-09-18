@@ -4,7 +4,8 @@ from pathlib import Path
 import cv2
 import yaml
 
-from edgevision.detector import Detection, YoloDetector
+from edgevision.detector import Detection
+from edgevision.factory import build_detector
 from edgevision.metrics import PerformanceMetrics
 from edgevision.video import VideoSource
 
@@ -36,9 +37,20 @@ def draw_detections(frame, detections: list[Detection]):
         )
 
 
+def format_stages(metrics: PerformanceMetrics) -> str:
+    return " ".join(
+        f"{name}={stats['mean_ms']:.1f}ms" for name, stats in metrics.summary().items()
+    )
+
+
 def parse_args():
-    parser = argparse.ArgumentParser(description="EdgeVision PyTorch baseline")
+    parser = argparse.ArgumentParser(description="EdgeVision real-time detection")
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
+    parser.add_argument(
+        "--backend",
+        choices=["pytorch", "onnx"],
+        help="Override model.backend",
+    )
     parser.add_argument(
         "--source",
         help="Override video.source (webcam index or file/URL path)",
@@ -65,16 +77,11 @@ def main():
     video_cfg = config["video"]
     log_interval = config["metrics"]["log_interval_frames"]
 
-    device = model_cfg.get("device")
-    if device == "auto":
-        device = None
+    if args.backend:
+        model_cfg["backend"] = args.backend
 
-    detector = YoloDetector(
-        model_path=model_cfg["path"],
-        confidence=model_cfg["confidence"],
-        image_size=model_cfg["image_size"],
-        device=device,
-    )
+    metrics = PerformanceMetrics()
+    detector = build_detector(model_cfg, metrics)
 
     source = video_cfg["source"] if args.source is None else args.source
     if isinstance(source, str) and source.isdigit():
@@ -83,11 +90,11 @@ def main():
     display = video_cfg["display"] and not args.no_display
 
     video = VideoSource(source)
-    metrics = PerformanceMetrics()
 
     try:
         while True:
-            ok, frame = video.read()
+            with metrics.stage("decode"):
+                ok, frame = video.read()
 
             if not ok:
                 break
@@ -98,10 +105,8 @@ def main():
 
             if metrics.frame_count % log_interval == 0:
                 print(
-                    f"frame={metrics.frame_count} "
-                    f"latency={metrics.average_latency_ms:.1f}ms "
-                    f"fps={metrics.fps:.1f} "
-                    f"detections={len(detections)}"
+                    f"frame={metrics.frame_count} fps={metrics.fps:.1f} "
+                    f"detections={len(detections)} {format_stages(metrics)}"
                 )
 
             if display:
@@ -109,7 +114,7 @@ def main():
 
                 cv2.putText(
                     frame,
-                    f"FPS: {metrics.fps:.1f}",
+                    f"{model_cfg['backend']} FPS: {metrics.fps:.1f}",
                     (20, 30),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.8,
@@ -130,9 +135,8 @@ def main():
         cv2.destroyAllWindows()
 
     print(
-        f"done: frames={metrics.frame_count} "
-        f"avg_latency={metrics.average_latency_ms:.1f}ms "
-        f"fps={metrics.fps:.1f}"
+        f"done: backend={model_cfg['backend']} frames={metrics.frame_count} "
+        f"fps={metrics.fps:.1f} {format_stages(metrics)}"
     )
 
 

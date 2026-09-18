@@ -1,8 +1,12 @@
 model:
-  path: models/pytorch/yolo26n.pt
+  backend: pytorch          # pytorch | onnx
+  paths:
+    pytorch: models/pytorch/yolo26n.pt
+    onnx: models/onnx/yolo26n.onnx
   confidence: 0.50
+  iou_threshold: 0.45       # NMS, used by the onnx backend
   image_size: 640
-  device: auto
+  device: auto              # pytorch backend only
 
 video:
   source: 0

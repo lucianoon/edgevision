@@ -1,3 +1,4 @@
+from contextlib import nullcontext
 from dataclasses import dataclass
 
 import numpy as np
@@ -22,20 +23,26 @@ class YoloDetector:
         confidence: float = 0.5,
         image_size: int = 640,
         device: str | None = None,
+        metrics=None,
     ):
         self.model = YOLO(model_path)
+        self.metrics = metrics
         self.confidence = confidence
         self.image_size = image_size
         self.device = device
 
     def detect(self, frame: np.ndarray) -> list[Detection]:
-        results = self.model.predict(
-            source=frame,
-            conf=self.confidence,
-            imgsz=self.image_size,
-            device=self.device,
-            verbose=False,
-        )
+        # Ultralytics does its own pre/post-processing inside predict(), so the
+        # whole call is timed as a single 'inference' stage for this backend.
+        timer = self.metrics.stage("inference") if self.metrics else nullcontext()
+        with timer:
+            results = self.model.predict(
+                source=frame,
+                conf=self.confidence,
+                imgsz=self.image_size,
+                device=self.device,
+                verbose=False,
+            )
 
         result = results[0]
 

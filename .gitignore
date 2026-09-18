@@ -10,4 +10,7 @@ videos/*
 benchmarks/results/*
 !benchmarks/results/.gitkeep
 !benchmarks/results/*.json
+!benchmarks/results/*.log
+# raw per-iteration trtexec timings (MBs); the .log keeps the summary
+benchmarks/results/*_times.json
 runs/

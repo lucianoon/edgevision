@@ -1,0 +1,65 @@
+{
+  "timestamp_utc": "20260918T195144Z",
+  "backend": "onnx",
+  "label": "cuda",
+  "model_path": "models/onnx/yolo26n.onnx",
+  "image_size": 640,
+  "confidence": 0.5,
+  "source": "videos/sample.mp4",
+  "frames": 300,
+  "warmup": 30,
+  "fps": 88.6110405826296,
+  "stages": {
+    "decode": {
+      "mean_ms": 0.9541774733368887,
+      "p50_ms": 0.8289585000511579,
+      "p95_ms": 1.1660609998216387,
+      "max_ms": 7.104407000042556,
+      "samples": 300
+    },
+    "preprocess": {
+      "mean_ms": 3.064882453343216,
+      "p50_ms": 2.9643115001363185,
+      "p95_ms": 3.203179999900385,
+      "max_ms": 7.524190000140152,
+      "samples": 300
+    },
+    "inference": {
+      "mean_ms": 6.078448960002636,
+      "p50_ms": 6.0776975000180755,
+      "p95_ms": 6.141998999964926,
+      "max_ms": 6.559726999967097,
+      "samples": 300
+    },
+    "postprocess": {
+      "mean_ms": 2.1030041900030483,
+      "p50_ms": 2.099897500102088,
+      "p95_ms": 2.2075320000567444,
+      "max_ms": 2.523736000057397,
+      "samples": 300
+    },
+    "end_to_end": {
+      "mean_ms": 11.285275440000078,
+      "p50_ms": 11.190921499974138,
+      "p95_ms": 11.527589000024818,
+      "max_ms": 15.889089999973294,
+      "samples": 300
+    }
+  },
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-7.0.0-1012-aws-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "numpy": "2.5.3",
+    "torch": "2.14.0+cu130",
+    "cuda_available": true,
+    "onnxruntime": "1.30.0",
+    "ort_providers": [
+      "CUDAExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "ultralytics": "8.4.155",
+    "gpu": "Tesla T4",
+    "tensorrt": "10.16.1.11"
+  }
+}

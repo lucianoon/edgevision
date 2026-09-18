@@ -2,6 +2,7 @@
 # Works from Git Bash (Windows) and WSL/Linux.
 export MSYS_NO_PATHCONV=1
 export AWS_PAGER=""
+export PYTHONUTF8=1 PYTHONIOENCODING=utf-8  # aws.exe on Windows chokes on non-ASCII output otherwise
 : "${AWS_PROFILE:=default}"
 : "${AWS_REGION:=us-east-1}"
 : "${STACK_NAME:=edgevision-gpu-dev}"

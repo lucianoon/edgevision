@@ -1,0 +1,80 @@
+== environment
+Tesla T4, 595.91.07, 15360 MiB
+tensorrt 10.16.1.11 | torch 2.14.0+cu130 cuda True | ort 1.30.0 ['TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']
+== engines
+== building models/tensorrt/yolo26n_fp32.engine ()
+[09/18/2026-19:45:33] [I] Engine built in 82.993 sec.
+[09/18/2026-19:45:33] [I] Engine deserialized in 0.0239041 sec.
+[09/18/2026-19:45:49] [I] Throughput: 295.308 qps
+[09/18/2026-19:45:49] [I] Latency: min = 4.54102 ms, max = 4.73535 ms, mean = 4.62262 ms, median = 4.61523 ms, percentile(90%) = 4.66406 ms, percentile(95%) = 4.66895 ms, percentile(99%) = 4.67871 ms
+[09/18/2026-19:45:49] [I] Enqueue Time: min = 1.22632 ms, max = 1.77832 ms, mean = 1.3214 ms, median = 1.31958 ms, percentile(90%) = 1.36133 ms, percentile(95%) = 1.375 ms, percentile(99%) = 1.40137 ms
+[09/18/2026-19:45:49] [I] H2D Latency: min = 0.800781 ms, max = 0.824219 ms, mean = 0.804804 ms, median = 0.804688 ms, percentile(90%) = 0.806641 ms, percentile(95%) = 0.806641 ms, percentile(99%) = 0.808594 ms
+[09/18/2026-19:45:49] [I] GPU Compute Time: min = 3.30273 ms, max = 3.48926 ms, mean = 3.38355 ms, median = 3.37598 ms, percentile(90%) = 3.4248 ms, percentile(95%) = 3.42871 ms, percentile(99%) = 3.44043 ms
+[09/18/2026-19:45:49] [I] D2H Latency: min = 0.429688 ms, max = 0.444824 ms, mean = 0.434269 ms, median = 0.434326 ms, percentile(90%) = 0.435547 ms, percentile(95%) = 0.435547 ms, percentile(99%) = 0.4375 ms
+== building models/tensorrt/yolo26n_fp16.engine (--fp16)
+[09/18/2026-19:46:06] [W] Weakly-typed networks have been deprecated in TensorRT. You can use the AutoCast tool (https://nvidia.github.io/TensorRT-Model-Optimizer/guides/8_autocast.html) to convert the network to be strongly typed.
+[09/18/2026-19:50:50] [I] Engine built in 283.442 sec.
+[09/18/2026-19:50:50] [I] Engine deserialized in 0.0379436 sec.
+[09/18/2026-19:51:06] [I] Throughput: 594.738 qps
+[09/18/2026-19:51:06] [I] Latency: min = 2.85254 ms, max = 3.00586 ms, mean = 2.94993 ms, median = 2.94922 ms, percentile(90%) = 2.96875 ms, percentile(95%) = 2.97461 ms, percentile(99%) = 2.98633 ms
+[09/18/2026-19:51:06] [I] Enqueue Time: min = 1.22559 ms, max = 1.72559 ms, mean = 1.33898 ms, median = 1.3374 ms, percentile(90%) = 1.38867 ms, percentile(95%) = 1.40234 ms, percentile(99%) = 1.42969 ms
+[09/18/2026-19:51:06] [I] H2D Latency: min = 0.823242 ms, max = 0.869141 ms, mean = 0.833447 ms, median = 0.827637 ms, percentile(90%) = 0.844727 ms, percentile(95%) = 0.845703 ms, percentile(99%) = 0.850586 ms
+[09/18/2026-19:51:06] [I] GPU Compute Time: min = 1.57715 ms, max = 1.72363 ms, mean = 1.67935 ms, median = 1.6792 ms, percentile(90%) = 1.69434 ms, percentile(95%) = 1.7002 ms, percentile(99%) = 1.70801 ms
+[09/18/2026-19:51:06] [I] D2H Latency: min = 0.429688 ms, max = 0.46582 ms, mean = 0.437137 ms, median = 0.437012 ms, percentile(90%) = 0.438477 ms, percentile(95%) = 0.438965 ms, percentile(99%) = 0.441406 ms
+total 18820
+drwxrwxr-x 2 ubuntu ubuntu     4096 Sep 18 19:51 .
+drwxrwxr-x 5 ubuntu ubuntu     4096 Sep 18 19:27 ..
+-rw-r--r-- 1 ubuntu ubuntu        0 Sep 18 15:42 .gitkeep
+-rw-r--r-- 1 root   root       1331 Sep 18 19:44 yolo26n.names.json
+-rw-r--r-- 1 root   root    7119892 Sep 18 19:50 yolo26n_fp16.engine
+-rw-r--r-- 1 root   root       1331 Sep 18 19:51 yolo26n_fp16.names.json
+-rw-r--r-- 1 root   root   12126460 Sep 18 19:45 yolo26n_fp32.engine
+-rw-r--r-- 1 root   root       1331 Sep 18 19:46 yolo26n_fp32.names.json
+== benchmarks (300 frames, 30 warmup)
+WARNING ⚠️ user config directory '/root/.config/Ultralytics' is not writable, using '/tmp/Ultralytics'. Set YOLO_CONFIG_DIR to override.
+Creating new Ultralytics Settings v0.0.8 file ✅ 
+View Ultralytics Settings with 'yolo settings' or at '/tmp/Ultralytics/settings.json'
+Update Settings with 'yolo settings key=value', i.e. 'yolo settings runs_dir=path/to/dir'. For help see https://docs.ultralytics.com/usage/settings.
+
+backend=tensorrt  fps=94.6
+stage              mean      p50      p95      max  n
+decode              1.0      0.9      1.3      7.4  300
+preprocess          3.0      3.0      3.1      5.2  300
+inference           5.5      5.4      5.7      6.1  300
+postprocess         2.1      2.1      2.2      2.5  300
+end_to_end         10.6     10.5     10.9     12.9  300
+
+saved: benchmarks/results/tensorrt_fp32_20260918T195131Z.json
+
+backend=tensorrt  fps=108.1
+stage              mean      p50      p95      max  n
+decode              1.0      0.9      1.2      6.9  300
+preprocess          3.0      3.0      3.1      3.7  300
+inference           4.1      4.1      4.4      4.5  300
+postprocess         2.1      2.1      2.2      2.2  300
+end_to_end          9.3      9.2      9.8     10.1  300
+
+saved: benchmarks/results/tensorrt_fp16_20260918T195137Z.json
+
+backend=onnx  fps=88.6
+stage              mean      p50      p95      max  n
+decode              1.0      0.8      1.2      7.1  300
+preprocess          3.1      3.0      3.2      7.5  300
+inference           6.1      6.1      6.1      6.6  300
+postprocess         2.1      2.1      2.2      2.5  300
+end_to_end         11.3     11.2     11.5     15.9  300
+
+saved: benchmarks/results/onnx_cuda_20260918T195144Z.json
+[KDownloading https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n.pt to 'models/pytorch/yolo26n.pt': 100% ━━━━━━━━━━━━ 5.3MB 99.6MB/s 0.1s
+
+backend=pytorch  fps=80.6
+stage              mean      p50      p95      max  n
+decode              1.0      0.9      1.3      7.8  300
+inference          11.9     11.9     12.5     14.1  300
+end_to_end         12.4     12.3     13.0     14.6  300
+
+saved: benchmarks/results/pytorch_cuda_20260918T195154Z.json
+== tests
+...........................                                              [100%]
+27 passed in 6.21s
+== done: benchmarks/results/gpu_sprint3_20260918T194354Z.log

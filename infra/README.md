@@ -59,6 +59,20 @@ G and VT instances"); new accounts often start at 0 and must request >= 4.
 
 `AWS_PROFILE`, `AWS_REGION` and `STACK_NAME` can be overridden in the environment.
 
+Notes learned on the first run (2026-09-18):
+
+- `aws cloudformation deploy` keeps the *previous* value of any parameter you do not
+  override, so new template defaults only apply when passed explicitly
+  (e.g. `deploy.sh MaxUptimeHours=4 IdleStopPeriods=6`).
+- After a vCPU quota increase is approved, Service Quotas shows the new value a few
+  minutes before EC2 enforces it; `run-instances --dry-run` does **not** check the
+  quota, so a real launch is the only test. A failed update rolls back cleanly.
+- The idle-stop alarm needs `cloudwatch:PutMetricAlarm` on the deploying identity
+  (statement `IdleStopAlarm` in the policy file). Until that policy version is
+  attached, deploy with `CreateIdleAlarm=false`; the in-instance uptime cap still runs.
+- Inside `scripts/aws/run.sh` commands, use absolute paths for docker bind mounts
+  (`-v /opt/edgevision/repo:/workspace/edgevision`), not `$PWD`.
+
 ## Cost (us-east-1 on-demand, Pricing API 2026-09-18)
 
 | item | price |
@@ -77,15 +91,14 @@ Resuming costs the image rebuild again (~15 min ≈ US$ 0.15).
 
 ```bash
 cd /opt/edgevision/repo
-docker build -f docker/Dockerfile.tensorrt -t edgevision:trt .
-docker run --rm --gpus all -v $PWD:/workspace/edgevision edgevision:trt \
-    bash -lc 'scripts/build_engine.sh && \
-              python -m edgevision.benchmark --backend tensorrt --model models/tensorrt/yolo26n_fp32.engine --label fp32 && \
-              python -m edgevision.benchmark --backend tensorrt --model models/tensorrt/yolo26n_fp16.engine --label fp16 && \
-              python -m edgevision.benchmark --backend onnx --label cuda && \
-              python -m edgevision.benchmark --backend pytorch --label cuda && \
-              pytest -q'
+docker build -f docker/Dockerfile.tensorrt -t edgevision:trt .   # ~5 min, 9.8 GB
+docker run --rm --gpus all -v /opt/edgevision/repo:/workspace/edgevision \
+    -e FRAMES=300 -e WARMUP=30 edgevision:trt scripts/gpu_sprint3.sh
 ```
+
+`scripts/gpu_sprint3.sh` builds the FP32/FP16 engines, benchmarks the four backends
+(TensorRT FP32, TensorRT FP16, ONNX Runtime CUDA, PyTorch CUDA) on the same clip,
+runs the tests and leaves a log next to the JSON reports in `benchmarks/results/`.
 
 Pick the NGC TensorRT tag (`--build-arg TRT_TAG=`) whose CUDA major is supported by
 the AMI's driver (`nvidia-smi` shows the max CUDA version). 26.04 = TensorRT 10.16 /

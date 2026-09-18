@@ -53,8 +53,19 @@ Parameters:
       false = create network, bucket, role and launch template only (e.g. while the
       G-instance vCPU quota is still 0, or to keep the bucket but drop the instance).
 
+  CreateIdleAlarm:
+    Type: String
+    Default: "true"
+    AllowedValues: ["true", "false"]
+    Description: >-
+      false = skip the CloudWatch idle-stop alarm (needs cloudwatch:PutMetricAlarm on
+      the deploying identity). The in-instance MaxUptimeHours cap still applies.
+
 Conditions:
   LaunchInstance: !Equals [!Ref LaunchInstance, "true"]
+  IdleAlarmEnabled: !And
+    - !Condition LaunchInstance
+    - !Equals [!Ref CreateIdleAlarm, "true"]
 
 Resources:
   Vpc:
@@ -304,7 +315,7 @@ Resources:
 
   IdleStopAlarm:
     Type: AWS::CloudWatch::Alarm
-    Condition: LaunchInstance
+    Condition: IdleAlarmEnabled
     Metadata:
       com.aws.cloudformation.Context:
         why: cost guard - stops (not terminates) the box when CPU <5% for IdleStopPeriods x 5 min; restart with scripts/aws/start.sh

@@ -56,4 +56,10 @@ postprocess, end_to_end) and writes a JSON report with environment details to
 Needs an NVIDIA GPU. This laptop has none, so engines are built and measured on an
 EC2 GPU box defined in `infra/gpu-dev.yaml`; see `infra/README.md` for the workflow.
 `scripts/build_engine.sh` builds FP32 and FP16 engines with `trtexec` from the ONNX
-export and keeps trtexec's own timing reports in `benchmarks/results/`.
+export and keeps trtexec's own timing reports in `benchmarks/results/`;
+`scripts/gpu_sprint3.sh` runs the whole measurement inside the container.
+
+First results on a Tesla T4 (end-to-end per frame, mean): PyTorch CUDA 12.4 ms,
+ONNX Runtime CUDA 11.3 ms, TensorRT FP32 10.6 ms, TensorRT FP16 9.3 ms (108 FPS).
+GPU compute for FP16 is 1.7 ms; CPU-side letterbox + NMS now dominate the frame.
+Details in `benchmarks/README.md`.

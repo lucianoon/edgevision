@@ -23,7 +23,9 @@
       ],
       "Resource": "*",
       "Condition": {
-        "StringEqualsIfExists": { "aws:RequestedRegion": "us-east-1" }
+        "StringEqualsIfExists": {
+          "aws:RequestedRegion": "us-east-1"
+        }
       }
     },
     {
@@ -62,7 +64,9 @@
       ],
       "Resource": "*",
       "Condition": {
-        "StringEquals": { "aws:RequestedRegion": "us-east-1" }
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
       }
     },
     {
@@ -79,7 +83,9 @@
       ],
       "Resource": "*",
       "Condition": {
-        "StringEquals": { "aws:ResourceTag/Project": "edgevision" }
+        "StringEquals": {
+          "aws:ResourceTag/Project": "edgevision"
+        }
       }
     },
     {
@@ -153,7 +159,9 @@
         "arn:aws:ssm:us-east-1::document/SSM-SessionManagerRunShell"
       ],
       "Condition": {
-        "StringEqualsIfExists": { "ssm:resourceTag/Project": "edgevision" }
+        "StringEqualsIfExists": {
+          "ssm:resourceTag/Project": "edgevision"
+        }
       }
     },
     {
@@ -186,6 +194,29 @@
         "ce:GetCostAndUsage"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "IdleStopAlarm",
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:PutMetricAlarm",
+        "cloudwatch:DescribeAlarms",
+        "cloudwatch:DeleteAlarms",
+        "cloudwatch:EnableAlarmActions",
+        "cloudwatch:DisableAlarmActions"
+      ],
+      "Resource": "arn:aws:cloudwatch:us-east-1:342996267972:alarm:edgevision-*"
+    },
+    {
+      "Sid": "CloudWatchEventsServiceLinkedRoleForEc2AlarmActions",
+      "Effect": "Allow",
+      "Action": "iam:CreateServiceLinkedRole",
+      "Resource": "arn:aws:iam::*:role/aws-service-role/events.amazonaws.com/AWSServiceRoleForCloudWatchEvents*",
+      "Condition": {
+        "StringLike": {
+          "iam:AWSServiceName": "events.amazonaws.com"
+        }
+      }
     }
   ]
 }

@@ -7,7 +7,8 @@ set -euo pipefail
 source "$(dirname "$0")/common.sh"
 : "${TIMEOUT_SECONDS:=1800}"
 
-CMD="cd /opt/edgevision/repo 2>/dev/null || cd /opt/edgevision; sudo -u ubuntu -i bash -lc $(printf '%q' "cd \$PWD && $*")"
+# sudo -i resets the cwd to the home dir, so the repo path must be spelled out inside the login shell.
+CMD="sudo -u ubuntu -i bash -lc $(printf '%q' "cd /opt/edgevision/repo 2>/dev/null || cd /opt/edgevision || cd ~; $*")"
 CMD_ID=$(aws ssm send-command --region "$AWS_REGION" \
     --instance-ids "$(instance_id)" \
     --document-name AWS-RunShellScript \

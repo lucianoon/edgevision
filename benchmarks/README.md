@@ -71,3 +71,50 @@ Observations:
 
 Raw reports: `results/tensorrt_*`, `results/onnx_cuda_*`, `results/pytorch_cuda_*`,
 `results/trtexec_*` and the run log `results/gpu_sprint3_*.log`.
+
+## 2026-09-18 - Sprint 4 prep: real 1080p clip and NMS inside the graph
+
+Clip: `videos/pedestrian_area_1080p25.webm` (1920x1080, CC0; ~49 candidates >= 0.5 per
+frame reduced to ~6 detections by NMS, almost all `person`). Two graphs of the same
+yolo26n weights: **raw** (`1x84x8400`, our letterbox + NMS in Python) and **nmsgraph**
+(Ultralytics `export(nms=True, conf=0.5, iou=0.45)`, ONNX `NonMaxSuppression` op,
+output `1x300x6`; decoded by `postprocess.decode_end2end`). 300 frames, 30 warm-up. ms, mean.
+
+### Laptop CPU (i7-1185G7, onnxruntime CPU)
+
+| graph    | decode | preprocess | inference | postprocess | end_to_end | FPS  |
+|----------|-------:|-----------:|----------:|------------:|-----------:|-----:|
+| raw      | 5.7    | 6.0        | 39.7      | 2.7         | 48.9       | 20.5 |
+| nmsgraph | 5.6    | 5.7        | 40.6      | 0.2         | 46.9       | 21.3 |
+
+### Tesla T4 (g4dn.xlarge, TensorRT 10.16 / CUDA 13.2)
+
+| backend / graph          | decode | preprocess | inference | postprocess | end_to_end | p95  | FPS   |
+|--------------------------|-------:|-----------:|----------:|------------:|-----------:|-----:|------:|
+| pytorch CUDA             | 1.7    | (inside)   | 11.8      | (inside)    | 12.4       | 15.0 | 81.0  |
+| onnx CUDA / raw          | 4.5*   | 6.0        | 6.3       | 2.2         | 14.4       | 18.2 | 69.3  |
+| onnx CUDA / nmsgraph     | 2.2    | 5.7        | 6.1       | 0.2         | 12.0       | 15.1 | 83.1  |
+| tensorrt FP16 / raw      | 2.0    | 3.1        | 4.2       | 2.1         | 9.5        | 11.8 | 105.7 |
+| tensorrt FP16 / nmsgraph | 2.0    | 3.2        | 4.2       | 0.2         | **7.6**    | 9.6  | **130.9** |
+
+\* one 89 ms decode outlier in the first run (cold VP8 decoder); p50 was 2.3 ms.
+
+Observations:
+
+- **NMS in the graph is free on the GPU and removes the Python post-processing**
+  (2.1 -> 0.2 ms). TensorRT inference did not change (4.2 ms) with NMS inside, and the
+  ONNX Runtime CUDA path lost only 0.2 ms. Decision for the C++ runtime: ship the
+  engine with NMS built in; no NMS code to write or maintain in C++.
+- **Pre-processing is now the largest CPU cost**: 3.1-3.2 ms on the T4 box (5.7-6.0 ms
+  under ONNX Runtime, whose CPU is busier) for a 1080p letterbox + BGR->RGB + NCHW +
+  /255 in OpenCV/NumPy. That is 42% of the 7.6 ms frame. Next target: resize/normalize
+  on the GPU (CUDA kernel or NPP) fed by a single H2D copy of the raw frame.
+- **Decode of 1080p VP8 costs ~2 ms of CPU on the box, 5.7 ms on the laptop.** Real
+  cameras (H.264/H.265 RTSP) will need hardware decode (NVDEC via GStreamer) to keep
+  this off the CPU - the GStreamer step of the roadmap is also a performance step.
+- Per-frame accuracy of the nmsgraph path matches ours: same classes, IoU > 0.95,
+  confidence within 0.02 on the sample image (`tests/test_end2end_output.py`).
+- Sprint 3 figures on the synthetic clip (9.3 ms) and these on the real clip (9.5 ms) agree;
+  the still-image clip did not distort the raw-path numbers, but it hid the decode cost.
+
+Raw reports: `results/*_raw_*`, `results/*_nmsgraph_*`, `results/gpu_nms_compare_*.log`.

@@ -6,6 +6,7 @@ models/**/*.pt
 models/**/*.onnx
 models/**/*.engine
 videos/*
+!videos/README.md
 !videos/.gitkeep
 benchmarks/results/*
 !benchmarks/results/.gitkeep

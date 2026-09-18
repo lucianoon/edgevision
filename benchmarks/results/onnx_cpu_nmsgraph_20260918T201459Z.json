@@ -1,0 +1,64 @@
+{
+  "timestamp_utc": "20260918T201459Z",
+  "backend": "onnx",
+  "label": "cpu_nmsgraph",
+  "model_path": "models/onnx/yolo26n_nms.onnx",
+  "image_size": 640,
+  "confidence": 0.5,
+  "source": "videos/pedestrian_area_1080p25.webm",
+  "frames": 100,
+  "warmup": 10,
+  "fps": 21.322769983694496,
+  "stages": {
+    "decode": {
+      "mean_ms": 5.634381016716361,
+      "p50_ms": 5.520249949768186,
+      "p95_ms": 6.735899951308966,
+      "max_ms": 11.223599780350924,
+      "samples": 100
+    },
+    "preprocess": {
+      "mean_ms": 5.668246019631624,
+      "p50_ms": 5.647200159728527,
+      "p95_ms": 7.310500368475914,
+      "max_ms": 11.475100181996822,
+      "samples": 100
+    },
+    "inference": {
+      "mean_ms": 40.57765000965446,
+      "p50_ms": 41.72089998610318,
+      "p95_ms": 46.55700037255883,
+      "max_ms": 49.32330036535859,
+      "samples": 100
+    },
+    "postprocess": {
+      "mean_ms": 0.20957702305167913,
+      "p50_ms": 0.21489989012479782,
+      "p95_ms": 0.2578999847173691,
+      "max_ms": 0.3983001224696636,
+      "samples": 100
+    },
+    "end_to_end": {
+      "mean_ms": 46.89822198357433,
+      "p50_ms": 48.22700028307736,
+      "p95_ms": 54.331999737769365,
+      "max_ms": 60.126100201159716,
+      "samples": 100
+    }
+  },
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+    "numpy": "2.5.3",
+    "torch": "2.14.0+cpu",
+    "cuda_available": false,
+    "onnxruntime": "1.30.0",
+    "ort_providers": [
+      "CPUExecutionProvider"
+    ],
+    "ultralytics": "8.4.155",
+    "gpu": null,
+    "tensorrt": null
+  }
+}

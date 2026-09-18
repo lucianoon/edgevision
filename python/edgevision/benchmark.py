@@ -94,7 +94,7 @@ def parse_args():
     parser.add_argument("--backend", choices=["pytorch", "onnx", "tensorrt"], required=True)
     parser.add_argument("--model", help="Override model.paths.<backend> (e.g. an FP32 engine)")
     parser.add_argument("--label", default="", help="Suffix for the report file name (e.g. fp32)")
-    parser.add_argument("--source", default="videos/sample.mp4")
+    parser.add_argument("--source", default="videos/pedestrian_area_1080p25.webm", help="see videos/README.md")
     parser.add_argument("--frames", type=int, default=100, help="measured frames")
     parser.add_argument("--warmup", type=int, default=10, help="frames discarded before measuring")
     parser.add_argument("--out", type=Path, help="JSON path (default: benchmarks/results/<backend>_<utc>.json)")

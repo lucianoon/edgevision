@@ -84,6 +84,21 @@ def scale_boxes(boxes: np.ndarray, info: LetterboxInfo) -> np.ndarray:
     return scaled
 
 
+def decode_end2end(
+    output: np.ndarray, conf_threshold: float
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """(1, max_det, 6) from a graph with NMS built in: rows are
+    (x1, y1, x2, y2, score, class) in letterboxed pixels, zero-padded."""
+    rows = output[0]
+    mask = rows[:, 4] >= conf_threshold
+    rows = rows[mask]
+    return rows[:, :4], rows[:, 4], rows[:, 5].astype(np.int64)
+
+
+def is_end2end_output(output: np.ndarray) -> bool:
+    return output.ndim == 3 and output.shape[2] == 6
+
+
 def postprocess(
     output: np.ndarray,
     info: LetterboxInfo,
@@ -92,8 +107,14 @@ def postprocess(
     iou_threshold: float,
     max_det: int = 300,
 ) -> list[Detection]:
-    boxes, scores, class_ids = decode_raw(output, conf_threshold)
-    keep = batched_nms(boxes, scores, class_ids, iou_threshold)[:max_det]
+    if is_end2end_output(output):
+        # NMS already ran inside the graph; nothing left to suppress.
+        boxes, scores, class_ids = decode_end2end(output, conf_threshold)
+        keep = np.arange(len(scores))[:max_det]
+    else:
+        boxes, scores, class_ids = decode_raw(output, conf_threshold)
+        keep = batched_nms(boxes, scores, class_ids, iou_threshold)[:max_det]
+
     boxes = scale_boxes(boxes[keep], info)
 
     return [

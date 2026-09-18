@@ -2,10 +2,10 @@ model:
   backend: pytorch          # pytorch | onnx | tensorrt
   paths:
     pytorch: models/pytorch/yolo26n.pt
-    onnx: models/onnx/yolo26n.onnx
-    tensorrt: models/tensorrt/yolo26n_fp16.engine
+    onnx: models/onnx/yolo26n_nms.onnx              # NMS inside the graph (1x300x6); raw head: yolo26n.onnx
+    tensorrt: models/tensorrt/yolo26n_nms_fp16.engine # built by scripts/build_engine.sh from the onnx above
   confidence: 0.50
-  iou_threshold: 0.45       # NMS, used by the onnx/tensorrt backends
+  iou_threshold: 0.45       # our NMS (raw-head graphs only); nms graphs bake conf/iou at export time
   image_size: 640
   device: auto              # pytorch backend only
 

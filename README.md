@@ -63,3 +63,12 @@ First results on a Tesla T4 (end-to-end per frame, mean): PyTorch CUDA 12.4 ms,
 ONNX Runtime CUDA 11.3 ms, TensorRT FP32 10.6 ms, TensorRT FP16 9.3 ms (108 FPS).
 GPU compute for FP16 is 1.7 ms; CPU-side letterbox + NMS now dominate the frame.
 Details in `benchmarks/README.md`.
+
+### NMS inside the graph (Sprint 4 prep)
+
+`python scripts/export_onnx.py` exports the raw head; adding NMS to the graph
+(`YOLO(...).export(format="onnx", nms=True, conf=0.5, iou=0.45)`) gives a `1x300x6`
+output that `postprocess.py` recognises by shape and decodes without running NMS.
+On the T4 with a real 1080p clip this took TensorRT FP16 from 9.5 to 7.6 ms per frame
+(131 FPS); `configs/app.yaml` now points at the NMS graphs. Benchmark clips and their
+licenses: `videos/README.md`.

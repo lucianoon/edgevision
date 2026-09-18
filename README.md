@@ -32,6 +32,7 @@ Weights (`yolo26n.pt`) are downloaded by Ultralytics on first run into `models/p
 |-----------|--------------------|--------------------------------|
 | `pytorch` | Ultralytics `predict()` | inside Ultralytics (opaque) |
 | `onnx`    | ONNX Runtime       | ours: `preprocess.py` (letterbox), `postprocess.py` (decode + NMS) |
+| `tensorrt`| TensorRT engine (`tensorrt_detector.py`, TensorRT 10 API + cuda-python) | same as `onnx` |
 
 Export the ONNX graph (static `1x3x640x640`, opset 17, output `1x84x8400`):
 
@@ -49,3 +50,10 @@ python -m edgevision.benchmark --backend onnx --frames 100
 Prints mean / p50 / p95 / max per stage (decode, preprocess, inference,
 postprocess, end_to_end) and writes a JSON report with environment details to
 `benchmarks/results/`. Results in `benchmarks/README.md`.
+
+## TensorRT (Sprint 3)
+
+Needs an NVIDIA GPU. This laptop has none, so engines are built and measured on an
+EC2 GPU box defined in `infra/gpu-dev.yaml`; see `infra/README.md` for the workflow.
+`scripts/build_engine.sh` builds FP32 and FP16 engines with `trtexec` from the ONNX
+export and keeps trtexec's own timing reports in `benchmarks/results/`.

@@ -1,10 +1,11 @@
 model:
-  backend: pytorch          # pytorch | onnx
+  backend: pytorch          # pytorch | onnx | tensorrt
   paths:
     pytorch: models/pytorch/yolo26n.pt
     onnx: models/onnx/yolo26n.onnx
+    tensorrt: models/tensorrt/yolo26n_fp16.engine
   confidence: 0.50
-  iou_threshold: 0.45       # NMS, used by the onnx backend
+  iou_threshold: 0.45       # NMS, used by the onnx/tensorrt backends
   image_size: 640
   device: auto              # pytorch backend only
 

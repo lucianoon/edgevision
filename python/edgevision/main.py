@@ -48,7 +48,7 @@ def parse_args():
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument(
         "--backend",
-        choices=["pytorch", "onnx"],
+        choices=["pytorch", "onnx", "tensorrt"],
         help="Override model.backend",
     )
     parser.add_argument(

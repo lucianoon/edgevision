@@ -4,7 +4,8 @@ from edgevision.metrics import PerformanceMetrics
 def build_detector(model_cfg: dict, metrics: PerformanceMetrics | None = None):
     """Create a detector from the `model` section of app.yaml.
 
-    backend: pytorch (Ultralytics, opaque pre/post) | onnx (ONNX Runtime, ours).
+    backend: pytorch (Ultralytics, opaque pre/post) | onnx (ONNX Runtime, ours)
+             | tensorrt (TensorRT engine, ours).
     """
     backend = model_cfg["backend"]
     path = model_cfg["paths"][backend]
@@ -32,4 +33,17 @@ def build_detector(model_cfg: dict, metrics: PerformanceMetrics | None = None):
             metrics=metrics,
         )
 
-    raise ValueError(f"Unknown backend: {backend!r} (expected 'pytorch' or 'onnx')")
+    if backend == "tensorrt":
+        from edgevision.tensorrt_detector import TensorRTDetector
+
+        return TensorRTDetector(
+            engine_path=path,
+            confidence=model_cfg["confidence"],
+            iou_threshold=model_cfg["iou_threshold"],
+            image_size=model_cfg["image_size"],
+            metrics=metrics,
+        )
+
+    raise ValueError(
+        f"Unknown backend: {backend!r} (expected 'pytorch', 'onnx' or 'tensorrt')"
+    )

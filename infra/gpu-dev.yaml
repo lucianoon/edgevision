@@ -1,0 +1,339 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  EdgeVision GPU dev box - single NVIDIA GPU EC2 instance (Deep Learning Base AMI
+  with driver + Docker + NVIDIA container toolkit) reached only through SSM Session
+  Manager, plus an S3 bucket to move code, ONNX models, TensorRT engines and
+  benchmark results. Auto-stops on idle to cap cost.
+
+Metadata:
+  AWSToolsMetrics:
+    AWSAgentToolkit: aws-cloudformation@3
+  com.aws.cloudformation.Context:
+    arch: laptop -> S3 (code/models) -> GPU EC2 (docker trt) -> S3 (engines/results) -> laptop
+    must:
+      - no inbound ports; access via SSM only
+      - IMDSv2 required; hop limit 2 for docker containers
+      - all resources tagged Project=edgevision (IAM user policy scopes on it)
+      - us-east-1 only (IAM user policy scopes on it)
+    owner: edgevision project (see repo infra/README.md)
+
+Parameters:
+  InstanceType:
+    Type: String
+    Default: g4dn.xlarge
+    AllowedValues: [g4dn.xlarge, g4dn.2xlarge, g5.xlarge, g6.xlarge]
+    Description: NVIDIA GPU instance. g4dn.xlarge (T4) is the cheapest that fits.
+  AmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/deeplearning/ami/x86_64/base-oss-nvidia-driver-gpu-ubuntu-24.04/latest/ami-id
+    Description: Deep Learning Base OSS NVIDIA Driver GPU AMI (Ubuntu 24.04), resolved from Parameter Store.
+  VolumeSizeGiB:
+    Type: Number
+    Default: 100
+    MinValue: 50
+    MaxValue: 500
+    Description: Root EBS size. Docker images with torch + TensorRT take ~20 GiB.
+  IdleStopPeriods:
+    Type: Number
+    Default: 12
+    MinValue: 3
+    MaxValue: 144
+    Description: Stop the instance after this many 5-minute periods of CPU below 5% (12 = 1 hour).
+  MaxUptimeHours:
+    Type: Number
+    Default: 8
+    MinValue: 1
+    MaxValue: 48
+    Description: Hard cap - the instance powers off this many hours after each boot.
+  LaunchInstance:
+    Type: String
+    Default: "true"
+    AllowedValues: ["true", "false"]
+    Description: >-
+      false = create network, bucket, role and launch template only (e.g. while the
+      G-instance vCPU quota is still 0, or to keep the bucket but drop the instance).
+
+Conditions:
+  LaunchInstance: !Equals [!Ref LaunchInstance, "true"]
+
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: own VPC so the stack does not depend on a default VPC existing in the account
+        must: [DNS support + hostnames on for SSM agent name resolution]
+    Properties:
+      CidrBlock: 10.42.0.0/24
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - { Key: Name, Value: !Sub "${AWS::StackName}-vpc" }
+        - { Key: Project, Value: edgevision }
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - { Key: Project, Value: edgevision }
+
+  VpcGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: public subnet w/ IGW gives the SSM agent + docker pulls outbound internet; no inbound rules exist
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.42.0.0/26
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - { Key: Name, Value: !Sub "${AWS::StackName}-public" }
+        - { Key: Project, Value: edgevision }
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - { Key: Project, Value: edgevision }
+
+  DefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VpcGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: egress-only; shell access is SSM Session Manager, no SSH
+        must: [never add ingress rules]
+        mutable: must-never-change
+    Properties:
+      GroupDescription: EdgeVision GPU dev - egress only, SSM access
+      VpcId: !Ref Vpc
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: HTTPS (SSM, apt, pip, docker registries, S3)
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP (apt mirrors)
+      Tags:
+        - { Key: Project, Value: edgevision }
+
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: transfer channel laptop<->instance (code tarball, onnx, engines, benchmark json); retained so results survive stack deletion
+        must: [name must match edgevision-* (IAM user policy), private, encrypted, TLS only]
+    Properties:
+      BucketName: !Sub "edgevision-${AWS::AccountId}-${AWS::Region}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: expire-old-versions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 7
+          - Id: abort-incomplete-uploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 2
+      Tags:
+        - { Key: Project, Value: edgevision }
+
+  ArtifactBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ArtifactBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: "s3:*"
+            Resource:
+              - !GetAtt ArtifactBucket.Arn
+              - !Sub "${ArtifactBucket.Arn}/*"
+            Condition:
+              Bool: { "aws:SecureTransport": "false" }
+
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: SSM managed node + read/write only on the artifact bucket; no other AWS access from the box
+        must: [role name must match edgevision-* (IAM user policy)]
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-instance-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: ec2.amazonaws.com }
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals: { "aws:SourceAccount": !Ref "AWS::AccountId" }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: artifact-bucket-rw
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [s3:ListBucket, s3:GetBucketLocation]
+                Resource: !GetAtt ArtifactBucket.Arn
+              - Effect: Allow
+                Action: [s3:GetObject, s3:PutObject, s3:DeleteObject, s3:AbortMultipartUpload]
+                Resource: !Sub "${ArtifactBucket.Arn}/*"
+      Tags:
+        - { Key: Project, Value: edgevision }
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub "${AWS::StackName}-instance-profile"
+      Roles: [!Ref InstanceRole]
+
+  LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: launch template keeps IMDSv2/EBS/user-data in one versioned place; user data only sets a power-off timer + env, DLAMI already ships driver/docker/nvidia-ctk
+        must: [HttpTokens required; HopLimit 2 (docker); encrypted gp3 root; shutdown behavior stop so state survives]
+    Properties:
+      LaunchTemplateName: !Sub "${AWS::StackName}-lt"
+      LaunchTemplateData:
+        ImageId: !Ref AmiId
+        InstanceType: !Ref InstanceType
+        IamInstanceProfile:
+          Arn: !GetAtt InstanceProfile.Arn
+        SecurityGroupIds: [!Ref InstanceSecurityGroup]
+        InstanceInitiatedShutdownBehavior: stop
+        MetadataOptions:
+          HttpEndpoint: enabled
+          HttpTokens: required
+          HttpPutResponseHopLimit: 2
+        BlockDeviceMappings:
+          - DeviceName: /dev/sda1
+            Ebs:
+              VolumeType: gp3
+              VolumeSize: !Ref VolumeSizeGiB
+              Encrypted: true
+              DeleteOnTermination: true
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - { Key: Name, Value: !Sub "${AWS::StackName}" }
+              - { Key: Project, Value: edgevision }
+          - ResourceType: volume
+            Tags:
+              - { Key: Project, Value: edgevision }
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            set -euxo pipefail
+            # Hard uptime cap: power off (-> stop) MaxUptimeHours after every boot.
+            CAP_MINUTES=$(( ${MaxUptimeHours} * 60 ))
+            cat >/etc/systemd/system/edgevision-uptime-cap.service <<UNIT
+            [Unit]
+            Description=EdgeVision hard uptime cap (power off after $CAP_MINUTES minutes)
+            After=multi-user.target
+            [Service]
+            Type=oneshot
+            ExecStart=/sbin/shutdown -h +$CAP_MINUTES "edgevision: max uptime reached"
+            [Install]
+            WantedBy=multi-user.target
+            UNIT
+            systemctl daemon-reload
+            systemctl enable --now edgevision-uptime-cap.service
+            # Shared env for the dev workflow.
+            cat >/etc/profile.d/edgevision.sh <<ENV
+            export EDGEVISION_BUCKET=${ArtifactBucket}
+            export AWS_DEFAULT_REGION=${AWS::Region}
+            ENV
+            mkdir -p /opt/edgevision && chown ubuntu:ubuntu /opt/edgevision
+
+  Instance:
+    Type: AWS::EC2::Instance
+    Condition: LaunchInstance
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      SubnetId: !Ref PublicSubnet
+      Tags:
+        - { Key: Name, Value: !Sub "${AWS::StackName}" }
+        - { Key: Project, Value: edgevision }
+
+  IdleStopAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: LaunchInstance
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: cost guard - stops (not terminates) the box when CPU <5% for IdleStopPeriods x 5 min; restart with scripts/aws/start.sh
+        mutable: free-to-tune
+    Properties:
+      AlarmDescription: !Sub "Stop ${AWS::StackName} after ${IdleStopPeriods} idle 5-minute periods"
+      Namespace: AWS/EC2
+      MetricName: CPUUtilization
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref Instance
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: !Ref IdleStopPeriods
+      Threshold: 5
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Sub "arn:aws:automate:${AWS::Region}:ec2:stop"
+
+Outputs:
+  InstanceId:
+    Condition: LaunchInstance
+    Description: EC2 instance id (target for SSM Session Manager)
+    Value: !Ref Instance
+  BucketName:
+    Description: Artifact bucket shared between laptop and instance
+    Value: !Ref ArtifactBucket
+  ConnectCommand:
+    Condition: LaunchInstance
+    Description: Open a shell on the box
+    Value: !Sub "aws ssm start-session --target ${Instance} --region ${AWS::Region}"

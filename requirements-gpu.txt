@@ -1,0 +1,10 @@
+# Installed inside docker/Dockerfile.tensorrt (tensorrt + trtexec come from the NGC base image).
+ultralytics
+opencv-python-headless
+numpy
+pyyaml
+onnx
+onnxruntime-gpu
+cuda-python
+psutil
+pytest

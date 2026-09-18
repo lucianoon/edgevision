@@ -1,0 +1,19 @@
+# EdgeVision GPU image: TensorRT + trtexec from NGC, plus our Python stack.
+# Build:  docker build -f docker/Dockerfile.tensorrt --build-arg TRT_TAG=26.04 -t edgevision:trt .
+# Run:    docker run --rm --gpus all -v $PWD:/workspace/edgevision -w /workspace/edgevision edgevision:trt bash
+ARG TRT_TAG=26.04
+FROM nvcr.io/nvidia/tensorrt:${TRT_TAG}-py3
+
+ENV PYTHONPATH=/workspace/edgevision/python \
+    PIP_NO_CACHE_DIR=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libgl1 libglib2.0-0 ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements-gpu.txt /tmp/requirements-gpu.txt
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install -r /tmp/requirements-gpu.txt
+
+WORKDIR /workspace/edgevision

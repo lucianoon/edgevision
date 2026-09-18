@@ -36,7 +36,16 @@ def environment(detector) -> dict:
         "onnxruntime": onnxruntime.__version__,
         "ort_providers": getattr(detector, "providers", None),
         "ultralytics": ultralytics.__version__,
+        "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
+        "tensorrt": _version("tensorrt"),
     }
+
+
+def _version(module_name: str):
+    try:
+        return __import__(module_name).__version__
+    except ImportError:
+        return None
 
 
 def run(model_cfg: dict, source, frames: int, warmup: int) -> tuple[PerformanceMetrics, object]:
@@ -82,7 +91,9 @@ def print_report(backend: str, summary: dict, fps: float):
 def parse_args():
     parser = argparse.ArgumentParser(description="EdgeVision detector benchmark")
     parser.add_argument("--config", type=Path, default=Path("configs/app.yaml"))
-    parser.add_argument("--backend", choices=["pytorch", "onnx"], required=True)
+    parser.add_argument("--backend", choices=["pytorch", "onnx", "tensorrt"], required=True)
+    parser.add_argument("--model", help="Override model.paths.<backend> (e.g. an FP32 engine)")
+    parser.add_argument("--label", default="", help="Suffix for the report file name (e.g. fp32)")
     parser.add_argument("--source", default="videos/sample.mp4")
     parser.add_argument("--frames", type=int, default=100, help="measured frames")
     parser.add_argument("--warmup", type=int, default=10, help="frames discarded before measuring")
@@ -94,6 +105,8 @@ def main():
     args = parse_args()
     model_cfg = load_config(args.config)["model"]
     model_cfg["backend"] = args.backend
+    if args.model:
+        model_cfg["paths"][args.backend] = args.model
 
     source = int(args.source) if args.source.isdigit() else args.source
     metrics, detector = run(model_cfg, source, args.frames, args.warmup)
@@ -102,12 +115,14 @@ def main():
     print_report(args.backend, summary, metrics.fps)
 
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    out = args.out or RESULTS_DIR / f"{args.backend}_{stamp}.json"
+    name = "_".join(filter(None, [args.backend, args.label, stamp]))
+    out = args.out or RESULTS_DIR / f"{name}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
 
     report = {
         "timestamp_utc": stamp,
         "backend": args.backend,
+        "label": args.label,
         "model_path": model_cfg["paths"][args.backend],
         "image_size": model_cfg["image_size"],
         "confidence": model_cfg["confidence"],

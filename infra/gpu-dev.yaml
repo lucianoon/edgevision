@@ -35,13 +35,13 @@ Parameters:
     Description: Root EBS size. Docker images with torch + TensorRT take ~20 GiB.
   IdleStopPeriods:
     Type: Number
-    Default: 12
+    Default: 6
     MinValue: 3
     MaxValue: 144
-    Description: Stop the instance after this many 5-minute periods of CPU below 5% (12 = 1 hour).
+    Description: Stop the instance after this many 5-minute periods of CPU below 5% (6 = 30 min).
   MaxUptimeHours:
     Type: Number
-    Default: 8
+    Default: 4
     MinValue: 1
     MaxValue: 48
     Description: Hard cap - the instance powers off this many hours after each boot.

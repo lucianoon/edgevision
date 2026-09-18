@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+models/**/*.pt
+models/**/*.onnx
+models/**/*.engine
+videos/*
+!videos/.gitkeep
+benchmarks/results/*
+!benchmarks/results/.gitkeep
+runs/

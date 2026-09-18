@@ -1,0 +1,12 @@
+model:
+  path: models/pytorch/yolo26n.pt
+  confidence: 0.50
+  image_size: 640
+  device: auto
+
+video:
+  source: 0
+  display: true
+
+metrics:
+  log_interval_frames: 30

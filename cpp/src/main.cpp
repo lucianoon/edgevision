@@ -24,6 +24,7 @@
 #include "edgevision/detector.hpp"
 #include "edgevision/metrics.hpp"
 #include "edgevision/names.hpp"
+#include "edgevision/video_decoder.hpp"
 
 using namespace edgevision;
 
@@ -32,6 +33,7 @@ namespace {
 struct Args {
     std::string engine;
     std::string source = "videos/pedestrian_area_1080p25.webm";
+    std::string decoder = "opencv";  // opencv (CPU decode, H2D copy) | nvdec (GPU decode, no copy)
     std::string names;
     std::string label;
     std::string out;
@@ -53,6 +55,7 @@ Args parse_args(int argc, char** argv) {
         };
         if (k == "--engine") a.engine = next("--engine");
         else if (k == "--source") a.source = next("--source");
+        else if (k == "--decoder") a.decoder = next("--decoder");
         else if (k == "--names") a.names = next("--names");
         else if (k == "--label") a.label = next("--label");
         else if (k == "--out") a.out = next("--out");
@@ -63,13 +66,14 @@ Args parse_args(int argc, char** argv) {
         else if (k == "--no-pinned") a.pinned = false;
         else if (k == "--no-stage-timing") a.stage_timing = false;
         else if (k == "--help" || k == "-h") {
-            std::cout << "usage: edgevision_trt --engine E [--source S] [--frames N] [--warmup N] [--label L]\n"
-                         "       [--names names.json] [--out report.json] [--dump-detections dets.json]\n"
-                         "       [--confidence 0.5] [--no-pinned] [--no-stage-timing]\n";
+            std::cout << "usage: edgevision_trt --engine E [--source S] [--decoder opencv|nvdec] [--frames N]\n"
+                         "       [--warmup N] [--label L] [--names names.json] [--out report.json]\n"
+                         "       [--dump-detections dets.json] [--confidence 0.5] [--no-pinned] [--no-stage-timing]\n";
             std::exit(0);
         } else throw std::runtime_error("unknown argument: " + k);
     }
     if (a.engine.empty()) throw std::runtime_error("--engine is required");
+    if (a.decoder != "opencv" && a.decoder != "nvdec") throw std::runtime_error("--decoder must be opencv or nvdec");
     return a;
 }
 
@@ -94,7 +98,7 @@ std::string cuda_runtime_version() {
 
 void print_table(const PerformanceMetrics& m) {
     const auto summary = m.summary();
-    std::printf("\nbackend=cpp_tensorrt  fps=%.1f\n", m.fps());
+    std::printf("\nbackend=cpp_tensorrt  fps=%.1f\n", m.fps());  // decoder printed in the JSON
     std::printf("%-14s%9s%9s%9s%9s  n\n", "stage", "mean", "p50", "p95", "max");
     for (const auto& name : m.order()) {
         const auto& s = summary.at(name);
@@ -112,6 +116,7 @@ void write_report(const Args& a, const PerformanceMetrics& m, const std::string&
     f << "  \"model_path\": \"" << a.engine << "\",\n";
     f << "  \"confidence\": " << a.confidence << ",\n";
     f << "  \"source\": \"" << a.source << "\",\n";
+    f << "  \"decoder\": \"" << a.decoder << "\",\n";
     f << "  \"frames\": " << a.frames << ",\n";
     f << "  \"warmup\": " << a.warmup << ",\n";
     f << "  \"pinned_host_frame\": " << (a.pinned ? "true" : "false") << ",\n";
@@ -154,64 +159,94 @@ int main(int argc, char** argv) try {
     TensorRTDetector detector(args.engine, args.confidence, load_class_names(names_path),
                               args.stage_timing ? &metrics : nullptr);
 
-    // A still image (jpg/png/bmp) is decoded once and re-used as every frame.
-    std::string ext = args.source.size() > 4 ? args.source.substr(args.source.size() - 4) : "";
-    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-    const bool still_image = ext == ".jpg" || ext == "jpeg" || ext == ".png" || ext == ".bmp";
-    cv::Mat still;
-    cv::VideoCapture cap;
-    if (still_image) {
-        still = cv::imread(args.source);
-        if (still.empty()) throw std::runtime_error("cannot read image: " + args.source);
-    } else if (!cap.open(args.source)) {
-        throw std::runtime_error("cannot open source: " + args.source);
-    }
-
-    cv::Mat frame;
     std::vector<Detection> first_measured;
     int processed = 0;
     const int total = args.warmup + args.frames;
-    while (processed < total) {
-        bool ok;
-        {
-            ScopedTimer t(metrics, "decode");
-            if (still_image) {
-                still.copyTo(frame);
-                ok = true;
-            } else {
-                ok = cap.read(frame);
-            }
-        }
-        if (!ok) {  // loop short clips
-            cap.release();
-            cap.open(args.source);
-            if (!cap.isOpened()) throw std::runtime_error("cannot reopen source: " + args.source);
-            continue;
-        }
-        if (args.pinned) {
-            // Decode lands in OpenCV's own buffer; keep the frame in pinned memory so the
-            // H2D copy is a DMA. One host memcpy (~6 MB at 1080p) instead of a staged copy.
-            cv::Mat pinned = detector.pinned_frame(frame.rows, frame.cols);
-            frame.copyTo(pinned);
-            frame = pinned;
-        }
 
-        std::vector<Detection> dets;
-        {
-            ScopedTimer t(metrics, PerformanceMetrics::kEndToEnd);
-            dets = detector.detect(frame);
-        }
+    auto account = [&](std::vector<Detection>& dets) {
         metrics.count_frame();
         ++processed;
         if (processed == args.warmup) metrics.reset();
         if (processed == args.warmup + 1) first_measured = dets;
+    };
+
+    if (args.decoder == "nvdec") {
+        NvVideoDecoder decoder(args.source);
+        std::printf("nvdec: %s %dx%d -> %s\n", decoder.codec_name().c_str(), decoder.width(), decoder.height(),
+                    decoder.hw_pixel_format().c_str());
+        GpuFrame gpu;
+        while (processed < total) {
+            bool ok;
+            {
+                ScopedTimer t(metrics, "decode");
+                ok = decoder.next(gpu);
+            }
+            if (!ok) {  // loop short clips
+                decoder.reopen();
+                continue;
+            }
+            std::vector<Detection> dets;
+            {
+                ScopedTimer t(metrics, PerformanceMetrics::kEndToEnd);
+                dets = detector.detect(gpu);  // synchronises before returning: frame can be recycled
+            }
+            account(dets);
+        }
+    } else {
+        // A still image (jpg/png/bmp) is decoded once and re-used as every frame.
+        std::string ext = args.source.size() > 4 ? args.source.substr(args.source.size() - 4) : "";
+        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+        const bool still_image = ext == ".jpg" || ext == "jpeg" || ext == ".png" || ext == ".bmp";
+        cv::Mat still;
+        cv::VideoCapture cap;
+        if (still_image) {
+            still = cv::imread(args.source);
+            if (still.empty()) throw std::runtime_error("cannot read image: " + args.source);
+        } else if (!cap.open(args.source)) {
+            throw std::runtime_error("cannot open source: " + args.source);
+        }
+
+        cv::Mat frame;
+        while (processed < total) {
+            bool ok;
+            {
+                ScopedTimer t(metrics, "decode");
+                if (still_image) {
+                    still.copyTo(frame);
+                    ok = true;
+                } else {
+                    ok = cap.read(frame);
+                }
+            }
+            if (!ok) {  // loop short clips
+                cap.release();
+                cap.open(args.source);
+                if (!cap.isOpened()) throw std::runtime_error("cannot reopen source: " + args.source);
+                continue;
+            }
+            if (args.pinned) {
+                // Decode lands in OpenCV's own buffer; keep the frame in pinned memory so the
+                // H2D copy is a DMA. One host memcpy (~6 MB at 1080p) instead of a staged copy.
+                cv::Mat pinned = detector.pinned_frame(frame.rows, frame.cols);
+                frame.copyTo(pinned);
+                frame = pinned;
+            }
+
+            std::vector<Detection> dets;
+            {
+                ScopedTimer t(metrics, PerformanceMetrics::kEndToEnd);
+                dets = detector.detect(frame);
+            }
+            account(dets);
+        }
     }
 
     print_table(metrics);
     const std::string stamp = utc_stamp();
     std::string out = args.out;
     if (out.empty())
-        out = "benchmarks/results/cpp_tensorrt" + (args.label.empty() ? "" : "_" + args.label) + "_" + stamp + ".json";
+        out = "benchmarks/results/cpp_tensorrt_" + args.decoder + (args.label.empty() ? "" : "_" + args.label) + "_" +
+              stamp + ".json";
     write_report(args, metrics, stamp, out);
     std::printf("saved: %s\n", out.c_str());
     if (!args.dump_detections.empty()) {

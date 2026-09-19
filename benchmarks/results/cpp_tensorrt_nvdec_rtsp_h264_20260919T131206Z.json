@@ -1,0 +1,22 @@
+{
+  "timestamp_utc": "20260919T131206Z",
+  "backend": "cpp_tensorrt",
+  "label": "rtsp_h264",
+  "model_path": "models/tensorrt/yolo26n_nms_fp16.engine",
+  "confidence": 0.5,
+  "source": "rtsp://127.0.0.1:8554/cam",
+  "decoder": "nvdec",
+  "frames": 250,
+  "warmup": 25,
+  "pinned_host_frame": true,
+  "stage_timing": true,
+  "fps": 436.736,
+  "stages": {
+    "decode": {"mean_ms": 36.5828, "p50_ms": 37.6608, "p95_ms": 39.2986, "max_ms": 77.7385, "samples": 250},
+    "preprocess": {"mean_ms": 0.272254, "p50_ms": 0.273565, "p95_ms": 0.278792, "max_ms": 0.28171, "samples": 250},
+    "inference": {"mean_ms": 2.00418, "p50_ms": 1.97548, "p95_ms": 2.22513, "max_ms": 2.6627, "samples": 250},
+    "postprocess": {"mean_ms": 0.0115169, "p50_ms": 0.011236, "p95_ms": 0.012842, "max_ms": 0.030393, "samples": 250},
+    "end_to_end": {"mean_ms": 2.28971, "p50_ms": 2.26003, "p95_ms": 2.51102, "max_ms": 2.94052, "samples": 250}
+  },
+  "environment": {"tensorrt": "10.16.1", "cuda_runtime": "13.2", "gpu": "Tesla T4", "opencv": "4.6.0"}
+}

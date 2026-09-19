@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "edgevision/detection.hpp"
+#include "edgevision/gpu_frame.hpp"
 #include "edgevision/letterbox.hpp"
 #include "edgevision/metrics.hpp"
 #include "edgevision/trt_engine.hpp"
@@ -30,7 +31,11 @@ public:
     TensorRTDetector(const TensorRTDetector&) = delete;
     TensorRTDetector& operator=(const TensorRTDetector&) = delete;
 
+    // Host BGR frame: H2D copy + letterbox kernel.
     std::vector<Detection> detect(const cv::Mat& frame_bgr);
+
+    // NV12 frame already in device memory (NVDEC): no host copy at all.
+    std::vector<Detection> detect(const GpuFrame& frame_nv12);
 
     // Pinned host image of the given size; decode into it to make the H2D copy a DMA
     // instead of a staged copy from pageable memory. Owned by the detector.
@@ -42,6 +47,7 @@ public:
 private:
     void ensure_device_frame(size_t bytes);
     void sync_if_timing();
+    std::vector<Detection> run_and_collect(const LetterboxInfo& info);
 
     TrtEngine engine_;
     float confidence_;

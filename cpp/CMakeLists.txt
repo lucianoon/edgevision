@@ -15,6 +15,8 @@ endif()
 
 find_package(CUDAToolkit REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs videoio)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET libavformat libavcodec libavutil)
 
 find_path(TENSORRT_INCLUDE_DIR NvInfer.h
   HINTS /usr/include/x86_64-linux-gnu /usr/include/aarch64-linux-gnu /usr/local/tensorrt/include /usr/include)
@@ -29,11 +31,12 @@ add_library(edgevision_core STATIC
   src/letterbox.cu
   src/trt_engine.cpp
   src/detector.cpp
+  src/video_decoder.cpp
   src/metrics.cpp
   src/names.cpp)
 target_include_directories(edgevision_core PUBLIC include ${TENSORRT_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(edgevision_core PUBLIC
-  ${NVINFER_LIBRARY} CUDA::cudart ${OpenCV_LIBS})
+  ${NVINFER_LIBRARY} CUDA::cudart ${OpenCV_LIBS} PkgConfig::LIBAV)
 target_compile_options(edgevision_core PRIVATE
   $<$<COMPILE_LANGUAGE:CXX>:-Wall -Wextra>)
 
@@ -44,3 +47,6 @@ enable_testing()
 add_executable(test_letterbox tests/test_letterbox.cpp)
 target_link_libraries(test_letterbox PRIVATE edgevision_core)
 add_test(NAME letterbox COMMAND test_letterbox)
+add_executable(test_nv12 tests/test_nv12.cpp)
+target_link_libraries(test_nv12 PRIVATE edgevision_core)
+add_test(NAME nv12 COMMAND test_nv12)

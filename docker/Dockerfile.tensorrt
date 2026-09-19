@@ -4,6 +4,8 @@
 ARG TRT_TAG=26.04
 FROM nvcr.io/nvidia/tensorrt:${TRT_TAG}-py3
 
+# 'video' exposes libnvcuvid (NVDEC) to the container; compute,utility are the defaults.
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
 ENV PYTHONPATH=/workspace/edgevision/python \
     PIP_NO_CACHE_DIR=1 \
     DEBIAN_FRONTEND=noninteractive
@@ -11,6 +13,7 @@ ENV PYTHONPATH=/workspace/edgevision/python \
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libgl1 libglib2.0-0 ffmpeg \
         cmake ninja-build libopencv-dev pkg-config \
+        libavformat-dev libavcodec-dev libavutil-dev \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements-gpu.txt /tmp/requirements-gpu.txt

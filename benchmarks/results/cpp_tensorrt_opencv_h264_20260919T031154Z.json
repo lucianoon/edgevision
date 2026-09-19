@@ -1,0 +1,22 @@
+{
+  "timestamp_utc": "20260919T031154Z",
+  "backend": "cpp_tensorrt",
+  "label": "h264",
+  "model_path": "models/tensorrt/yolo26n_nms_fp16.engine",
+  "confidence": 0.5,
+  "source": "videos/pedestrian_area_1080p25_h264.mp4",
+  "decoder": "opencv",
+  "frames": 300,
+  "warmup": 30,
+  "pinned_host_frame": true,
+  "stage_timing": true,
+  "fps": 269.396,
+  "stages": {
+    "decode": {"mean_ms": 2.87419, "p50_ms": 2.60066, "p95_ms": 5.33817, "max_ms": 13.9488, "samples": 300},
+    "preprocess": {"mean_ms": 1.05548, "p50_ms": 1.0496, "p95_ms": 1.05764, "max_ms": 1.60801, "samples": 300},
+    "inference": {"mean_ms": 2.63061, "p50_ms": 2.86041, "p95_ms": 3.07126, "max_ms": 3.38304, "samples": 300},
+    "postprocess": {"mean_ms": 0.0137711, "p50_ms": 0.013957, "p95_ms": 0.01576, "max_ms": 0.04343, "samples": 300},
+    "end_to_end": {"mean_ms": 3.712, "p50_ms": 3.92636, "p95_ms": 4.15907, "max_ms": 7.03957, "samples": 300}
+  },
+  "environment": {"tensorrt": "10.16.1", "cuda_runtime": "13.2", "gpu": "Tesla T4", "opencv": "4.6.0"}
+}

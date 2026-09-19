@@ -1,7 +1,7 @@
 # EdgeVision
 
 Real-time object detection pipeline, evolved in stages:
-PyTorch baseline -> ONNX Runtime -> TensorRT (FP32/FP16) -> C++ runtime -> Jetson.
+PyTorch baseline -> ONNX Runtime -> TensorRT (FP32/FP16) -> C++ runtime -> NVDEC/RTSP -> Jetson.
 
 ## Setup
 
@@ -90,3 +90,14 @@ cpp/build/edgevision_trt --engine models/tensorrt/yolo26n_nms_fp16.engine     --
 
 Tesla T4, 1080p clip: 3.0 ms per frame end-to-end (332 FPS) vs 8.4 ms for the Python
 TensorRT path on the same engine. Details in `benchmarks/README.md`.
+
+## Hardware decode and RTSP (Sprint 5)
+
+`edgevision_trt --decoder nvdec` decodes with NVDEC through FFmpeg's CUDA hwaccel; the
+NV12 frame stays on the GPU and `letterbox_nv12_cuda` feeds the engine directly. Files
+and RTSP/RTMP/HTTP URLs work alike (`--source rtsp://...`). The container must expose
+NVDEC (`NVIDIA_DRIVER_CAPABILITIES=compute,utility,video`, set in the Dockerfile).
+`scripts/rtsp_sim.sh` runs a MediaMTX + ffmpeg camera simulator on the host.
+
+Tesla T4, 1080p H.264: 2.0 ms end-to-end + 0.4 ms decode wait per frame (~415 FPS
+sustained for one stream) vs 3.7 + 2.9 ms with CPU decode. Details in `benchmarks/README.md`.

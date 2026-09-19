@@ -72,6 +72,15 @@ Notes learned on the first run (2026-09-18):
   attached, deploy with `CreateIdleAlarm=false`; the in-instance uptime cap still runs.
 - Inside `scripts/aws/run.sh` commands, use absolute paths for docker bind mounts
   (`-v /opt/edgevision/repo:/workspace/edgevision`), not `$PWD`.
+- NVDEC inside the container needs the `video` driver capability
+  (`ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility,video` in the Dockerfile); without it
+  `av_hwdevice_ctx_create(CUDA)` fails because libnvcuvid is not mounted.
+- Long runs survive the laptop going idle only because they run detached on the box (SSM
+  Run Command) and write to `benchmarks/results/`; the local watcher may be killed. Check
+  the log on the box, then `sync-down`. The uptime cap is what limited a forgotten
+  overnight instance to 4 h of cost.
+- `aws login` while the browser is signed in as root offers to rebind `default` to root
+  and aborts without a tty; sign in to the console as the IAM user first.
 
 ## Cost (us-east-1 on-demand, Pricing API 2026-09-18)
 

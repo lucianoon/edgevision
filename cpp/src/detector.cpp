@@ -73,6 +73,22 @@ std::vector<Detection> TensorRTDetector::detect(const cv::Mat& frame) {
                        static_cast<float*>(engine_.input_device()), stream_);
         sync_if_timing();
     }
+    return run_and_collect(info);
+}
+
+std::vector<Detection> TensorRTDetector::detect(const GpuFrame& frame) {
+    if (!frame.y || !frame.uv || frame.width <= 0 || frame.height <= 0)
+        throw std::runtime_error("detect() expects a valid NV12 GpuFrame");
+    const LetterboxInfo info = compute_letterbox(frame.width, frame.height, input_size_);
+    {
+        ScopedTimer timer(*metrics_, "preprocess");
+        letterbox_nv12_cuda(frame, info, static_cast<float*>(engine_.input_device()), stream_);
+        sync_if_timing();
+    }
+    return run_and_collect(info);
+}
+
+std::vector<Detection> TensorRTDetector::run_and_collect(const LetterboxInfo& info) {
     {
         ScopedTimer timer(*metrics_, "inference");
         engine_.enqueue(stream_);

@@ -29,4 +29,13 @@ void letterbox_cuda(const std::uint8_t* src_bgr, int src_pitch_bytes, const Lett
 void letterbox_reference(const std::uint8_t* src_bgr, int src_pitch_bytes, const LetterboxInfo& info,
                          float* dst);
 
+struct GpuFrame;
+
+// Same output, but straight from an NV12 frame in device memory (NVDEC output):
+// bilinear in Y and in the half-resolution UV plane, BT.601 limited-range to RGB.
+void letterbox_nv12_cuda(const GpuFrame& frame, const LetterboxInfo& info, float* dst, cudaStream_t stream);
+
+// CPU reference of the NV12 path (host pointers).
+void letterbox_nv12_reference(const GpuFrame& frame_on_host, const LetterboxInfo& info, float* dst);
+
 }  // namespace edgevision

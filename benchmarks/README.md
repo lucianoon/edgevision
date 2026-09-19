@@ -156,3 +156,46 @@ Observations:
 
 Raw reports: `results/cpp_tensorrt_*`, `results/tensorrt_fp16_nmsgraph_20260919*`,
 `results/gpu_sprint4_*.log`.
+
+## 2026-09-19 - Sprint 5: hardware decode (NVDEC) - the frame never touches the CPU
+
+Same T4, same engine (`yolo26n_nms_fp16`, NMS in the graph), same C++ runtime. New
+`--decoder nvdec`: FFmpeg libavformat/libavcodec with the CUDA hwaccel; frames arrive
+as NV12 in device memory and a second kernel (`letterbox_nv12_cuda`) does colour
+conversion + letterbox + normalisation straight into the engine input. The H.264 clip
+is the VP8 clip re-encoded with libx264 (`videos/pedestrian_area_1080p25_h264.mp4`).
+300 frames, 30 warm-up, ms mean. `decode` is outside `end_to_end`; **sustained** =
+1000 / (decode + end_to_end) is what one stream can actually reach.
+
+| codec | decoder        | decode | preprocess | inference | end_to_end | e2e no-stage-sync | sustained FPS |
+|-------|----------------|-------:|-----------:|----------:|-----------:|------------------:|--------------:|
+| VP8   | opencv (CPU)   | 2.7    | 1.0        | 2.4       | 3.5        | -                 | ~160          |
+| VP8   | nvdec          | 1.5    | 0.3        | 1.9       | 2.2        | 2.0               | ~285          |
+| H.264 | opencv (CPU)   | 2.9    | 1.1        | 2.6       | 3.7        | -                 | ~150          |
+| H.264 | nvdec          | 0.4    | 0.3        | 1.8       | 2.1        | 2.0               | **~415**      |
+| H.264 | nvdec, RTSP 25 fps live | 36.6* | 0.3 | 2.0      | 2.3        | -                 | (paced by camera) |
+
+\* waiting for the next packet from the camera simulator (MediaMTX + ffmpeg on the host,
+RTSP over TCP); the pipeline needs 2.3 ms of the 40 ms frame period, ~6% of one T4.
+
+Detections with nvdec vs opencv decode on the same H.264 frame: same 4 classes, IoU
+0.985-0.999 (the two paths differ only in YUV->RGB rounding and chroma interpolation).
+CTest `nv12`: kernel vs OpenCV's NV12->BGR path mean < 2/255. 30 Python tests passed.
+
+Observations:
+
+- **Pre-processing went from 1.0 to 0.3 ms**: the 6 MB host->device copy is gone; what
+  is left is the kernel itself. Inference also dropped 2.4 -> 1.9 ms because the CPU no
+  longer competes with decode and there is less to synchronise on the stream.
+- **Decode: 2.9 ms of CPU -> 0.4 ms waiting for NVDEC** for H.264. VP8 on NVDEC is slower
+  (1.5 ms); real cameras are H.264/H.265 anyway.
+- **One 1080p H.264 stream now costs ~2.4 ms of wall time per frame** (~415 FPS if the
+  source were unlimited) vs 6.6 ms with CPU decode and 12 ms in Python with TensorRT
+  (Sprint 3). From the Sprint 1 CPU baseline (48 ms) that is 20x.
+- At 25 fps a stream uses ~6% of the GPU's time budget: the headroom is for **many
+  streams per GPU** (T4 NVDEC handles several 1080p30 H.264 streams), the next thing to
+  measure (N decoders feeding one engine, batched).
+- Real cameras confirmed through RTSP/TCP via the same libavformat path; the
+  `h264 ... co located POCs unavailable` warnings are the decoder joining mid-GOP.
+
+Raw reports: `results/cpp_tensorrt_{opencv,nvdec}_*`, `results/gpu_sprint5_*.log`.

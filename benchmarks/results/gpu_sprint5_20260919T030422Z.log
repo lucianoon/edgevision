@@ -1,0 +1,165 @@
+== environment
+Tesla T4, 595.91.07
+Hardware acceleration methods: vdpau cuda vaapi qsv drm opencl vulkan  
+ V..... av1_cuvid            Nvidia CUVID AV1 decoder (codec av1)
+ V..... h264_cuvid           Nvidia CUVID H264 decoder (codec h264)
+ V..... hevc_cuvid           Nvidia CUVID HEVC decoder (codec hevc)
+ V..... mjpeg_cuvid          Nvidia CUVID MJPEG decoder (codec mjpeg)
+ V..... mpeg1_cuvid          Nvidia CUVID MPEG1VIDEO decoder (codec mpeg1video)
+lrwxrwxrwx 1 root root       15 Sep 19 03:03 /usr/lib/x86_64-linux-gnu/libnvcuvid.so -> libnvcuvid.so.1
+lrwxrwxrwx 1 root root       23 Sep 19 03:03 /usr/lib/x86_64-linux-gnu/libnvcuvid.so.1 -> libnvcuvid.so.595.91.07
+-rwxr-xr-x 1 root root 25189896 Sep 18 07:13 /usr/lib/x86_64-linux-gnu/libnvcuvid.so.595.91.07
+== engine
+== building models/tensorrt/yolo26n_nms_fp32.engine ()
+[09/19/2026-03:06:03] [W] * Throughput may be bound by Enqueue Time rather than GPU Compute and the GPU may be under-utilized.
+[09/19/2026-03:06:03] [W]   If not already in use, --useCudaGraph (utilize CUDA graphs where possible) may increase the throughput.
+[09/19/2026-03:05:46] [I] Engine built in 67.1743 sec.
+[09/19/2026-03:05:47] [I] Engine deserialized in 0.0208267 sec.
+[09/19/2026-03:06:03] [I] Throughput: 244.386 qps
+[09/19/2026-03:06:03] [I] Latency: min = 3.95081 ms, max = 4.19629 ms, mean = 4.05187 ms, median = 4.05176 ms, percentile(90%) = 4.10156 ms, percentile(95%) = 4.11621 ms, percentile(99%) = 4.1377 ms
+[09/19/2026-03:06:03] [I] Enqueue Time: min = 3.90625 ms, max = 4.17432 ms, mean = 4.01828 ms, median = 4.01758 ms, percentile(90%) = 4.0625 ms, percentile(95%) = 4.07349 ms, percentile(99%) = 4.09375 ms
+[09/19/2026-03:06:03] [I] H2D Latency: min = 0.791504 ms, max = 0.824219 ms, mean = 0.794466 ms, median = 0.792969 ms, percentile(90%) = 0.794922 ms, percentile(95%) = 0.807617 ms, percentile(99%) = 0.810547 ms
+[09/19/2026-03:06:03] [I] GPU Compute Time: min = 3.14258 ms, max = 3.39111 ms, mean = 3.23891 ms, median = 3.24023 ms, percentile(90%) = 3.28223 ms, percentile(95%) = 3.2959 ms, percentile(99%) = 3.31152 ms
+[09/19/2026-03:06:03] [I] D2H Latency: min = 0.00439453 ms, max = 0.0556641 ms, mean = 0.0184919 ms, median = 0.0224609 ms, percentile(90%) = 0.03125 ms, percentile(95%) = 0.0332031 ms, percentile(99%) = 0.0429688 ms
+== building models/tensorrt/yolo26n_nms_fp16.engine (--fp16)
+[09/19/2026-03:06:21] [W] Weakly-typed networks have been deprecated in TensorRT. You can use the AutoCast tool (https://nvidia.github.io/TensorRT-Model-Optimizer/guides/8_autocast.html) to convert the network to be strongly typed.
+[09/19/2026-03:10:34] [W] * Throughput may be bound by Enqueue Time rather than GPU Compute and the GPU may be under-utilized.
+[09/19/2026-03:10:34] [W]   If not already in use, --useCudaGraph (utilize CUDA graphs where possible) may increase the throughput.
+[09/19/2026-03:10:18] [I] Engine built in 236.294 sec.
+[09/19/2026-03:10:18] [I] Engine deserialized in 0.036772 sec.
+[09/19/2026-03:10:34] [I] Throughput: 408.084 qps
+[09/19/2026-03:10:34] [I] Latency: min = 2.39551 ms, max = 2.55884 ms, mean = 2.41825 ms, median = 2.41614 ms, percentile(90%) = 2.43152 ms, percentile(95%) = 2.43652 ms, percentile(99%) = 2.44824 ms
+[09/19/2026-03:10:34] [I] Enqueue Time: min = 2.37939 ms, max = 2.54517 ms, mean = 2.40838 ms, median = 2.40698 ms, percentile(90%) = 2.4209 ms, percentile(95%) = 2.42615 ms, percentile(99%) = 2.43701 ms
+[09/19/2026-03:10:34] [I] H2D Latency: min = 0.791016 ms, max = 0.830078 ms, mean = 0.792113 ms, median = 0.791992 ms, percentile(90%) = 0.792969 ms, percentile(95%) = 0.793945 ms, percentile(99%) = 0.794922 ms
+[09/19/2026-03:10:34] [I] GPU Compute Time: min = 1.59863 ms, max = 1.76147 ms, mean = 1.62083 ms, median = 1.61914 ms, percentile(90%) = 1.6333 ms, percentile(95%) = 1.63867 ms, percentile(99%) = 1.64941 ms
+[09/19/2026-03:10:34] [I] D2H Latency: min = 0.00390625 ms, max = 0.0253906 ms, mean = 0.00531112 ms, median = 0.00488281 ms, percentile(90%) = 0.00585938 ms, percentile(95%) = 0.00585938 ms, percentile(99%) = 0.00683594 ms
+total 18880
+drwxrwxr-x 2 ubuntu ubuntu     4096 Sep 19 03:06 .
+drwxrwxr-x 5 ubuntu ubuntu     4096 Sep 19 02:43 ..
+-rw-r--r-- 1 ubuntu ubuntu        0 Sep 18 15:42 .gitkeep
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 18 19:53 yolo26n.names.json
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 18 19:53 yolo26n_fp16.names.json
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 18 19:53 yolo26n_fp32.names.json
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 19 03:04 yolo26n_nms.names.json
+-rw-r--r-- 1 root   root    7230428 Sep 19 03:10 yolo26n_nms_fp16.engine
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 19 03:10 yolo26n_nms_fp16.names.json
+-rw-r--r-- 1 root   root   12065372 Sep 19 03:05 yolo26n_nms_fp32.engine
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 19 03:06 yolo26n_nms_fp32.names.json
+== H.264 version of the clip (what real cameras send)
+-rw-rw-r-- 1 ubuntu ubuntu 11215394 Sep 18 20:16 videos/pedestrian_area_1080p25.webm
+-rw-r--r-- 1 root   root   12356433 Sep 19 03:11 videos/pedestrian_area_1080p25_h264.mp4
+== build C++ runtime
+-- The CXX compiler identification is GNU 13.3.0
+-- The CUDA compiler identification is NVIDIA 13.2.78 with host compiler GNU 13.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Detecting CUDA compiler ABI info
+-- Detecting CUDA compiler ABI info - done
+-- Check for working CUDA compiler: /usr/local/cuda/bin/nvcc - skipped
+-- Detecting CUDA compile features
+-- Detecting CUDA compile features - done
+-- Found CUDAToolkit: /usr/local/cuda/targets/x86_64-linux/include (found version "13.2.78")
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found OpenCV: /usr (found version "4.6.0") found components: core imgproc imgcodecs videoio
+-- Found PkgConfig: /usr/bin/pkg-config (found version "1.8.1")
+-- Checking for modules 'libavformat;libavcodec;libavutil'
+--   Found libavformat, version 60.16.100
+--   Found libavcodec, version 60.31.102
+--   Found libavutil, version 58.29.100
+-- TensorRT headers: /usr/include/x86_64-linux-gnu, lib: /usr/lib/x86_64-linux-gnu/libnvinfer.so
+-- Configuring done (8.9s)
+-- Generating done (0.0s)
+-- Build files have been written to: /workspace/edgevision/cpp/build
+[1/13] Building CXX object CMakeFiles/edgevision_core.dir/src/names.cpp.o
+[2/13] Building CXX object CMakeFiles/edgevision_core.dir/src/video_decoder.cpp.o
+[3/13] Building CXX object CMakeFiles/edgevision_core.dir/src/trt_engine.cpp.o
+[4/13] Building CXX object CMakeFiles/edgevision_core.dir/src/metrics.cpp.o
+[5/13] Building CUDA object CMakeFiles/edgevision_core.dir/src/letterbox.cu.o
+[6/13] Building CXX object CMakeFiles/test_letterbox.dir/tests/test_letterbox.cpp.o
+[7/13] Building CXX object CMakeFiles/test_nv12.dir/tests/test_nv12.cpp.o
+[8/13] Building CXX object CMakeFiles/edgevision_core.dir/src/detector.cpp.o
+[9/13] Linking CXX static library libedgevision_core.a
+[10/13] Linking CXX executable test_letterbox
+[11/13] Linking CXX executable test_nv12
+[12/13] Building CXX object CMakeFiles/edgevision_trt.dir/src/main.cpp.o
+[13/13] Linking CXX executable edgevision_trt
+Test project /workspace/edgevision/cpp/build
+    Start 1: letterbox
+1/2 Test #1: letterbox ........................   Passed   14.77 sec
+    Start 2: nv12
+2/2 Test #2: nv12 .............................   Passed    0.67 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =  15.45 sec
+== VP8 clip: CPU decode (opencv) vs NVDEC
+
+backend=cpp_tensorrt  fps=284.8
+stage              mean      p50      p95      max  n
+decode              2.7      2.6      4.5      9.5  300
+preprocess          1.0      1.1      1.1      1.1  300
+inference           2.4      2.3      3.0      3.3  300
+postprocess         0.0      0.0      0.0      0.0  300
+end_to_end          3.5      3.4      4.1      4.4  300
+saved: benchmarks/results/cpp_tensorrt_opencv_vp8_20260919T031146Z.json
+nvdec: vp8 1920x1080 -> cuda/nv12
+
+backend=cpp_tensorrt  fps=463.0
+stage              mean      p50      p95      max  n
+decode              1.5      1.4      2.8      2.9  300
+preprocess          0.3      0.3      0.3      0.3  300
+inference           1.9      1.9      1.9      2.0  300
+postprocess         0.0      0.0      0.0      0.0  300
+end_to_end          2.2      2.2      2.2      2.3  300
+saved: benchmarks/results/cpp_tensorrt_nvdec_vp8_20260919T031149Z.json
+nvdec: vp8 1920x1080 -> cuda/nv12
+
+backend=cpp_tensorrt  fps=504.3
+stage              mean      p50      p95      max  n
+decode              1.5      1.4      2.8      2.9  300
+end_to_end          2.0      2.0      2.0      2.1  300
+saved: benchmarks/results/cpp_tensorrt_nvdec_vp8_nostage_20260919T031151Z.json
+== H.264 clip: CPU decode (opencv) vs NVDEC
+
+backend=cpp_tensorrt  fps=269.4
+stage              mean      p50      p95      max  n
+decode              2.9      2.6      5.3     13.9  300
+preprocess          1.1      1.0      1.1      1.6  300
+inference           2.6      2.9      3.1      3.4  300
+postprocess         0.0      0.0      0.0      0.0  300
+end_to_end          3.7      3.9      4.2      7.0  300
+saved: benchmarks/results/cpp_tensorrt_opencv_h264_20260919T031154Z.json
+nvdec: h264 1920x1080 -> cuda/nv12
+
+backend=cpp_tensorrt  fps=472.9
+stage              mean      p50      p95      max  n
+decode              0.4      0.1      1.6      1.6  300
+preprocess          0.3      0.3      0.3      0.3  300
+inference           1.8      1.8      1.9      1.9  300
+postprocess         0.0      0.0      0.0      0.0  300
+end_to_end          2.1      2.1      2.1      2.2  300
+saved: benchmarks/results/cpp_tensorrt_nvdec_h264_20260919T031156Z.json
+nvdec: h264 1920x1080 -> cuda/nv12
+
+backend=cpp_tensorrt  fps=500.2
+stage              mean      p50      p95      max  n
+decode              0.4      0.1      1.6      1.6  300
+end_to_end          2.0      2.0      2.0      2.0  300
+saved: benchmarks/results/cpp_tensorrt_nvdec_h264_nostage_20260919T031158Z.json
+== detections: nvdec vs opencv on the first measured H.264 frame
+WARNING ⚠️ user config directory '/root/.config/Ultralytics' is not writable, using '/tmp/Ultralytics'. Set YOLO_CONFIG_DIR to override.
+Creating new Ultralytics Settings v0.0.8 file ✅ 
+View Ultralytics Settings with 'yolo settings' or at '/tmp/Ultralytics/settings.json'
+Update Settings with 'yolo settings key=value', i.e. 'yolo settings runs_dir=path/to/dir'. For help see https://docs.ultralytics.com/usage/settings.
+opencv: 4 detections, nvdec: 4 detections
+classes equal: True
+best IoU per nvdec box: min 0.985 mean 0.993
+== tests
+..............................s                                          [100%]
+30 passed, 1 skipped in 16.53s
+== done: benchmarks/results/gpu_sprint5_20260919T030422Z.log

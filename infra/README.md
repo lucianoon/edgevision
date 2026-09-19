@@ -34,6 +34,7 @@ The day-to-day IAM user (`luciano`) has no EC2/CloudFormation rights. Attach the
 scoped policy once with an administrative identity:
 
 ```bash
+sed -i "s/<ACCOUNT_ID>/$(aws sts get-caller-identity --query Account --output text)/g" infra/iam-policy-edgevision-dev.json
 aws iam create-policy --policy-name edgevision-gpu-dev \
     --policy-document file://infra/iam-policy-edgevision-dev.json --profile <admin>
 aws iam attach-user-policy --user-name luciano \

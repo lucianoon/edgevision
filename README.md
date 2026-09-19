@@ -1,5 +1,7 @@
 # EdgeVision
 
+[![ci](https://github.com/lucianoon/edgevision/actions/workflows/ci.yml/badge.svg)](https://github.com/lucianoon/edgevision/actions/workflows/ci.yml) MIT License
+
 Real-time object detection pipeline, evolved in stages:
 PyTorch baseline -> ONNX Runtime -> TensorRT (FP32/FP16) -> C++ runtime -> NVDEC/RTSP -> multi-stream -> Jetson.
 

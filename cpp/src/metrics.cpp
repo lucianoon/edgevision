@@ -44,6 +44,18 @@ std::map<std::string, StageStats> PerformanceMetrics::summary() const {
     return result;
 }
 
+double PerformanceMetrics::average_ms(const std::string& stage) const {
+    auto it = stages_.find(stage);
+    if (it == stages_.end() || it->second.empty()) return 0.0;
+    return std::accumulate(it->second.begin(), it->second.end(), 0.0) / it->second.size();
+}
+
+void PerformanceMetrics::merge_into(PerformanceMetrics& other) const {
+    for (const auto& name : order_)
+        for (double v : stages_.at(name)) other.record(name, v);
+    other.frames_ += frames_;
+}
+
 double PerformanceMetrics::fps() const {
     auto it = stages_.find(kEndToEnd);
     if (it == stages_.end() || it->second.empty()) return 0.0;

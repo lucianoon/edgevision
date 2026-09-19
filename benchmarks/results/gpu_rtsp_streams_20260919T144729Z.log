@@ -1,0 +1,8 @@
+--- rtsp streams=1
+    nvidia-smi: gpu util mean 0% max 5%, decoder util mean 0% (21 samples)
+--- rtsp streams=4
+    nvidia-smi: gpu util mean 1% max 5%, decoder util mean 0% (3 samples)
+--- rtsp streams=8
+    nvidia-smi: gpu util mean 1% max 2%, decoder util mean 0% (4 samples)
+--- rtsp streams=12
+    nvidia-smi: gpu util mean 4% max 9%, decoder util mean 0% (4 samples)

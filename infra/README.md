@@ -81,6 +81,14 @@ Notes learned on the first run (2026-09-18):
   overnight instance to 4 h of cost.
 - `aws login` while the browser is signed in as root offers to rebind `default` to root
   and aborts without a tty; sign in to the console as the IAM user first.
+- Files patched with Python on Windows come out CRLF unless written with
+  `newline="
+"`; a CRLF shell script on the box fails with
+  `set: pipefail: invalid option name`. `git ls-files --eol | grep w/crlf` finds them
+  (Git Bash's `grep $''` does not).
+- Keep remote logic in scripts inside the repo (`scripts/gpu_*.sh`) and call them with
+  `run.sh 'bash scripts/x.sh'`; inline multi-line commands lose `$VAR`/`$!` through the
+  sudo / SSM quoting layers.
 
 ## Cost (us-east-1 on-demand, Pricing API 2026-09-18)
 

@@ -199,3 +199,54 @@ Observations:
   `h264 ... co located POCs unavailable` warnings are the decoder joining mid-GOP.
 
 Raw reports: `results/cpp_tensorrt_{opencv,nvdec}_*`, `results/gpu_sprint5_*.log`.
+
+## 2026-09-19 - Sprint 6 (phase A): how many 1080p streams per T4?
+
+`edgevision_trt --streams N`: N independent pipelines, each with its own NVDEC decoder
+(libav CUDA hwaccel) and its own TensorRT execution context (batch 1) on its own thread,
+all sharing the T4. Same `yolo26n_nms_fp16` engine. GPU and NVDEC utilisation sampled
+with `nvidia-smi` every 500 ms during each run (middle half of the samples).
+
+### File source, unpaced (each stream as fast as decode + inference allow), no per-stage syncs
+
+| streams | aggregate FPS | per-stream FPS | e2e mean (ms) | e2e p95 | GPU util | NVDEC util | GPU mem |
+|--------:|--------------:|---------------:|--------------:|--------:|---------:|-----------:|--------:|
+| 1  | ~500 | 500  | 2.0  | 2.0  | -    | 8%  | 336 MiB  |
+| 2  | 480  | 240  | 3.1  | 3.5  | 26%  | 12% | 514 MiB  |
+| 4  | 547  | 137  | 5.8  | 6.8  | 78%  | 42% | 876 MiB  |
+| 6  | 539  | 90   | 9.2  | 11.5 | 69%  | 38% | 1269 MiB |
+| 8  | 538  | 67   | 12.5 | 16.3 | 84%  | 47% | 1629 MiB |
+| 12 | 542  | 45   | 19.3 | 27.0 | 90%  | 49% | 2384 MiB |
+
+Stage breakdown at 4 streams (per-stage syncs on): decode 0.7, preprocess 0.2,
+**inference 5.7**, postprocess 0.0, e2e 5.9 ms. Single stream inference was 1.8 ms:
+four batch-1 contexts serialise on the GPU, so each waits for the others.
+
+### Live RTSP cameras (MediaMTX + ffmpeg simulator on the host, 25 fps each, TCP)
+
+| cameras | per-camera FPS | e2e mean (ms) | e2e p95 | GPU util | NVDEC util |
+|--------:|---------------:|--------------:|--------:|---------:|-----------:|
+| 1  | 25 (paced) | 2.4  | 2.5  | 5%  | 2%  |
+| 4  | 24.3       | 5.3  | 6.1  | 14% | 8%  |
+| 8  | 23.6       | 9.9  | 12.4 | 28% | 21% |
+| 12 | 24.6       | 14.7 | 19.4 | 48% | 34% |
+
+Observations:
+
+- **The T4 saturates at ~540 frames/s aggregate with batch-1 contexts**, reached already
+  at 4 streams; adding streams only divides that budget (per-stream FPS = 540 / N) and
+  stretches per-frame latency linearly (~1.6 ms per extra stream). NVDEC is not the
+  limit: ~50% at 12 streams.
+- **12 live 1080p cameras at 25 fps run with no dropped frames at 48% GPU**, 14.7 ms per
+  frame against a 40 ms budget. Extrapolated ceiling with this design: ~20-22 cameras
+  per T4 (540 / 25), latency then ~35 ms.
+- **The ceiling is inference concurrency, not compute.** yolo26n at batch 1 uses a
+  fraction of the T4's SMs (trtexec: 1.7 ms GPU time, i.e. 590 inferences/s single
+  stream), and N contexts contend for launches instead of filling the GPU. Batching the
+  N letterboxed frames into one `Nx3x640x640` inference (phase B: dynamic-batch engine,
+  one enqueue per round, ping-pong input buffers) is the lever to raise the ceiling.
+- GPU memory: ~170 MiB per stream (decoder surfaces + engine context); 12 streams = 2.4
+  GB of the T4's 15 GB, so memory is not the limit either.
+
+Raw reports: `results/cpp_tensorrt_nvdec_s*_h264_file_*`, `results/cpp_tensorrt_nvdec_s*_rtsp_live_*`,
+`results/gpu_sprint6_*.log`, `results/gpu_rtsp_streams_*.log`.

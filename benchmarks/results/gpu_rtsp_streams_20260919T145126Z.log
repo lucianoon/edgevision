@@ -1,0 +1,44 @@
+--- rtsp streams=1
+backend=cpp_tensorrt  fps=410.4
+end_to_end          2.4      2.4      2.5      3.3  250
+saved: benchmarks/results/cpp_tensorrt_nvdec_rtsp_live_20260919T145149Z.json
+    nvidia-smi: gpu util mean 5% max 6%, decoder util mean 2% (26 samples)
+--- rtsp streams=4
+streams=4 decoder=nvdec  aggregate=97.1 fps (1000 frames, 14.3s wall)
+  stream 0: 24.3 fps sustained, e2e mean 5.34 ms, decode mean 34.65 ms
+  stream 1: 24.3 fps sustained, e2e mean 5.34 ms, decode mean 34.66 ms
+  stream 2: 24.3 fps sustained, e2e mean 5.34 ms, decode mean 34.66 ms
+  stream 3: 24.2 fps sustained, e2e mean 5.35 ms, decode mean 34.65 ms
+end_to_end          5.3      5.8      6.1      7.2  1000
+saved: benchmarks/results/cpp_tensorrt_nvdec_s4_rtsp_live_20260919T145204Z.json
+    nvidia-smi: gpu util mean 14% max 21%, decoder util mean 8% (31 samples)
+--- rtsp streams=8
+streams=8 decoder=nvdec  aggregate=189.1 fps (2000 frames, 14.4s wall)
+  stream 0: 23.8 fps sustained, e2e mean 9.91 ms, decode mean 30.08 ms
+  stream 1: 23.6 fps sustained, e2e mean 9.91 ms, decode mean 30.10 ms
+  stream 2: 23.6 fps sustained, e2e mean 9.82 ms, decode mean 30.18 ms
+  stream 3: 23.5 fps sustained, e2e mean 10.02 ms, decode mean 29.98 ms
+  stream 4: 23.6 fps sustained, e2e mean 9.76 ms, decode mean 30.23 ms
+  stream 5: 23.5 fps sustained, e2e mean 9.97 ms, decode mean 30.05 ms
+  stream 6: 23.6 fps sustained, e2e mean 9.94 ms, decode mean 30.07 ms
+  stream 7: 23.8 fps sustained, e2e mean 9.88 ms, decode mean 30.13 ms
+end_to_end          9.9     10.2     12.4     15.8  2000
+saved: benchmarks/results/cpp_tensorrt_nvdec_s8_rtsp_live_20260919T145220Z.json
+    nvidia-smi: gpu util mean 28% max 31%, decoder util mean 21% (31 samples)
+--- rtsp streams=12
+streams=12 decoder=nvdec  aggregate=295.4 fps (3000 frames, 14.4s wall)
+  stream 0: 24.9 fps sustained, e2e mean 14.96 ms, decode mean 23.14 ms
+  stream 1: 23.7 fps sustained, e2e mean 14.86 ms, decode mean 23.61 ms
+  stream 2: 24.9 fps sustained, e2e mean 14.36 ms, decode mean 22.90 ms
+  stream 3: 24.3 fps sustained, e2e mean 14.92 ms, decode mean 22.76 ms
+  stream 4: 25.4 fps sustained, e2e mean 14.25 ms, decode mean 22.24 ms
+  stream 5: 23.7 fps sustained, e2e mean 14.97 ms, decode mean 23.41 ms
+  stream 6: 23.8 fps sustained, e2e mean 15.33 ms, decode mean 22.93 ms
+  stream 7: 24.7 fps sustained, e2e mean 14.26 ms, decode mean 22.78 ms
+  stream 8: 26.1 fps sustained, e2e mean 13.95 ms, decode mean 22.54 ms
+  stream 9: 24.0 fps sustained, e2e mean 15.19 ms, decode mean 22.83 ms
+  stream 10: 24.9 fps sustained, e2e mean 14.56 ms, decode mean 23.57 ms
+  stream 11: 25.1 fps sustained, e2e mean 14.20 ms, decode mean 22.44 ms
+end_to_end         14.7     15.0     19.4     40.4  3000
+saved: benchmarks/results/cpp_tensorrt_nvdec_s12_rtsp_live_20260919T145235Z.json
+    nvidia-smi: gpu util mean 48% max 94%, decoder util mean 34% (31 samples)

@@ -7,6 +7,7 @@ set -euo pipefail
 CLIP=${CLIP:-/opt/edgevision/repo/videos/pedestrian_area_1080p25_h264.mp4}
 case "${1:-start}" in
   start)
+    [ -f "$CLIP" ] || { echo "clip not found: $CLIP (run scripts/gpu_sprint5.sh once to create the H.264 file)" >&2; exit 1; }
     docker rm -f mediamtx >/dev/null 2>&1 || true
     docker run -d --name mediamtx --network host bluenviron/mediamtx:latest >/dev/null
     sleep 2

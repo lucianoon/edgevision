@@ -40,8 +40,9 @@ target_link_libraries(edgevision_core PUBLIC
 target_compile_options(edgevision_core PRIVATE
   $<$<COMPILE_LANGUAGE:CXX>:-Wall -Wextra>)
 
+find_package(Threads REQUIRED)
 add_executable(edgevision_trt src/main.cpp)
-target_link_libraries(edgevision_trt PRIVATE edgevision_core)
+target_link_libraries(edgevision_trt PRIVATE edgevision_core Threads::Threads)
 
 enable_testing()
 add_executable(test_letterbox tests/test_letterbox.cpp)

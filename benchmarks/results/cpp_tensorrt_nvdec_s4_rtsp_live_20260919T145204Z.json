@@ -1,0 +1,27 @@
+{
+  "timestamp_utc": "20260919T145204Z",
+  "backend": "cpp_tensorrt",
+  "label": "rtsp_live",
+  "model_path": "models/tensorrt/yolo26n_nms_fp16.engine",
+  "confidence": 0.5,
+  "source": "rtsp://127.0.0.1:8554/cam",
+  "decoder": "nvdec",
+  "streams": 4,
+  "frames": 250,
+  "warmup": 25,
+  "pinned_host_frame": true,
+  "stage_timing": false,
+  "fps": 187.214,
+  "aggregate_fps": 97.054,
+  "stages": {
+    "decode": {"mean_ms": 34.6547, "p50_ms": 34.0132, "p95_ms": 40.0002, "max_ms": 43.1116, "samples": 1000},
+    "end_to_end": {"mean_ms": 5.34148, "p50_ms": 5.84767, "p95_ms": 6.09407, "max_ms": 7.19804, "samples": 1000}
+  },
+  "per_stream": [
+    {"source": "rtsp://127.0.0.1:8554/cam", "frames": 250, "measured_seconds": 10.3034, "sustained_fps": 24.2638, "e2e_mean_ms": 5.3429},
+    {"source": "rtsp://127.0.0.1:8554/cam", "frames": 250, "measured_seconds": 10.3083, "sustained_fps": 24.2523, "e2e_mean_ms": 5.33601},
+    {"source": "rtsp://127.0.0.1:8554/cam", "frames": 250, "measured_seconds": 10.2919, "sustained_fps": 24.2909, "e2e_mean_ms": 5.33922},
+    {"source": "rtsp://127.0.0.1:8554/cam", "frames": 250, "measured_seconds": 10.3106, "sustained_fps": 24.2469, "e2e_mean_ms": 5.3478}
+  ],
+  "environment": {"tensorrt": "10.16.1", "cuda_runtime": "13.2", "gpu": "Tesla T4", "opencv": "4.6.0"}
+}

@@ -23,6 +23,10 @@ public:
     std::map<std::string, StageStats> summary() const;  // insertion order not kept; see order()
     std::vector<std::string> order() const { return order_; }
     double fps() const;  // from end_to_end mean
+    double average_ms(const std::string& stage) const;
+
+    // Append every sample of every stage into `other` (multi-stream merged view).
+    void merge_into(PerformanceMetrics& other) const;
 
     static constexpr const char* kEndToEnd = "end_to_end";
 

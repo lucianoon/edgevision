@@ -118,3 +118,41 @@ Observations:
   the still-image clip did not distort the raw-path numbers, but it hid the decode cost.
 
 Raw reports: `results/*_raw_*`, `results/*_nmsgraph_*`, `results/gpu_nms_compare_*.log`.
+
+## 2026-09-19 - Sprint 4: C++ TensorRT runtime with CUDA pre-processing
+
+Same T4 box, same engine (`yolo26n_nms_fp16.engine`, NMS in the graph) and the same
+1080p clip for every row. C++ = `cpp/build/edgevision_trt` (OpenCV decode -> pinned
+host frame -> H2D -> CUDA letterbox kernel writing the engine input -> enqueueV3 ->
+D2H of 300x6 -> rescale). 300 frames, 30 warm-up, ms mean.
+
+| runtime                               | decode | preprocess | inference | postprocess | end_to_end | p95 e2e | FPS   |
+|---------------------------------------|-------:|-----------:|----------:|------------:|-----------:|--------:|------:|
+| Python TensorRT (OpenCV/NumPy pre)    | 2.3    | 3.5        | 4.7       | 0.2         | 8.4        | 10.5    | 118.8 |
+| C++, pageable host frame              | 2.5    | 1.6        | 2.7       | 0.0         | 4.3        | 5.2     | 233.9 |
+| C++, pinned host frame                | 3.0    | 1.1        | 2.6       | 0.0         | 3.7        | 4.5     | 269.5 |
+| C++, pinned, no per-stage syncs       | 2.9    | -          | -         | -           | **3.0**    | 3.5     | **332.0** |
+
+Decode is measured outside end_to_end in every runtime (it is the same OpenCV/FFmpeg
+VP8 software decoder, 2-3 ms of CPU per 1080p frame).
+
+Observations:
+
+- **Goal met: < 5 ms per frame.** From 8.4 ms (Python, same engine) to 3.0 ms (C++,
+  no measurement syncs): 2.8x, and 6.9x the Sprint 3 Python figure with our NMS.
+- **Pre-processing fell from 3.5 ms to 1.1 ms** and most of that 1.1 ms is the 6 MB
+  H2D copy (pinned) - the letterbox kernel itself is ~0.1 ms at 640x640. Pageable
+  memory costs +0.5 ms (staged copy); pinned frames are worth it.
+- **"inference" 2.6 ms vs trtexec's 1.7 ms GPU compute** is launch overhead + the
+  synchronisation we add to time the stage. Without per-stage syncs the whole frame
+  takes 3.0 ms, i.e. the pipeline overlaps as TensorRT intends.
+- **Kernel accuracy:** CTest compares the CUDA letterbox with the OpenCV pipeline the
+  Python path uses: mean diff < 0.5/255, max <= 3/255 on four geometries; the parity
+  test against the Python ONNX detector on bus.jpg passes (same classes, IoU > 0.9).
+- **Decode is now the largest CPU cost (2.5-3 ms) and it caps a single stream at
+  ~330 FPS regardless of the GPU.** Next: hardware decode (NVDEC through GStreamer or
+  OpenCV cudacodec) so the frame never touches host memory, and batching several
+  streams per enqueue.
+
+Raw reports: `results/cpp_tensorrt_*`, `results/tensorrt_fp16_nmsgraph_20260919*`,
+`results/gpu_sprint4_*.log`.

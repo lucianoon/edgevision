@@ -99,6 +99,12 @@ docker run --rm --gpus all -v /opt/edgevision/repo:/workspace/edgevision \
 `scripts/gpu_sprint3.sh` builds the FP32/FP16 engines, benchmarks the four backends
 (TensorRT FP32, TensorRT FP16, ONNX Runtime CUDA, PyTorch CUDA) on the same clip,
 runs the tests and leaves a log next to the JSON reports in `benchmarks/results/`.
+`scripts/gpu_nms_compare.sh` compares the raw-head and NMS-in-graph engines;
+`scripts/gpu_sprint4.sh` builds and benchmarks the C++ runtime (`cpp/`). All three are
+meant to be run as the container command, as above.
+
+The image rebuild after a standby takes 5-13 min (the 28 GB unpack is bound by the gp3
+volume); a fresh box also has no engines, so the scripts rebuild them (~6 min).
 
 Pick the NGC TensorRT tag (`--build-arg TRT_TAG=`) whose CUDA major is supported by
 the AMI's driver (`nvidia-smi` shows the max CUDA version). 26.04 = TensorRT 10.16 /

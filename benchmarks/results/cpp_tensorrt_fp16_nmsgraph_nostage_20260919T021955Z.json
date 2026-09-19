@@ -1,0 +1,18 @@
+{
+  "timestamp_utc": "20260919T021955Z",
+  "backend": "cpp_tensorrt",
+  "label": "fp16_nmsgraph_nostage",
+  "model_path": "models/tensorrt/yolo26n_nms_fp16.engine",
+  "confidence": 0.5,
+  "source": "videos/pedestrian_area_1080p25.webm",
+  "frames": 300,
+  "warmup": 30,
+  "pinned_host_frame": true,
+  "stage_timing": false,
+  "fps": 331.983,
+  "stages": {
+    "decode": {"mean_ms": 2.87903, "p50_ms": 2.78481, "p95_ms": 6.33936, "max_ms": 10.0961, "samples": 300},
+    "end_to_end": {"mean_ms": 3.0122, "p50_ms": 2.83817, "p95_ms": 3.52327, "max_ms": 3.67109, "samples": 300}
+  },
+  "environment": {"tensorrt": "10.16.1", "cuda_runtime": "13.2", "gpu": "Tesla T4", "opencv": "4.6.0"}
+}

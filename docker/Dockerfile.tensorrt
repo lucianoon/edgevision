@@ -10,6 +10,7 @@ ENV PYTHONPATH=/workspace/edgevision/python \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libgl1 libglib2.0-0 ffmpeg \
+        cmake ninja-build libopencv-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements-gpu.txt /tmp/requirements-gpu.txt

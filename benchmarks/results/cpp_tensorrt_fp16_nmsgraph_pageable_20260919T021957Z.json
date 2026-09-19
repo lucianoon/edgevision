@@ -1,0 +1,21 @@
+{
+  "timestamp_utc": "20260919T021957Z",
+  "backend": "cpp_tensorrt",
+  "label": "fp16_nmsgraph_pageable",
+  "model_path": "models/tensorrt/yolo26n_nms_fp16.engine",
+  "confidence": 0.5,
+  "source": "videos/pedestrian_area_1080p25.webm",
+  "frames": 300,
+  "warmup": 30,
+  "pinned_host_frame": false,
+  "stage_timing": true,
+  "fps": 233.909,
+  "stages": {
+    "decode": {"mean_ms": 2.49116, "p50_ms": 2.60594, "p95_ms": 2.93894, "max_ms": 8.01813, "samples": 300},
+    "preprocess": {"mean_ms": 1.56635, "p50_ms": 1.58006, "p95_ms": 1.71674, "max_ms": 1.78475, "samples": 300},
+    "inference": {"mean_ms": 2.69239, "p50_ms": 2.38748, "p95_ms": 3.49684, "max_ms": 3.6118, "samples": 300},
+    "postprocess": {"mean_ms": 0.0138809, "p50_ms": 0.012904, "p95_ms": 0.017053, "max_ms": 0.041146, "samples": 300},
+    "end_to_end": {"mean_ms": 4.27516, "p50_ms": 3.99151, "p95_ms": 5.18287, "max_ms": 5.3274, "samples": 300}
+  },
+  "environment": {"tensorrt": "10.16.1", "cuda_runtime": "13.2", "gpu": "Tesla T4", "opencv": "4.6.0"}
+}

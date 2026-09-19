@@ -1,0 +1,62 @@
+{
+  "timestamp_utc": "20260919T022036Z",
+  "backend": "tensorrt",
+  "label": "fp16_nmsgraph",
+  "model_path": "models/tensorrt/yolo26n_nms_fp16.engine",
+  "image_size": 640,
+  "confidence": 0.5,
+  "source": "videos/pedestrian_area_1080p25.webm",
+  "frames": 300,
+  "warmup": 30,
+  "fps": 118.78421951883786,
+  "stages": {
+    "decode": {
+      "mean_ms": 2.264544109993191,
+      "p50_ms": 2.1471600000495528,
+      "p95_ms": 3.067688000101043,
+      "max_ms": 4.755337000005966,
+      "samples": 300
+    },
+    "preprocess": {
+      "mean_ms": 3.491119249996094,
+      "p50_ms": 2.990254999986064,
+      "p95_ms": 4.472342000099161,
+      "max_ms": 4.613380000137113,
+      "samples": 300
+    },
+    "inference": {
+      "mean_ms": 4.6822420966691425,
+      "p50_ms": 4.338201499990646,
+      "p95_ms": 5.786640999986048,
+      "max_ms": 6.131322000101136,
+      "samples": 300
+    },
+    "postprocess": {
+      "mean_ms": 0.20294011999794748,
+      "p50_ms": 0.19469899996238382,
+      "p95_ms": 0.28229700001247693,
+      "max_ms": 0.3311699999812845,
+      "samples": 300
+    },
+    "end_to_end": {
+      "mean_ms": 8.418626683331544,
+      "p50_ms": 7.558165999967059,
+      "p95_ms": 10.469779000004564,
+      "max_ms": 10.859995000146228,
+      "samples": 300
+    }
+  },
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-7.0.0-1012-aws-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "numpy": "2.5.3",
+    "torch": "2.14.0+cu130",
+    "cuda_available": true,
+    "onnxruntime": "1.30.0",
+    "ort_providers": null,
+    "ultralytics": "8.4.155",
+    "gpu": "Tesla T4",
+    "tensorrt": "10.16.1.11"
+  }
+}

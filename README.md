@@ -33,6 +33,7 @@ Weights (`yolo26n.pt`) are downloaded by Ultralytics on first run into `models/p
 | `pytorch` | Ultralytics `predict()` | inside Ultralytics (opaque) |
 | `onnx`    | ONNX Runtime       | ours: `preprocess.py` (letterbox), `postprocess.py` (decode + NMS) |
 | `tensorrt`| TensorRT engine (`tensorrt_detector.py`, TensorRT 10 API + cuda-python) | same as `onnx` |
+| C++ `cpp/` | TensorRT 10 C++ API (`edgevision_trt`) | CUDA letterbox kernel, NMS in the graph |
 
 Export the ONNX graph (static `1x3x640x640`, opset 17, output `1x84x8400`):
 
@@ -72,3 +73,20 @@ output that `postprocess.py` recognises by shape and decodes without running NMS
 On the T4 with a real 1080p clip this took TensorRT FP16 from 9.5 to 7.6 ms per frame
 (131 FPS); `configs/app.yaml` now points at the NMS graphs. Benchmark clips and their
 licenses: `videos/README.md`.
+
+## C++ runtime (Sprint 4)
+
+`cpp/` holds a CMake project (C++17 + CUDA, TensorRT 10, OpenCV) that reproduces the
+detector with a CUDA letterbox kernel writing straight into the engine input and an
+engine with NMS in the graph, so there is no CPU post-processing. It builds inside the
+TensorRT container on the GPU box (`scripts/gpu_sprint4.sh`), has a CTest for the kernel
+and a pytest parity check against the Python ONNX path.
+
+```bash
+cmake -S cpp -B cpp/build -G Ninja -DCMAKE_CUDA_ARCHITECTURES=75   # T4; Orin = 87
+cmake --build cpp/build && (cd cpp/build && ctest)
+cpp/build/edgevision_trt --engine models/tensorrt/yolo26n_nms_fp16.engine     --source videos/pedestrian_area_1080p25.webm --frames 300 --warmup 30
+```
+
+Tesla T4, 1080p clip: 3.0 ms per frame end-to-end (332 FPS) vs 8.4 ms for the Python
+TensorRT path on the same engine. Details in `benchmarks/README.md`.

@@ -1,0 +1,124 @@
+== environment
+Tesla T4, 595.91.07
+cmake version 3.31.6
+Build cuda_13.2.r13.2/compiler.37668154_0
+4.6.0
+== engine
+== building models/tensorrt/yolo26n_nms_fp32.engine ()
+[09/19/2026-02:14:18] [W] * Throughput may be bound by Enqueue Time rather than GPU Compute and the GPU may be under-utilized.
+[09/19/2026-02:14:18] [W]   If not already in use, --useCudaGraph (utilize CUDA graphs where possible) may increase the throughput.
+[09/19/2026-02:14:02] [I] Engine built in 69.8871 sec.
+[09/19/2026-02:14:02] [I] Engine deserialized in 0.0214513 sec.
+[09/19/2026-02:14:18] [I] Throughput: 248.094 qps
+[09/19/2026-02:14:18] [I] Latency: min = 3.90479 ms, max = 4.09155 ms, mean = 3.9987 ms, median = 3.99805 ms, percentile(90%) = 4.03516 ms, percentile(95%) = 4.04492 ms, percentile(99%) = 4.06055 ms
+[09/19/2026-02:14:18] [I] Enqueue Time: min = 3.89233 ms, max = 4.07739 ms, mean = 3.98566 ms, median = 3.98535 ms, percentile(90%) = 4.02136 ms, percentile(95%) = 4.03027 ms, percentile(99%) = 4.0459 ms
+[09/19/2026-02:14:18] [I] H2D Latency: min = 0.791992 ms, max = 0.813477 ms, mean = 0.795828 ms, median = 0.795654 ms, percentile(90%) = 0.798828 ms, percentile(95%) = 0.800781 ms, percentile(99%) = 0.804688 ms
+[09/19/2026-02:14:18] [I] GPU Compute Time: min = 3.10547 ms, max = 3.29041 ms, mean = 3.19674 ms, median = 3.19629 ms, percentile(90%) = 3.23242 ms, percentile(95%) = 3.24219 ms, percentile(99%) = 3.25781 ms
+[09/19/2026-02:14:18] [I] D2H Latency: min = 0.00390625 ms, max = 0.0244141 ms, mean = 0.00613131 ms, median = 0.00585938 ms, percentile(90%) = 0.00683594 ms, percentile(95%) = 0.0078125 ms, percentile(99%) = 0.00964355 ms
+== building models/tensorrt/yolo26n_nms_fp16.engine (--fp16)
+[09/19/2026-02:14:36] [W] Weakly-typed networks have been deprecated in TensorRT. You can use the AutoCast tool (https://nvidia.github.io/TensorRT-Model-Optimizer/guides/8_autocast.html) to convert the network to be strongly typed.
+[09/19/2026-02:18:56] [W] * Throughput may be bound by Enqueue Time rather than GPU Compute and the GPU may be under-utilized.
+[09/19/2026-02:18:56] [W]   If not already in use, --useCudaGraph (utilize CUDA graphs where possible) may increase the throughput.
+[09/19/2026-02:18:40] [I] Engine built in 243.007 sec.
+[09/19/2026-02:18:40] [I] Engine deserialized in 0.0353344 sec.
+[09/19/2026-02:18:56] [I] Throughput: 398.219 qps
+[09/19/2026-02:18:56] [I] Latency: min = 2.39624 ms, max = 2.53223 ms, mean = 2.44836 ms, median = 2.44202 ms, percentile(90%) = 2.48389 ms, percentile(95%) = 2.49121 ms, percentile(99%) = 2.50537 ms
+[09/19/2026-02:18:56] [I] Enqueue Time: min = 2.35742 ms, max = 2.4834 ms, mean = 2.40557 ms, median = 2.39844 ms, percentile(90%) = 2.43994 ms, percentile(95%) = 2.44629 ms, percentile(99%) = 2.45996 ms
+[09/19/2026-02:18:56] [I] H2D Latency: min = 0.791016 ms, max = 0.830566 ms, mean = 0.797267 ms, median = 0.794922 ms, percentile(90%) = 0.808105 ms, percentile(95%) = 0.810059 ms, percentile(99%) = 0.815918 ms
+[09/19/2026-02:18:56] [I] GPU Compute Time: min = 1.59521 ms, max = 1.6958 ms, mean = 1.62789 ms, median = 1.62109 ms, percentile(90%) = 1.65723 ms, percentile(95%) = 1.66382 ms, percentile(99%) = 1.67529 ms
+[09/19/2026-02:18:56] [I] D2H Latency: min = 0.00390625 ms, max = 0.0644531 ms, mean = 0.0231949 ms, median = 0.0214844 ms, percentile(90%) = 0.0302734 ms, percentile(95%) = 0.0327148 ms, percentile(99%) = 0.0395508 ms
+total 18876
+drwxrwxr-x 2 ubuntu ubuntu     4096 Sep 19 02:14 .
+drwxrwxr-x 5 ubuntu ubuntu     4096 Sep 19 01:51 ..
+-rw-r--r-- 1 ubuntu ubuntu        0 Sep 18 15:42 .gitkeep
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 18 19:53 yolo26n.names.json
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 18 19:53 yolo26n_fp16.names.json
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 18 19:53 yolo26n_fp32.names.json
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 19 02:12 yolo26n_nms.names.json
+-rw-r--r-- 1 root   root    7220740 Sep 19 02:18 yolo26n_nms_fp16.engine
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 19 02:19 yolo26n_nms_fp16.names.json
+-rw-r--r-- 1 root   root   12074556 Sep 19 02:14 yolo26n_nms_fp32.engine
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 19 02:14 yolo26n_nms_fp32.names.json
+== build C++ runtime
+-- The CXX compiler identification is GNU 13.3.0
+-- The CUDA compiler identification is NVIDIA 13.2.78 with host compiler GNU 13.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Detecting CUDA compiler ABI info
+-- Detecting CUDA compiler ABI info - done
+-- Check for working CUDA compiler: /usr/local/cuda/bin/nvcc - skipped
+-- Detecting CUDA compile features
+-- Detecting CUDA compile features - done
+-- Found CUDAToolkit: /usr/local/cuda/targets/x86_64-linux/include (found version "13.2.78")
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found OpenCV: /usr (found version "4.6.0") found components: core imgproc imgcodecs videoio
+-- TensorRT headers: /usr/include/x86_64-linux-gnu, lib: /usr/lib/x86_64-linux-gnu/libnvinfer.so
+-- Configuring done (13.2s)
+-- Generating done (0.0s)
+-- Build files have been written to: /workspace/edgevision/cpp/build
+[1/10] Building CXX object CMakeFiles/edgevision_core.dir/src/names.cpp.o
+[2/10] Building CXX object CMakeFiles/edgevision_core.dir/src/trt_engine.cpp.o
+[3/10] Building CXX object CMakeFiles/edgevision_core.dir/src/metrics.cpp.o
+[4/10] Building CUDA object CMakeFiles/edgevision_core.dir/src/letterbox.cu.o
+[5/10] Building CXX object CMakeFiles/edgevision_core.dir/src/detector.cpp.o
+[6/10] Linking CXX static library libedgevision_core.a
+[7/10] Building CXX object CMakeFiles/test_letterbox.dir/tests/test_letterbox.cpp.o
+[8/10] Linking CXX executable test_letterbox
+[9/10] Building CXX object CMakeFiles/edgevision_trt.dir/src/main.cpp.o
+[10/10] Linking CXX executable edgevision_trt
+Test project /workspace/edgevision/cpp/build
+    Start 1: letterbox
+1/1 Test #1: letterbox ........................   Passed   11.28 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =  11.29 sec
+== C++ runtime benchmarks on videos/pedestrian_area_1080p25.webm
+
+backend=cpp_tensorrt  fps=269.5
+stage              mean      p50      p95      max  n
+decode              3.0      2.9      5.5     23.7  300
+preprocess          1.1      1.1      1.1      1.1  300
+inference           2.6      2.4      3.4      3.6  300
+postprocess         0.0      0.0      0.0      0.0  300
+end_to_end          3.7      3.5      4.5      4.7  300
+saved: benchmarks/results/cpp_tensorrt_fp16_nmsgraph_20260919T021950Z.json
+
+backend=cpp_tensorrt  fps=332.0
+stage              mean      p50      p95      max  n
+decode              2.9      2.8      6.3     10.1  300
+end_to_end          3.0      2.8      3.5      3.7  300
+saved: benchmarks/results/cpp_tensorrt_fp16_nmsgraph_nostage_20260919T021955Z.json
+
+backend=cpp_tensorrt  fps=233.9
+stage              mean      p50      p95      max  n
+decode              2.5      2.6      2.9      8.0  300
+preprocess          1.6      1.6      1.7      1.8  300
+inference           2.7      2.4      3.5      3.6  300
+postprocess         0.0      0.0      0.0      0.0  300
+end_to_end          4.3      4.0      5.2      5.3  300
+saved: benchmarks/results/cpp_tensorrt_fp16_nmsgraph_pageable_20260919T021957Z.json
+== Python TensorRT path, same engine and clip
+WARNING ⚠️ user config directory '/root/.config/Ultralytics' is not writable, using '/tmp/Ultralytics'. Set YOLO_CONFIG_DIR to override.
+Creating new Ultralytics Settings v0.0.8 file ✅ 
+View Ultralytics Settings with 'yolo settings' or at '/tmp/Ultralytics/settings.json'
+Update Settings with 'yolo settings key=value', i.e. 'yolo settings runs_dir=path/to/dir'. For help see https://docs.ultralytics.com/usage/settings.
+
+backend=tensorrt  fps=118.8
+stage              mean      p50      p95      max  n
+decode              2.3      2.1      3.1      4.8  300
+preprocess          3.5      3.0      4.5      4.6  300
+inference           4.7      4.3      5.8      6.1  300
+postprocess         0.2      0.2      0.3      0.3  300
+end_to_end          8.4      7.6     10.5     10.9  300
+
+saved: benchmarks/results/tensorrt_fp16_nmsgraph_20260919T022036Z.json
+== tests
+..............................s                                          [100%]
+30 passed, 1 skipped in 17.25s
+== done: benchmarks/results/gpu_sprint4_20260919T021237Z.log

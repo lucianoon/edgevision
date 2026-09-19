@@ -112,8 +112,8 @@
         "iam:RemoveRoleFromInstanceProfile"
       ],
       "Resource": [
-        "arn:aws:iam::342996267972:role/edgevision-*",
-        "arn:aws:iam::342996267972:instance-profile/edgevision-*"
+        "arn:aws:iam::<ACCOUNT_ID>:role/edgevision-*",
+        "arn:aws:iam::<ACCOUNT_ID>:instance-profile/edgevision-*"
       ]
     },
     {
@@ -153,7 +153,7 @@
       "Effect": "Allow",
       "Action": "ssm:StartSession",
       "Resource": [
-        "arn:aws:ec2:us-east-1:342996267972:instance/*",
+        "arn:aws:ec2:us-east-1:<ACCOUNT_ID>:instance/*",
         "arn:aws:ssm:us-east-1::document/AWS-StartInteractiveCommand",
         "arn:aws:ssm:us-east-1::document/AWS-StartPortForwardingSession",
         "arn:aws:ssm:us-east-1::document/SSM-SessionManagerRunShell"
@@ -205,7 +205,7 @@
         "cloudwatch:EnableAlarmActions",
         "cloudwatch:DisableAlarmActions"
       ],
-      "Resource": "arn:aws:cloudwatch:us-east-1:342996267972:alarm:edgevision-*"
+      "Resource": "arn:aws:cloudwatch:us-east-1:<ACCOUNT_ID>:alarm:edgevision-*"
     },
     {
       "Sid": "CloudWatchEventsServiceLinkedRoleForEc2AlarmActions",

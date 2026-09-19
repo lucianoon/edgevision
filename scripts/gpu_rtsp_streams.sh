@@ -4,7 +4,8 @@
 #   scripts/gpu_rtsp_streams.sh [1 4 8 12]
 set -uo pipefail
 cd /opt/edgevision/repo
-ENGINE=models/tensorrt/yolo26n_nms_fp16.engine
+ENGINE=${ENGINE:-models/tensorrt/yolo26n_nms_fp16.engine}
+MODE=${MODE:-independent}   # independent | batched (ENGINE must then be the batch-N engine)
 RTSP=${RTSP:-rtsp://127.0.0.1:8554/cam}
 LOG=benchmarks/results/gpu_rtsp_streams_$(date -u +%Y%m%dT%H%M%SZ).log
 COUNTS=${*:-1 4 8 12}

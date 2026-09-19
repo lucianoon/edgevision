@@ -28,6 +28,7 @@
 #include <thread>
 #include <vector>
 
+#include "edgevision/batch_pipeline.hpp"
 #include "edgevision/detector.hpp"
 #include "edgevision/metrics.hpp"
 #include "edgevision/names.hpp"
@@ -51,6 +52,7 @@ struct Args {
     float confidence = 0.5f;
     bool pinned = true;
     bool stage_timing = true;
+    bool batched = false;  // phase B: one batch-N inference per round for all streams
 };
 
 Args parse_args(int argc, char** argv) {
@@ -74,10 +76,12 @@ Args parse_args(int argc, char** argv) {
         else if (k == "--confidence") a.confidence = std::stof(next("--confidence"));
         else if (k == "--no-pinned") a.pinned = false;
         else if (k == "--no-stage-timing") a.stage_timing = false;
+        else if (k == "--batched") a.batched = true;
         else if (k == "--help" || k == "-h") {
-            std::cout << "usage: edgevision_trt --engine E [--source S]... [--decoder opencv|nvdec] [--streams N]\n"
+            std::cout << "usage: edgevision_trt --engine E [--source S]... [--decoder opencv|nvdec] [--streams N] [--batched]\n"
                          "       [--frames N] [--warmup N] [--label L] [--names names.json] [--out report.json]\n"
-                         "       [--dump-detections dets.json] [--confidence 0.5] [--no-pinned] [--no-stage-timing]\n";
+                         "       [--dump-detections dets.json] [--confidence 0.5] [--no-pinned] [--no-stage-timing]\n"
+                         "  --batched: all streams share one batch-N engine (engine exported with batch=N)\n";
             std::exit(0);
         } else throw std::runtime_error("unknown argument: " + k);
     }
@@ -242,6 +246,7 @@ void write_report(const Args& a, const std::vector<StreamResult>& streams, const
     f << "  \"source\": \"" << a.sources.front() << "\",\n";
     f << "  \"decoder\": \"" << a.decoder << "\",\n";
     f << "  \"streams\": " << a.streams << ",\n";
+    f << "  \"mode\": \"" << (a.batched ? "batched" : "independent") << "\",\n";
     f << "  \"frames\": " << a.frames << ",\n";
     f << "  \"warmup\": " << a.warmup << ",\n";
     f << "  \"pinned_host_frame\": " << (a.pinned ? "true" : "false") << ",\n";
@@ -289,6 +294,47 @@ int main(int argc, char** argv) try {
     for (int i = 0; i < args.streams; ++i) results[i].source = args.sources[i % args.sources.size()];
 
     const auto wall_start = std::chrono::steady_clock::now();
+    if (args.batched) {
+        BatchOptions opt;
+        opt.engine_path = args.engine;
+        for (const auto& r : results) opt.sources.push_back(r.source);
+        opt.nvdec = args.decoder == "nvdec";
+        opt.confidence = args.confidence;
+        opt.frames = args.frames;
+        opt.warmup = args.warmup;
+        BatchResult batch = run_batched(opt, names);
+
+        // Map onto the per-stream report: every stream advances one frame per round.
+        for (int i = 0; i < args.streams; ++i) {
+            results[i].metrics = batch.workers[i];          // decode, preprocess (own thread)
+            batch.rounds.merge_into(results[i].metrics);    // gather/inference/postprocess/e2e of the round
+            results[i].measured_seconds = batch.measured_seconds;
+            results[i].first_measured = batch.first_measured[i];
+        }
+        const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - wall_start).count();
+        std::printf("\nbatched streams=%d decoder=%s  aggregate=%.1f fps (%d rounds, %.1fs measured, %.1fs wall)\n",
+                    args.streams, args.decoder.c_str(), batch.aggregate_fps(), batch.rounds_measured,
+                    batch.measured_seconds, wall);
+        print_table("per round (all streams)", batch.rounds);
+        std::printf("worker means: decode %.2f ms, preprocess %.2f ms\n", results[0].metrics.average_ms("decode"),
+                    results[0].metrics.average_ms("preprocess"));
+
+        PerformanceMetrics merged;
+        for (const auto& r : results) r.metrics.merge_into(merged);
+        const std::string stamp = utc_stamp();
+        std::string out = args.out;
+        if (out.empty())
+            out = "benchmarks/results/cpp_tensorrt_" + args.decoder + "_b" + std::to_string(args.streams) +
+                  (args.label.empty() ? "" : "_" + args.label) + "_" + stamp + ".json";
+        write_report(args, results, batch.rounds, batch.aggregate_fps(), stamp, out);
+        std::printf("saved: %s\n", out.c_str());
+        if (!args.dump_detections.empty()) {
+            dump_detections(results[0].first_measured, args.dump_detections);
+            std::printf("detections of first measured round (stream 0): %zu -> %s\n", results[0].first_measured.size(),
+                        args.dump_detections.c_str());
+        }
+        return 0;
+    }
     if (args.streams == 1) {
         run_stream(args, names, results[0]);
     } else {

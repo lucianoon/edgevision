@@ -1,0 +1,36 @@
+{
+  "timestamp_utc": "20260919T155136Z",
+  "backend": "cpp_tensorrt",
+  "label": "h264_file",
+  "model_path": "models/tensorrt/yolo26n_nms_fp16.engine",
+  "confidence": 0.5,
+  "source": "videos/pedestrian_area_1080p25_h264.mp4",
+  "decoder": "nvdec",
+  "streams": 12,
+  "mode": "independent",
+  "frames": 300,
+  "warmup": 30,
+  "pinned_host_frame": true,
+  "stage_timing": false,
+  "fps": 51.307,
+  "aggregate_fps": 539.286,
+  "stages": {
+    "decode": {"mean_ms": 0.752347, "p50_ms": 0.199238, "p95_ms": 3.13344, "max_ms": 7.41171, "samples": 3600},
+    "end_to_end": {"mean_ms": 19.4905, "p50_ms": 19.2788, "p95_ms": 27.0094, "max_ms": 42.0145, "samples": 3600}
+  },
+  "per_stream": [
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 6.58712, "sustained_fps": 45.5434, "e2e_mean_ms": 19.4763},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 6.70876, "sustained_fps": 44.7176, "e2e_mean_ms": 19.2891},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 6.87545, "sustained_fps": 43.6335, "e2e_mean_ms": 19.5291},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 6.94449, "sustained_fps": 43.1997, "e2e_mean_ms": 19.6185},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 6.9807, "sustained_fps": 42.9756, "e2e_mean_ms": 19.7224},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 6.59565, "sustained_fps": 45.4845, "e2e_mean_ms": 19.6973},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 6.31682, "sustained_fps": 47.4922, "e2e_mean_ms": 19.2642},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 6.64063, "sustained_fps": 45.1764, "e2e_mean_ms": 19.3088},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 6.77225, "sustained_fps": 44.2984, "e2e_mean_ms": 19.3148},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 6.61802, "sustained_fps": 45.3308, "e2e_mean_ms": 19.6555},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 6.25701, "sustained_fps": 47.9462, "e2e_mean_ms": 19.2516},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 6.89848, "sustained_fps": 43.4878, "e2e_mean_ms": 19.7584}
+  ],
+  "environment": {"tensorrt": "10.16.1", "cuda_runtime": "13.2", "gpu": "Tesla T4", "opencv": "4.6.0"}
+}

@@ -31,6 +31,7 @@ add_library(edgevision_core STATIC
   src/letterbox.cu
   src/trt_engine.cpp
   src/detector.cpp
+  src/batch_pipeline.cpp
   src/video_decoder.cpp
   src/metrics.cpp
   src/names.cpp)

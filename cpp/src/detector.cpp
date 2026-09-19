@@ -101,23 +101,29 @@ std::vector<Detection> TensorRTDetector::run_and_collect(const LetterboxInfo& in
         EV_CUDA_CHECK(cudaMemcpyAsync(host_output_, engine_.output_device(), engine_.output_bytes(),
                                       cudaMemcpyDeviceToHost, stream_));
         EV_CUDA_CHECK(cudaStreamSynchronize(stream_));
+        detections = collect_detections(host_output_, max_det_, info, confidence_, names_);
+    }
+    return detections;
+}
 
-        const float w = static_cast<float>(info.source_width), h = static_cast<float>(info.source_height);
-        for (int i = 0; i < max_det_; ++i) {
-            const float* row = host_output_ + i * 6;
-            const float score = row[4];
-            if (score < confidence_) continue;  // zero-padded rows land here too
-            Detection d;
-            d.x1 = std::clamp((row[0] - info.pad_x) / info.scale, 0.0f, w);
-            d.y1 = std::clamp((row[1] - info.pad_y) / info.scale, 0.0f, h);
-            d.x2 = std::clamp((row[2] - info.pad_x) / info.scale, 0.0f, w);
-            d.y2 = std::clamp((row[3] - info.pad_y) / info.scale, 0.0f, h);
-            d.confidence = score;
-            d.class_id = static_cast<int>(row[5]);
-            auto it = names_.find(d.class_id);
-            d.class_name = it != names_.end() ? it->second : std::to_string(d.class_id);
-            detections.push_back(std::move(d));
-        }
+std::vector<Detection> collect_detections(const float* rows, int max_det, const LetterboxInfo& info,
+                                          float confidence, const std::map<int, std::string>& names) {
+    std::vector<Detection> detections;
+    const float w = static_cast<float>(info.source_width), h = static_cast<float>(info.source_height);
+    for (int i = 0; i < max_det; ++i) {
+        const float* row = rows + i * 6;
+        const float score = row[4];
+        if (score < confidence) continue;  // zero-padded rows land here too
+        Detection d;
+        d.x1 = std::clamp((row[0] - info.pad_x) / info.scale, 0.0f, w);
+        d.y1 = std::clamp((row[1] - info.pad_y) / info.scale, 0.0f, h);
+        d.x2 = std::clamp((row[2] - info.pad_x) / info.scale, 0.0f, w);
+        d.y2 = std::clamp((row[3] - info.pad_y) / info.scale, 0.0f, h);
+        d.confidence = score;
+        d.class_id = static_cast<int>(row[5]);
+        auto it = names.find(d.class_id);
+        d.class_name = it != names.end() ? it->second : std::to_string(d.class_id);
+        detections.push_back(std::move(d));
     }
     return detections;
 }

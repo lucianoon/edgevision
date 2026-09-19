@@ -1,0 +1,133 @@
+== environment
+Tesla T4, 595.91.07, 15360 MiB
+== building models/tensorrt/yolo26n_nms_fp32.engine ()
+[09/19/2026-15:33:22] [W] * Throughput may be bound by Enqueue Time rather than GPU Compute and the GPU may be under-utilized.
+[09/19/2026-15:33:22] [W]   If not already in use, --useCudaGraph (utilize CUDA graphs where possible) may increase the throughput.
+[09/19/2026-15:33:06] [I] Engine built in 68.9002 sec.
+[09/19/2026-15:33:06] [I] Engine deserialized in 0.0223736 sec.
+[09/19/2026-15:33:22] [I] Throughput: 247.051 qps
+[09/19/2026-15:33:22] [I] Latency: min = 3.94434 ms, max = 4.09351 ms, mean = 4.01049 ms, median = 4.00879 ms, percentile(90%) = 4.03955 ms, percentile(95%) = 4.05029 ms, percentile(99%) = 4.06726 ms
+[09/19/2026-15:33:22] [I] Enqueue Time: min = 3.91455 ms, max = 4.0752 ms, mean = 3.99251 ms, median = 3.99121 ms, percentile(90%) = 4.02051 ms, percentile(95%) = 4.0332 ms, percentile(99%) = 4.04785 ms
+[09/19/2026-15:33:22] [I] H2D Latency: min = 0.791992 ms, max = 0.814453 ms, mean = 0.793905 ms, median = 0.793701 ms, percentile(90%) = 0.794922 ms, percentile(95%) = 0.795166 ms, percentile(99%) = 0.806885 ms
+[09/19/2026-15:33:22] [I] GPU Compute Time: min = 3.14331 ms, max = 3.28711 ms, mean = 3.20782 ms, median = 3.20605 ms, percentile(90%) = 3.23438 ms, percentile(95%) = 3.24707 ms, percentile(99%) = 3.26172 ms
+[09/19/2026-15:33:22] [I] D2H Latency: min = 0.00390625 ms, max = 0.0426025 ms, mean = 0.00876253 ms, median = 0.00634766 ms, percentile(90%) = 0.0205078 ms, percentile(95%) = 0.0275879 ms, percentile(99%) = 0.029541 ms
+== building models/tensorrt/yolo26n_nms_fp16.engine (--fp16)
+[09/19/2026-15:33:40] [W] Weakly-typed networks have been deprecated in TensorRT. You can use the AutoCast tool (https://nvidia.github.io/TensorRT-Model-Optimizer/guides/8_autocast.html) to convert the network to be strongly typed.
+[09/19/2026-15:37:56] [W] * Throughput may be bound by Enqueue Time rather than GPU Compute and the GPU may be under-utilized.
+[09/19/2026-15:37:56] [W]   If not already in use, --useCudaGraph (utilize CUDA graphs where possible) may increase the throughput.
+[09/19/2026-15:37:40] [I] Engine built in 239.406 sec.
+[09/19/2026-15:37:40] [I] Engine deserialized in 0.0357627 sec.
+[09/19/2026-15:37:56] [I] Throughput: 407.016 qps
+[09/19/2026-15:37:56] [I] Latency: min = 2.3916 ms, max = 3.11768 ms, mean = 2.41494 ms, median = 2.41064 ms, percentile(90%) = 2.43262 ms, percentile(95%) = 2.43945 ms, percentile(99%) = 2.45459 ms
+[09/19/2026-15:37:56] [I] Enqueue Time: min = 2.35645 ms, max = 3.06738 ms, mean = 2.39621 ms, median = 2.39551 ms, percentile(90%) = 2.40723 ms, percentile(95%) = 2.4126 ms, percentile(99%) = 2.42285 ms
+[09/19/2026-15:37:56] [I] H2D Latency: min = 0.791016 ms, max = 0.830078 ms, mean = 0.794291 ms, median = 0.792969 ms, percentile(90%) = 0.794922 ms, percentile(95%) = 0.807617 ms, percentile(99%) = 0.80957 ms
+[09/19/2026-15:37:56] [I] GPU Compute Time: min = 1.59424 ms, max = 2.29492 ms, mean = 1.61171 ms, median = 1.60938 ms, percentile(90%) = 1.62207 ms, percentile(95%) = 1.62744 ms, percentile(99%) = 1.63574 ms
+[09/19/2026-15:37:56] [I] D2H Latency: min = 0.00390625 ms, max = 0.0478516 ms, mean = 0.00893895 ms, median = 0.00585938 ms, percentile(90%) = 0.020752 ms, percentile(95%) = 0.0234375 ms, percentile(99%) = 0.0334473 ms
+total 18912
+drwxrwxr-x 2 ubuntu ubuntu     4096 Sep 19 15:33 .
+drwxrwxr-x 5 ubuntu ubuntu     4096 Sep 19 15:09 ..
+-rw-r--r-- 1 ubuntu ubuntu        0 Sep 18 15:42 .gitkeep
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 18 19:53 yolo26n.names.json
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 18 19:53 yolo26n_fp16.names.json
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 18 19:53 yolo26n_fp32.names.json
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 19 15:31 yolo26n_nms.names.json
+-rw-r--r-- 1 root   root    7182660 Sep 19 15:37 yolo26n_nms_fp16.engine
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 19 15:38 yolo26n_nms_fp16.names.json
+-rw-r--r-- 1 root   root   12145660 Sep 19 15:33 yolo26n_nms_fp32.engine
+-rw-r--r-- 1 ubuntu ubuntu     1331 Sep 19 15:33 yolo26n_nms_fp32.names.json
+== static-batch engines (FP16 only)
+-- building batch 4
+Engine built in 203.04 sec.
+Throughput: 131.243 qps
+GPU Compute Time: min = 4.3457 ms, max = 4.57935 ms, mean = 4.42654 ms, median = 4.41748 ms, percentile(90%) = 4.48779 m
+Total GPU Compute Time: 4.65672 s
+[09/19/2026-15:42:14] [W] * Throughput may be bound by Enqueue Time rather than GPU Compute and the GPU may be under-uti
+-- building batch 8
+Engine built in 219.098 sec.
+Throughput: 68.4214 qps
+GPU Compute Time: min = 8.08789 ms, max = 8.53021 ms, mean = 8.27069 ms, median = 8.271 ms, percentile(90%) = 8.37848 ms
+Total GPU Compute Time: 4.54061 s
+[09/19/2026-15:46:04] [W] * Throughput may be bound by Enqueue Time rather than GPU Compute and the GPU may be under-uti
+-- building batch 12
+Engine built in 248.531 sec.
+Throughput: 43.7974 qps
+GPU Compute Time: min = 12.9111 ms, max = 13.731 ms, mean = 13.2746 ms, median = 13.2188 ms, percentile(90%) = 13.5569 m
+Total GPU Compute Time: 4.67265 s
+[09/19/2026-15:50:23] [W] * Throughput may be bound by Enqueue Time rather than GPU Compute and the GPU may be under-uti
+-rw-r--r-- 1 root root  8050212 Sep 19 15:50 models/tensorrt/yolo26n_nms_b12_fp16.engine
+-rw-r--r-- 1 root root  7531324 Sep 19 15:42 models/tensorrt/yolo26n_nms_b4_fp16.engine
+-rw-r--r-- 1 root root  7488548 Sep 19 15:45 models/tensorrt/yolo26n_nms_b8_fp16.engine
+-rw-r--r-- 1 root root  7182660 Sep 19 15:37 models/tensorrt/yolo26n_nms_fp16.engine
+-rw-r--r-- 1 root root 12145660 Sep 19 15:33 models/tensorrt/yolo26n_nms_fp32.engine
+== build
+[1/14] Building CXX object CMakeFiles/edgevision_core.dir/src/video_decoder.cpp.o
+[2/14] Building CXX object CMakeFiles/edgevision_core.dir/src/trt_engine.cpp.o
+[3/14] Building CXX object CMakeFiles/edgevision_core.dir/src/metrics.cpp.o
+[4/14] Building CXX object CMakeFiles/edgevision_core.dir/src/names.cpp.o
+[5/14] Building CXX object CMakeFiles/edgevision_core.dir/src/detector.cpp.o
+[6/14] Building CUDA object CMakeFiles/edgevision_core.dir/src/letterbox.cu.o
+[7/14] Building CXX object CMakeFiles/edgevision_core.dir/src/batch_pipeline.cpp.o
+[8/14] Building CXX object CMakeFiles/test_letterbox.dir/tests/test_letterbox.cpp.o
+[9/14] Linking CXX static library libedgevision_core.a
+[10/14] Building CXX object CMakeFiles/test_nv12.dir/tests/test_nv12.cpp.o
+[11/14] Linking CXX executable test_letterbox
+[12/14] Linking CXX executable test_nv12
+[13/14] Building CXX object CMakeFiles/edgevision_trt.dir/src/main.cpp.o
+[14/14] Linking CXX executable edgevision_trt
+Test project /workspace/edgevision/cpp/build
+    Start 1: letterbox
+1/2 Test #1: letterbox ........................   Passed   11.74 sec
+    Start 2: nv12
+2/2 Test #2: nv12 .............................   Passed    0.48 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =  12.24 sec
+== batched vs independent, file source, unpaced
+--- batched N=4
+batched streams=4 decoder=nvdec  aggregate=552.0 fps (300 rounds, 2.2s measured, 3.8s wall)
+gather              0.0      0.0      0.0      0.0  300
+inference           6.2      6.2      6.5      6.6  300
+postprocess         0.0      0.0      0.0      0.0  300
+end_to_end          6.2      6.2      6.5      6.6  300
+worker means: decode 0.76 ms, preprocess 0.28 ms
+saved: benchmarks/results/cpp_tensorrt_nvdec_b4_h264_file_20260919T155057Z.json
+--- independent N=4 (phase A design, batch-1 engine)
+streams=4 decoder=nvdec  aggregate=529.1 fps (1200 frames, 3.4s wall)
+end_to_end          5.9      6.0      7.2      8.6  1200
+saved: benchmarks/results/cpp_tensorrt_nvdec_s4_h264_file_20260919T155102Z.json
+--- batched N=8
+batched streams=8 decoder=nvdec  aggregate=578.3 fps (300 rounds, 4.2s measured, 6.1s wall)
+gather              0.0      0.0      0.0      0.0  300
+inference          11.8     11.7     12.4     12.9  300
+postprocess         0.0      0.0      0.1      0.1  300
+end_to_end         11.8     11.7     12.4     12.9  300
+worker means: decode 1.45 ms, preprocess 0.50 ms
+saved: benchmarks/results/cpp_tensorrt_nvdec_b8_h264_file_20260919T155109Z.json
+--- independent N=8 (phase A design, batch-1 engine)
+streams=8 decoder=nvdec  aggregate=536.0 fps (2400 frames, 6.8s wall)
+end_to_end         12.7     12.6     16.3     21.0  2400
+saved: benchmarks/results/cpp_tensorrt_nvdec_s8_h264_file_20260919T155116Z.json
+--- batched N=12
+batched streams=12 decoder=nvdec  aggregate=561.7 fps (300 rounds, 6.4s measured, 9.3s wall)
+gather              0.0      0.0      0.0      0.0  300
+inference          18.3     18.2     19.1     23.0  300
+postprocess         0.1      0.1      0.1      0.9  300
+end_to_end         18.4     18.3     19.2     23.1  300
+worker means: decode 1.92 ms, preprocess 1.07 ms
+saved: benchmarks/results/cpp_tensorrt_nvdec_b12_h264_file_20260919T155126Z.json
+--- independent N=12 (phase A design, batch-1 engine)
+streams=12 decoder=nvdec  aggregate=539.3 fps (3600 frames, 10.2s wall)
+end_to_end         19.5     19.3     27.0     42.0  3600
+saved: benchmarks/results/cpp_tensorrt_nvdec_s12_h264_file_20260919T155136Z.json
+== detections: batched N=4 (stream 0) vs single stream on the same clip
+WARNING ⚠️ user config directory '/root/.config/Ultralytics' is not writable, using '/tmp/Ultralytics'. Set YOLO_CONFIG_DIR to override.
+Creating new Ultralytics Settings v0.0.8 file ✅ 
+View Ultralytics Settings with 'yolo settings' or at '/tmp/Ultralytics/settings.json'
+Update Settings with 'yolo settings key=value', i.e. 'yolo settings runs_dir=path/to/dir'. For help see https://docs.ultralytics.com/usage/settings.
+single: 4 detections, batched: 4 detections
+classes equal: True | min IoU 0.998
+== tests
+..............................s                                          [100%]
+30 passed, 1 skipped in 63.24s (0:01:03)
+== done: benchmarks/results/gpu_sprint6b_20260919T153143Z.log

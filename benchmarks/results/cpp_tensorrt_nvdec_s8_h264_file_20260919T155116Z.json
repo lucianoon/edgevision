@@ -1,0 +1,32 @@
+{
+  "timestamp_utc": "20260919T155116Z",
+  "backend": "cpp_tensorrt",
+  "label": "h264_file",
+  "model_path": "models/tensorrt/yolo26n_nms_fp16.engine",
+  "confidence": 0.5,
+  "source": "videos/pedestrian_area_1080p25_h264.mp4",
+  "decoder": "nvdec",
+  "streams": 8,
+  "mode": "independent",
+  "frames": 300,
+  "warmup": 30,
+  "pinned_host_frame": true,
+  "stage_timing": false,
+  "fps": 79.0158,
+  "aggregate_fps": 536.034,
+  "stages": {
+    "decode": {"mean_ms": 0.73358, "p50_ms": 0.193067, "p95_ms": 3.10908, "max_ms": 7.44091, "samples": 2400},
+    "end_to_end": {"mean_ms": 12.6557, "p50_ms": 12.6261, "p95_ms": 16.3287, "max_ms": 20.9822, "samples": 2400}
+  },
+  "per_stream": [
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 4.50527, "sustained_fps": 66.5887, "e2e_mean_ms": 12.7471},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 4.58105, "sustained_fps": 65.4871, "e2e_mean_ms": 12.5955},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 4.35474, "sustained_fps": 68.8905, "e2e_mean_ms": 12.6401},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 4.22742, "sustained_fps": 70.9653, "e2e_mean_ms": 12.4596},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 4.62123, "sustained_fps": 64.9179, "e2e_mean_ms": 12.7426},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 4.31166, "sustained_fps": 69.5788, "e2e_mean_ms": 12.5989},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 4.61191, "sustained_fps": 65.049, "e2e_mean_ms": 12.6678},
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 4.64706, "sustained_fps": 64.557, "e2e_mean_ms": 12.794}
+  ],
+  "environment": {"tensorrt": "10.16.1", "cuda_runtime": "13.2", "gpu": "Tesla T4", "opencv": "4.6.0"}
+}

@@ -23,11 +23,21 @@ names = ast.literal_eval({p.key: p.value for p in model.metadata_props}["names"]
 json.dump(names, open(sys.argv[2], "w"))
 PY
 
+# Dynamic-batch graphs (exported with dynamic=True; file name contains "dyn") get an
+# optimisation profile of 1..MAX_BATCH images; the runtime picks the batch per enqueue.
+SHAPES=()
+if [[ "$STEM" == *dyn* ]]; then
+    MAX_BATCH=${MAX_BATCH:-16}
+    OPT_BATCH=${OPT_BATCH:-8}
+    SHAPES=(--minShapes=images:1x3x640x640 --optShapes=images:${OPT_BATCH}x3x640x640 --maxShapes=images:${MAX_BATCH}x3x640x640)
+    echo "dynamic batch profile: min 1, opt $OPT_BATCH, max $MAX_BATCH"
+fi
+
 build() {
     local precision=$1; shift
     local engine="$OUT_DIR/${STEM}_${precision}.engine"
     echo "== building $engine ($*)"
-    trtexec --onnx="$ONNX" --saveEngine="$engine" "$@" \
+    trtexec --onnx="$ONNX" --saveEngine="$engine" "$@" "${SHAPES[@]}" \
         --warmUp=1000 --duration=15 --avgRuns=100 \
         --exportTimes="$RESULTS_DIR/trtexec_${precision}_${GPU}_${STAMP}_times.json" \
         --exportProfile="$RESULTS_DIR/trtexec_${precision}_${GPU}_${STAMP}_profile.json" \

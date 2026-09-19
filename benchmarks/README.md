@@ -250,3 +250,49 @@ Observations:
 
 Raw reports: `results/cpp_tensorrt_nvdec_s*_h264_file_*`, `results/cpp_tensorrt_nvdec_s*_rtsp_live_*`,
 `results/gpu_sprint6_*.log`, `results/gpu_rtsp_streams_*.log`.
+
+## 2026-09-19 - Sprint 6 (phase B): batched inference across streams
+
+`edgevision_trt --streams N --batched`: N decoder workers letterbox into their slot of
+a shared `Nx3x640x640` input (two ping-pong buffers) and a coordinator runs ONE
+`enqueueV3` per round on a static-batch engine. Same clip, same T4, FP16.
+
+**Export finding.** Ultralytics `export(nms=True, dynamic=True)` produces a graph whose
+NMS only fills image 0 of a batch (ORT: `[bus, zidane] -> [5, 0]` detections); the
+static `export(nms=True, batch=N)` graphs are correct per image (`[5, 3, 5, 3]`). So one
+engine per batch size (`yolo26n_nms_b{4,8,12}_fp16.engine`); `TrtEngine` keeps dynamic
+support for graphs without NMS.
+
+| N  | design      | aggregate FPS | round / e2e mean (ms) | p95  | max  | trtexec batch-N qps x N |
+|---:|-------------|--------------:|----------------------:|-----:|-----:|------------------------:|
+| 4  | independent | 529           | 5.9                   | 7.2  | 8.6  | -                       |
+| 4  | batched     | 552           | 6.2                   | 6.5  | 6.6  | 131 x 4 = 525           |
+| 8  | independent | 536           | 12.7                  | 16.3 | 21.0 | -                       |
+| 8  | batched     | 578           | 11.8                  | 12.4 | 12.9 | 68.4 x 8 = 547          |
+| 12 | independent | 539           | 19.5                  | 27.0 | 42.0 | -                       |
+| 12 | batched     | 562           | 18.4                  | 19.2 | 23.1 | 43.8 x 12 = 526         |
+
+Batched worker means (decode / preprocess): N=4 0.8 / 0.3 ms, N=8 1.5 / 0.5, N=12 1.9 / 1.1;
+`gather` (coordinator waiting for the slowest worker) ~0.0 ms: workers always finish
+before the previous round's inference does. Detections of the batched path match the
+single-stream path (same classes, IoU 0.998).
+
+Observations:
+
+- **Batching buys 4-8% throughput, not a new ceiling.** trtexec itself says why: batch 4,
+  8 and 12 all deliver ~525-550 images/s of GPU compute, the same as batch 1 (~590/s
+  with no other work). yolo26n FP16 on a T4 costs ~1.8 ms of GPU per 1080p->640 image
+  whatever the batch; the phase A result (~540 fps) was already the compute ceiling,
+  not a concurrency artefact.
+- **What batching does buy is predictability**: p95/max latency drops from 16.3/21.0 to
+  12.4/12.9 ms at 8 streams and from 27/42 to 19/23 ms at 12, because one context
+  serialises the work instead of N contexts fighting for the GPU.
+- **Design decision**: keep the simple independent-context design (phase A) as the
+  default; use `--batched` where tail latency matters. To go beyond ~550 1080p frames/s
+  per T4 the model, not the pipeline, has to get cheaper: INT8 (T4 tensor cores, needs
+  calibration), a smaller input (e.g. 512 or 416, ~1.5-2.3x fewer pixels) or a bigger
+  GPU (L4/A10G). That is the next measurable hypothesis.
+
+Raw reports: `results/cpp_tensorrt_nvdec_b*_h264_file_*` (batched),
+`results/cpp_tensorrt_nvdec_s*_h264_file_*` (independent), `results/trtexec_b*_fp16_*.log`,
+`results/gpu_sprint6b_*.log`.

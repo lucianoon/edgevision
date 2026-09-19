@@ -110,6 +110,11 @@ context pipelines on threads and reports per-stream and aggregate throughput.
 `scripts/gpu_rtsp_streams.sh` (host side) does the same against N live RTSP cameras
 from `scripts/rtsp_sim.sh`.
 
-Tesla T4: ~540 frames/s aggregate ceiling with batch-1 contexts (reached at 4 streams);
-12 live 1080p cameras at 25 fps with no drops at 48% GPU. Next lever is batched
-inference across streams (phase B). Details in `benchmarks/README.md`.
+`--batched` (phase B) shares one static-batch engine across the streams (one
+`enqueueV3` per round, ping-pong input buffers); the ONNX must be exported with
+`batch=N` because Ultralytics' dynamic-batch NMS export only fills image 0.
+
+Tesla T4: ~540-580 1080p frames/s aggregate whatever the design (that is the GPU compute
+ceiling of yolo26n FP16, ~1.8 ms/image); batching mainly tightens tail latency (p95
+16 -> 12 ms at 8 streams). 12 live 1080p cameras at 25 fps run with no drops at 48%
+GPU. Details in `benchmarks/README.md`.

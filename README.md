@@ -1,140 +1,127 @@
 # EdgeVision
 
-[![ci](https://github.com/lucianoon/edgevision/actions/workflows/ci.yml/badge.svg)](https://github.com/lucianoon/edgevision/actions/workflows/ci.yml) MIT License
+[![ci](https://github.com/lucianoon/edgevision/actions/workflows/ci.yml/badge.svg)](https://github.com/lucianoon/edgevision/actions/workflows/ci.yml)
+![license](https://img.shields.io/badge/license-MIT-green)
+![tensorrt](https://img.shields.io/badge/TensorRT-10.16-76b900)
+![cuda](https://img.shields.io/badge/CUDA-13.2-76b900)
 
-Real-time object detection pipeline, evolved in stages:
-PyTorch baseline -> ONNX Runtime -> TensorRT (FP32/FP16) -> C++ runtime -> NVDEC/RTSP -> multi-stream -> accuracy vs speed (INT8, input size) -> tracking -> Jetson.
+**Real-time multi-camera object detection and tracking, taken from a PyTorch notebook-style
+baseline to a C++/CUDA runtime, one measured step at a time.** Every stage of the journey has
+a benchmark, a test and a written conclusion, so each optimisation is justified by the
+bottleneck the previous measurement exposed.
 
-## Setup
+![ByteTrack on the pedestrian clip](docs/tracking_frame.jpg)
 
-Python 3.12 (pinned in `.python-version`). Python 3.11.0rc1 and 3.13+ break
-torch / TLS on this machine.
+## Highlights (Tesla T4, 1080p H.264, YOLO26n)
 
-```powershell
-uv venv --python 3.12 .venv
-uv pip install --python .venv\Scripts\python.exe -r requirements.txt
+| what | result |
+|---|---|
+| End-to-end latency per frame (decode on NVDEC, CUDA pre-processing, TensorRT FP16, NMS in graph, tracking) | **2.0 ms + 0.4 ms decode wait** |
+| Aggregate throughput, 12 independent streams | **675 frames/s** (compute ceiling of the model on this GPU) |
+| Live RTSP cameras at 25 fps with zero dropped frames | **12 tested**, ~27 extrapolated, GPU at 48% |
+| Accuracy on COCO val2017 (mAP50-95) | 0.404 @ 640 (matches the published figure), **0.378 @ 512** (production default) |
+| Speed-up vs the Python/PyTorch baseline on the same GPU | 12.4 ms -> 2.0 ms per frame (**6x**); vs the CPU baseline 48 ms (**24x**) |
+| Tracking cost (ByteTrack, C++, dependency-free) | tens of microseconds per frame |
+| Total cloud spend for all GPU measurements | about **US$ 8** (g4dn.xlarge, auto-stopped, zero-cost standby) |
+
+## Architecture
+
+```
+ RTSP / file ──► NVDEC (FFmpeg CUDA hwaccel) ──► NV12 frame in GPU memory
+                                                      │
+                             CUDA kernel: letterbox + BT.601 -> RGB + /255 + NCHW
+                                                      │  (writes straight into the engine input)
+                             TensorRT 10 engine, FP16 @ 512, NMS inside the graph
+                                                      │  1 x 300 x 6  (x1 y1 x2 y2 score class)
+                             D2H 7 KB ──► rescale ──► ByteTrack (Kalman + Hungarian, 2 passes)
+                                                      │
+                                              tracks: id, box, class, score  (JSONL / video)
+
+ N streams: one decoder + one execution context per thread (default), or --batched:
+ workers fill slots of a ping-pong N x 3 x S x S buffer and one enqueueV3 serves all.
 ```
 
-## Run
+Python (`python/edgevision/`) holds the reference implementation and the benchmark harness;
+C++ (`cpp/`) holds the production runtime. Both share the same `Detection` contract and are
+checked against each other by parity tests.
 
-```powershell
-.venv\Scripts\Activate.ps1
-$env:PYTHONPATH = "python"
-python -m edgevision.main                                  # webcam 0, backend from configs/app.yaml
-python -m edgevision.main --backend onnx --source video.mp4
-python -m edgevision.main --no-display --max-frames 100
-pytest
+## The journey, in measurements
+
+| sprint | step | key number on the T4 | what it taught |
+|---|---|---|---|
+| 1 | PyTorch/Ultralytics baseline, webcam, FPS counter | 48 ms/frame on a laptop CPU | Warm-up matters: the first figure (155 ms) was noise |
+| 2 | Own letterbox + decode + NMS, ONNX Runtime, per-stage metrics | 45 ms (CPU) | Without stage timing you cannot tell where the time goes |
+| 3 | TensorRT FP32/FP16 via `trtexec`, Python runtime, GPU box as code | 9.3 ms, 108 fps | FP16 halves GPU time but the frame barely moves: CPU pre/post-processing is 55% |
+| 4 prep | NMS inside the graph, real 1080p clip | 7.6 ms, 131 fps | NMS on the GPU is free; pre-processing is now 42% |
+| 4 | C++ runtime with a CUDA letterbox kernel, pinned frames | 3.0 ms, 332 fps | Pre-processing 3.5 -> 1.1 ms; CPU video decode is next |
+| 5 | NVDEC through libav, RTSP camera simulator | 2.0 ms + 0.4 ms decode, ~415 fps | The frame never touches the CPU; one 25 fps camera uses ~6% of the GPU |
+| 6A | N independent streams, live RTSP sweep | 540 fps aggregate ceiling; 12 cameras at 48% GPU | Latency grows 1.6 ms per extra stream; NVDEC is not the limit |
+| 6B | Batched inference (static-batch engines, ping-pong buffers) | 552-578 fps (+4-8%) | Batching only tightens tail latency: the model's compute is the ceiling |
+| 7 | Accuracy vs speed: input size and INT8, mAP on COCO | 512: +27% throughput for -2.6 mAP; INT8: -3.5 mAP, unbuildable with NMS | Resolution is the cheap lever; INT8 PTQ hurts a nano model |
+| 8 | ByteTrack in C++ | tracking ~0 ms; 45 ids / 300 frames | Fewer, longer tracks than Ultralytics' defaults by threshold choice; IoU-only handovers exist |
+
+Full tables, raw JSON reports and observations: [`benchmarks/README.md`](benchmarks/README.md).
+Every GPU run wrote its report to `benchmarks/results/`, versioned.
+
+## Repository layout
+
+```
+python/edgevision/   detector.py (Ultralytics), onnx_detector.py, tensorrt_detector.py,
+                     preprocess.py, postprocess.py (decode + NMS), factory.py, metrics.py,
+                     benchmark.py, main.py
+cpp/                 CMake project: letterbox.cu, trt_engine.cpp, video_decoder.cpp (NVDEC),
+                     detector.cpp, batch_pipeline.cpp, tracker.cpp, main.cpp; CTests
+scripts/             ONNX/engine exports, COCO mAP evaluation, tracking reference,
+                     gpu_sprint*.sh (one reproducible measurement per sprint)
+scripts/aws/         deploy / resume / standby / run / sync for the GPU box
+infra/               CloudFormation for the GPU box, scoped IAM policy, cost notes
+docker/              TensorRT container (NGC 26.04 + OpenCV, libav, CMake)
+benchmarks/          README with every result, results/*.json reports and logs
+tests/               pytest: pre/post-processing, parity between backends, C++ runtime
+configs/             app.yaml (backend, engine paths), COCO val/calibration yaml
 ```
 
-Weights (`yolo26n.pt`) are downloaded by Ultralytics on first run into `models/pytorch/`.
+## Reproduce
 
-## Backends
-
-| backend   | inference          | pre/post-processing            |
-|-----------|--------------------|--------------------------------|
-| `pytorch` | Ultralytics `predict()` | inside Ultralytics (opaque) |
-| `onnx`    | ONNX Runtime       | ours: `preprocess.py` (letterbox), `postprocess.py` (decode + NMS) |
-| `tensorrt`| TensorRT engine (`tensorrt_detector.py`, TensorRT 10 API + cuda-python) | same as `onnx` |
-| C++ `cpp/` | TensorRT 10 C++ API (`edgevision_trt`) | CUDA letterbox kernel, NMS in the graph |
-
-Export the ONNX graph (static `1x3x640x640`, opset 17, output `1x84x8400`):
-
-```powershell
-python scripts/export_onnx.py
-```
-
-## Benchmark
-
-```powershell
-python -m edgevision.benchmark --backend pytorch --frames 100
-python -m edgevision.benchmark --backend onnx --frames 100
-```
-
-Prints mean / p50 / p95 / max per stage (decode, preprocess, inference,
-postprocess, end_to_end) and writes a JSON report with environment details to
-`benchmarks/results/`. Results in `benchmarks/README.md`.
-
-## TensorRT (Sprint 3)
-
-Needs an NVIDIA GPU. This laptop has none, so engines are built and measured on an
-EC2 GPU box defined in `infra/gpu-dev.yaml`; see `infra/README.md` for the workflow.
-`scripts/build_engine.sh` builds FP32 and FP16 engines with `trtexec` from the ONNX
-export and keeps trtexec's own timing reports in `benchmarks/results/`;
-`scripts/gpu_sprint3.sh` runs the whole measurement inside the container.
-
-First results on a Tesla T4 (end-to-end per frame, mean): PyTorch CUDA 12.4 ms,
-ONNX Runtime CUDA 11.3 ms, TensorRT FP32 10.6 ms, TensorRT FP16 9.3 ms (108 FPS).
-GPU compute for FP16 is 1.7 ms; CPU-side letterbox + NMS now dominate the frame.
-Details in `benchmarks/README.md`.
-
-### NMS inside the graph (Sprint 4 prep)
-
-`python scripts/export_onnx.py` exports the raw head; adding NMS to the graph
-(`YOLO(...).export(format="onnx", nms=True, conf=0.5, iou=0.45)`) gives a `1x300x6`
-output that `postprocess.py` recognises by shape and decodes without running NMS.
-On the T4 with a real 1080p clip this took TensorRT FP16 from 9.5 to 7.6 ms per frame
-(131 FPS); `configs/app.yaml` now points at the NMS graphs. Benchmark clips and their
-licenses: `videos/README.md`.
-
-## C++ runtime (Sprint 4)
-
-`cpp/` holds a CMake project (C++17 + CUDA, TensorRT 10, OpenCV) that reproduces the
-detector with a CUDA letterbox kernel writing straight into the engine input and an
-engine with NMS in the graph, so there is no CPU post-processing. It builds inside the
-TensorRT container on the GPU box (`scripts/gpu_sprint4.sh`), has a CTest for the kernel
-and a pytest parity check against the Python ONNX path.
+**CPU only (what the CI runs, ~1 min):**
 
 ```bash
-cmake -S cpp -B cpp/build -G Ninja -DCMAKE_CUDA_ARCHITECTURES=75   # T4; Orin = 87
-cmake --build cpp/build && (cd cpp/build && ctest)
-cpp/build/edgevision_trt --engine models/tensorrt/yolo26n_nms_fp16.engine     --source videos/pedestrian_area_1080p25.webm --frames 300 --warmup 30
+uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.txt
+python scripts/export_onnx.py && python scripts/export_onnx.py --nms
+pytest -q
+PYTHONPATH=python python -m edgevision.benchmark --backend onnx --source <video>
 ```
 
-Tesla T4, 1080p clip: 3.0 ms per frame end-to-end (332 FPS) vs 8.4 ms for the Python
-TensorRT path on the same engine. Details in `benchmarks/README.md`.
+**GPU (any machine with an NVIDIA GPU and Docker; the repo used an EC2 g4dn.xlarge):**
 
-## Hardware decode and RTSP (Sprint 5)
+```bash
+docker build -f docker/Dockerfile.tensorrt -t edgevision:trt .
+docker run --rm --gpus all --ipc=host -v $PWD:/workspace/edgevision edgevision:trt scripts/gpu_sprint8.sh
+```
 
-`edgevision_trt --decoder nvdec` decodes with NVDEC through FFmpeg's CUDA hwaccel; the
-NV12 frame stays on the GPU and `letterbox_nv12_cuda` feeds the engine directly. Files
-and RTSP/RTMP/HTTP URLs work alike (`--source rtsp://...`). The container must expose
-NVDEC (`NVIDIA_DRIVER_CAPABILITIES=compute,utility,video`, set in the Dockerfile).
-`scripts/rtsp_sim.sh` runs a MediaMTX + ffmpeg camera simulator on the host.
+`infra/README.md` documents the AWS workflow used here: CloudFormation stack, SSM-only
+access, and a zero-cost standby that removes the instance and its disk between sessions.
 
-Tesla T4, 1080p H.264: 2.0 ms end-to-end + 0.4 ms decode wait per frame (~415 FPS
-sustained for one stream) vs 3.7 + 2.9 ms with CPU decode. Details in `benchmarks/README.md`.
+## Engineering practices worth noting
 
-## Multiple streams per GPU (Sprint 6, phase A)
+- **Measure before optimising**: each sprint states a hypothesis, the bottleneck it targets and
+  the number it moved. Two hypotheses were rejected by their own measurements (batching, INT8).
+- **Tests at every layer**: unit tests for the CUDA kernels (against an OpenCV reference), the
+  tracker (synthetic scenes with known identities) and the Python pipeline; parity tests
+  between PyTorch, ONNX Runtime, TensorRT and the C++ runtime; CI on every push.
+- **Infrastructure as code with cost guards**: the GPU box is a CloudFormation template with
+  an uptime cap and a standby script; total spend for the whole project was about US$ 8.
+- **Findings reported upstream-ready**: Ultralytics' dynamic-batch NMS export only fills the
+  first image of a batch; TensorRT cannot build INT8 for the NMS-in-graph export.
 
-`edgevision_trt --streams N [--source ...]...` runs N independent decoder + TensorRT
-context pipelines on threads and reports per-stream and aggregate throughput.
-`scripts/gpu_sprint6.sh` sweeps N on a file source with GPU/NVDEC utilisation sampling;
-`scripts/gpu_rtsp_streams.sh` (host side) does the same against N live RTSP cameras
-from `scripts/rtsp_sim.sh`.
+## Limitations and next steps
 
-`--batched` (phase B) shares one static-batch engine across the streams (one
-`enqueueV3` per round, ping-pong input buffers); the ONNX must be exported with
-`batch=N` because Ultralytics' dynamic-batch NMS export only fills image 0.
+- Detects the 80 COCO classes; no faces, plates or behaviour. The natural next layer is rules
+  over tracks (zones, counting, dwell time, alerts) and an event output.
+- Identity handovers can happen when tracks cross (IoU-only association); appearance
+  embeddings (BoT-SORT) would fix that where id purity matters.
+- Not yet ported to Jetson: engines are GPU-specific and the aarch64 build needs the device.
 
-Tesla T4: ~540-580 1080p frames/s aggregate whatever the design (that is the GPU compute
-ceiling of yolo26n FP16, ~1.8 ms/image); batching mainly tightens tail latency (p95
-16 -> 12 ms at 8 streams). 12 live 1080p cameras at 25 fps run with no drops at 48%
-GPU. Details in `benchmarks/README.md`.
+## License
 
-## Accuracy vs speed (Sprint 7)
-
-`scripts/get_coco_val.sh` + `scripts/eval_map.py` measure COCO mAP; `scripts/export_engines_ultralytics.py`
-exports FP16/INT8 engines at several input sizes (INT8 calibrated on a disjoint split). On the
-T4: 640 -> 512 buys +27% throughput for -2.6 mAP50-95 points; INT8 PTQ costs ~3.5 points at any
-size and cannot be built with NMS in the graph. Production default: **FP16 at 512**. Details in
-`benchmarks/README.md`.
-
-## Tracking (Sprint 8)
-
-`edgevision_trt --track` adds a dependency-free ByteTrack per stream (Kalman + Hungarian,
-two-pass association, lost buffer, class-aware) at no measurable cost: 2.0 ms per frame with
-tracking vs 1.9 without, 677 fps aggregate on 12 streams. Use an engine exported with conf
-0.1 (`scripts/export_engines_ultralytics.py --conf 0.1`) so low-score detections feed the
-second pass. `--render out.mp4` writes an annotated video, `--dump-tracks f.jsonl` the
-tracks; `scripts/track_stats.py` and `scripts/track_reference.py` compare with Ultralytics'
-ByteTrack. Details in `benchmarks/README.md`.
+MIT. Benchmark clips are CC0 / CC BY (see `videos/README.md`) and are not part of the repository.

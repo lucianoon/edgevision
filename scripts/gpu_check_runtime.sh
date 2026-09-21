@@ -12,7 +12,8 @@ ENGINE=${ENGINE:-models/tensorrt/yolo26n_nms_512_fp16.engine}
 ENGINE_640=models/tensorrt/yolo26n_nms_fp16.engine
 ENGINE_TRACK=models/tensorrt/yolo26n_nms_512_fp16_c10.engine
 ENGINE_B4=models/tensorrt/yolo26n_nms_b4_fp16.engine
-BUS=$(python3 -c "from ultralytics.utils import ASSETS; print(ASSETS / 'bus.jpg')")
+# stdout only, last line: Ultralytics may print settings warnings on first import
+BUS=$(YOLO_CONFIG_DIR=/tmp python3 -c "from ultralytics.utils import ASSETS; print(ASSETS / 'bus.jpg')" 2>/dev/null | tail -1)
 OUT=benchmarks/results
 TMP=$(mktemp -d)
 LOG=$OUT/gpu_check_runtime_$(date -u +%Y%m%dT%H%M%SZ).log
@@ -28,7 +29,7 @@ check() {  # check <name> <command...>: runs, records pass/fail, never aborts th
 step "environment"
 nvidia-smi --query-gpu=name,driver_version --format=csv,noheader
 cmake --version | head -1; nvcc --version | tail -1
-git -C . log --oneline -1
+git log --oneline -1 2>/dev/null || echo "(synced tree has no .git; see the commit named in the sync-up log)"
 ls models/tensorrt/*.engine 2>/dev/null || echo "no engines in models/tensorrt"
 [ -f "$CLIP" ] || ffmpeg -hide_banner -loglevel error -y -i videos/pedestrian_area_1080p25.webm -c:v libx264 -preset fast -crf 20 -pix_fmt yuv420p -an "$CLIP"
 

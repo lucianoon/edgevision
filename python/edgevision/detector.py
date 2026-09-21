@@ -65,7 +65,7 @@ class YoloDetector:
         if result.boxes is None or len(result.boxes) == 0:
             return []
 
-        boxes = result.boxes.numpy()
+        boxes = result.boxes.cpu().numpy()  # tensors live on the GPU when device is cuda
         xyxy = np.asarray(boxes.xyxy, dtype=np.float64)
         class_ids = np.asarray(boxes.cls, dtype=np.int64)
         confidences = np.asarray(boxes.conf, dtype=np.float64)

@@ -86,8 +86,7 @@ Notes learned on the first run (2026-09-18):
   `newline="
 "`; a CRLF shell script on the box fails with
   `set: pipefail: invalid option name`. `git ls-files --eol | grep w/crlf` finds them
-  (Git Bash's `grep $'
-'` does not).
+  (Git Bash's `grep $''` does not).
 - Keep remote logic in scripts inside the repo (`scripts/gpu_*.sh`) and call them with
   `run.sh 'bash scripts/x.sh'`; inline multi-line commands lose `$VAR`/`$!` through the
   sudo / SSM quoting layers.

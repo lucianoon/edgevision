@@ -15,7 +15,7 @@ benchmarks/results/*
 # raw per-iteration trtexec timings (MBs); the .log keeps the summary
 benchmarks/results/*_times.json
 runs/
-cpp/build/
+cpp/build*/
 datasets/
 # model files accidentally produced at the repo root
 /*.pt

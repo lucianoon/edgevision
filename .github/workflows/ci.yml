@@ -69,7 +69,7 @@ jobs:
       - name: mypy
         run: python -m mypy
 
-      - name: Tests (coverage floor 80%, TensorRT path excluded: GPU only)
+      - name: Tests (coverage floor 80%; the TensorRT path is GPU-only and excluded)
         run: python -m pytest -q -rs --cov --cov-report=term-missing --cov-fail-under=80
 
       - name: Smoke run (headless, still image, both backends, installed console script)

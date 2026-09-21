@@ -50,6 +50,7 @@ jobs:
           # torchvision.ops.nms) and at the versions the lock pins, so the lock never pulls the CUDA build.
           python -m pip install $(grep -E '^(torch|torchvision)==' requirements.lock) --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -r requirements.lock -r requirements-dev.txt
+          python -m pip install -e . --no-deps
 
       - name: Cache model files (weights + exports)
         uses: actions/cache@v4
@@ -68,12 +69,10 @@ jobs:
       - name: mypy
         run: python -m mypy
 
-      - name: Tests
-        run: python -m pytest -q -rs
+      - name: Tests (coverage floor 80%, TensorRT path excluded: GPU only)
+        run: python -m pytest -q -rs --cov --cov-report=term-missing --cov-fail-under=80
 
-      - name: Smoke run (headless, still image, both backends)
-        env:
-          PYTHONPATH: python
+      - name: Smoke run (headless, still image, both backends, installed console script)
         run: |
           python - <<'EOF'
           import cv2
@@ -83,8 +82,8 @@ jobs:
           for _ in range(20): w.write(img)
           w.release()
           EOF
-          python -m edgevision.main --backend pytorch --source videos/ci.mp4 --no-display --max-frames 10
-          python -m edgevision.main --backend onnx --source videos/ci.mp4 --no-display --max-frames 10
+          edgevision --backend pytorch --source videos/ci.mp4 --no-display --max-frames 10
+          edgevision --backend onnx --source videos/ci.mp4 --no-display --max-frames 10
 
   cpp-cpu:
     # The GPU runtime needs TensorRT and is built on the GPU box (scripts/gpu_sprint*.sh).

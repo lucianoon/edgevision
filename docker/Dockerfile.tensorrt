@@ -6,6 +6,7 @@ FROM nvcr.io/nvidia/tensorrt:${TRT_TAG}-py3
 
 # 'video' exposes libnvcuvid (NVDEC) to the container; compute,utility are the defaults.
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
+# The repo is bind-mounted at run time (not copied), so PYTHONPATH stands in for `pip install -e .`.
 ENV PYTHONPATH=/workspace/edgevision/python \
     PIP_NO_CACHE_DIR=1 \
     DEBIAN_FRONTEND=noninteractive

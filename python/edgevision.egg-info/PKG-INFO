@@ -1,3 +1,31 @@
+Metadata-Version: 2.4
+Name: edgevision
+Version: 0.1.0
+Summary: Real-time multi-camera object detection and tracking: PyTorch -> ONNX -> TensorRT -> C++/CUDA
+License-Expression: MIT
+Project-URL: Repository, https://github.com/lucianoon/edgevision
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: ultralytics
+Requires-Dist: opencv-python
+Requires-Dist: numpy
+Requires-Dist: pyyaml
+Requires-Dist: onnx
+Requires-Dist: onnxruntime
+Requires-Dist: psutil
+Provides-Extra: export
+Requires-Dist: onnxslim; extra == "export"
+Provides-Extra: gpu
+Requires-Dist: onnxruntime-gpu; extra == "gpu"
+Requires-Dist: cuda-python; extra == "gpu"
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+Requires-Dist: ruff; extra == "dev"
+Requires-Dist: mypy; extra == "dev"
+Dynamic: license-file
+
 # EdgeVision
 
 [![ci](https://github.com/lucianoon/edgevision/actions/workflows/ci.yml/badge.svg)](https://github.com/lucianoon/edgevision/actions/workflows/ci.yml)
@@ -70,8 +98,7 @@ Every GPU run wrote its report to `benchmarks/results/`, versioned.
 ## Repository layout
 
 ```
-python/edgevision/   pip-installable package (`edgevision`, `edgevision-benchmark` commands):
-                     detector.py (Ultralytics), onnx_detector.py, tensorrt_detector.py,
+python/edgevision/   detector.py (Ultralytics), onnx_detector.py, tensorrt_detector.py,
                      preprocess.py, postprocess.py (decode + NMS), factory.py, metrics.py,
                      benchmark.py, main.py
 cpp/                 CMake project: letterbox.cu, trt_engine.cpp, video_decoder.cpp (NVDEC),
@@ -92,10 +119,10 @@ configs/             app.yaml (backend, engine paths), COCO val/calibration yaml
 **CPU only (what the CI runs, ~1 min):**
 
 ```bash
-uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.lock -e .  # pinned deps + the package
+uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.lock  # pinned; requirements.txt is the unpinned list
 python scripts/export_onnx.py && python scripts/export_onnx.py --nms
 pytest -q
-edgevision-benchmark --backend onnx --source <video>   # or: edgevision --backend onnx --source 0
+PYTHONPATH=python python -m edgevision.benchmark --backend onnx --source <video>
 ```
 
 **GPU (any machine with an NVIDIA GPU and Docker; the repo used an EC2 g4dn.xlarge):**

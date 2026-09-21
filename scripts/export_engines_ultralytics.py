@@ -43,7 +43,8 @@ def export_one(weights: str, imgsz: int, precision: str, nms: bool, data: str, f
         )
     )
     seconds = time.perf_counter() - t0
-    stem = f"{Path(weights).stem}_{'nms_' if nms else 'raw_'}{imgsz}_{precision}"
+    conf_tag = "" if (not nms or abs(conf - 0.5) < 1e-6) else f"_c{int(round(conf * 100)):02d}"
+    stem = f"{Path(weights).stem}_{'nms_' if nms else 'raw_'}{imgsz}_{precision}{conf_tag}"
     target = out_dir / f"{stem}.engine"
     shutil.move(str(exported), str(target))
     names_path = out_dir / f"{stem}.names.json"
@@ -75,7 +76,8 @@ def main():
     for imgsz in args.imgsz:
         for precision in args.precision:
             for family in args.families:
-                target = out_dir / f"{Path(args.weights).stem}_{family}_{imgsz}_{precision}.engine"
+                conf_tag = "" if (family == "raw" or abs(args.conf - 0.5) < 1e-6) else f"_c{int(round(args.conf * 100)):02d}"
+                target = out_dir / f"{Path(args.weights).stem}_{family}_{imgsz}_{precision}{conf_tag}.engine"
                 if target.exists():
                     print(f"exists: {target}")
                     continue

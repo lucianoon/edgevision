@@ -28,10 +28,13 @@
 #include <thread>
 #include <vector>
 
+#include <opencv2/imgproc.hpp>
+
 #include "edgevision/batch_pipeline.hpp"
 #include "edgevision/detector.hpp"
 #include "edgevision/metrics.hpp"
 #include "edgevision/names.hpp"
+#include "edgevision/tracker.hpp"
 #include "edgevision/video_decoder.hpp"
 
 using namespace edgevision;
@@ -53,6 +56,11 @@ struct Args {
     bool pinned = true;
     bool stage_timing = true;
     bool batched = false;  // phase B: one batch-N inference per round for all streams
+    bool track = false;    // Sprint 8: ByteTrack per stream
+    float track_thresh = 0.5f;
+    int track_buffer = 30;
+    std::string dump_tracks;  // JSONL of stream 0's tracks for the measured frames
+    std::string render;       // annotated video (opencv decoder only)
 };
 
 Args parse_args(int argc, char** argv) {
@@ -77,11 +85,18 @@ Args parse_args(int argc, char** argv) {
         else if (k == "--no-pinned") a.pinned = false;
         else if (k == "--no-stage-timing") a.stage_timing = false;
         else if (k == "--batched") a.batched = true;
+        else if (k == "--track") a.track = true;
+        else if (k == "--track-thresh") a.track_thresh = std::stof(next("--track-thresh"));
+        else if (k == "--track-buffer") a.track_buffer = std::stoi(next("--track-buffer"));
+        else if (k == "--dump-tracks") a.dump_tracks = next("--dump-tracks");
+        else if (k == "--render") a.render = next("--render");
         else if (k == "--help" || k == "-h") {
             std::cout << "usage: edgevision_trt --engine E [--source S]... [--decoder opencv|nvdec] [--streams N] [--batched]\n"
                          "       [--frames N] [--warmup N] [--label L] [--names names.json] [--out report.json]\n"
                          "       [--dump-detections dets.json] [--confidence 0.5] [--no-pinned] [--no-stage-timing]\n"
-                         "  --batched: all streams share one batch-N engine (engine exported with batch=N)\n";
+                         "  --batched: all streams share one batch-N engine (engine exported with batch=N)\n"
+                         "  --track [--track-thresh 0.5] [--track-buffer 30] [--dump-tracks f.jsonl] [--render out.mp4]\n"
+                         "           ByteTrack per stream; use an engine exported with conf 0.1 so weak detections exist\n";
             std::exit(0);
         } else throw std::runtime_error("unknown argument: " + k);
     }
@@ -89,7 +104,29 @@ Args parse_args(int argc, char** argv) {
     if (a.sources.empty()) a.sources.push_back("videos/pedestrian_area_1080p25.webm");
     if (a.decoder != "opencv" && a.decoder != "nvdec") throw std::runtime_error("--decoder must be opencv or nvdec");
     if (a.streams < 1) throw std::runtime_error("--streams must be >= 1");
+    if (!a.render.empty() && a.decoder != "opencv") throw std::runtime_error("--render needs --decoder opencv (host frames)");
+    if (!a.render.empty() && !a.track) a.track = true;
     return a;
+}
+
+void draw_tracks(cv::Mat& frame, const std::vector<Track>& tracks) {
+    for (const auto& t : tracks) {
+        const cv::Scalar color((t.id * 67) % 256, (t.id * 131) % 256, (t.id * 197) % 256);
+        cv::rectangle(frame, cv::Point(int(t.x1), int(t.y1)), cv::Point(int(t.x2), int(t.y2)), color, 2);
+        const std::string label = "#" + std::to_string(t.id) + " " + t.class_name;
+        cv::putText(frame, label, cv::Point(int(t.x1), std::max(int(t.y1) - 6, 14)), cv::FONT_HERSHEY_SIMPLEX, 0.55,
+                    color, 2);
+    }
+}
+
+void dump_tracks_line(std::ofstream& f, int frame, const std::vector<Track>& tracks) {
+    f << "{\"frame\": " << frame << ", \"tracks\": [";
+    for (size_t i = 0; i < tracks.size(); ++i) {
+        const auto& t = tracks[i];
+        f << (i ? ", " : "") << "{\"id\": " << t.id << ", \"x1\": " << t.x1 << ", \"y1\": " << t.y1 << ", \"x2\": " << t.x2
+          << ", \"y2\": " << t.y2 << ", \"score\": " << t.score << ", \"class_name\": \"" << t.class_name << "\"}";
+    }
+    f << "]}\n";
 }
 
 std::string utc_stamp() {
@@ -124,15 +161,42 @@ struct StreamResult {
     double measured_seconds = 0.0;  // wall time of the measured frames (after warm-up)
     std::string source;
     std::string error;
+    int index = 0;
+    int unique_track_ids = 0;
 };
 
 void run_stream(const Args& args, const std::map<int, std::string>& names, StreamResult& result) {
     PerformanceMetrics& metrics = result.metrics;
     TensorRTDetector detector(args.engine, args.confidence, names, args.stage_timing ? &metrics : nullptr);
 
+    TrackerParams tp;
+    tp.track_thresh = args.track_thresh;
+    tp.track_buffer = args.track_buffer;
+    ByteTracker tracker(tp);
+    std::ofstream dump;
+    if (args.track && result.index == 0 && !args.dump_tracks.empty()) dump.open(args.dump_tracks);
+    cv::VideoWriter writer;
+
     int processed = 0;
     const int total = args.warmup + args.frames;
     std::chrono::steady_clock::time_point measure_start;
+    // Tracking runs inside the end-to-end window (it is part of the frame's work) and is
+    // also timed on its own as the "tracking" stage.
+    auto track_step = [&](std::vector<Detection>& dets, cv::Mat* host_frame) {
+        if (!args.track) return;
+        std::vector<Track> tracks;
+        {
+            ScopedTimer t(metrics, "tracking");
+            tracks = tracker.update(dets);
+        }
+        if (dump.is_open() && processed >= args.warmup) dump_tracks_line(dump, processed - args.warmup + 1, tracks);
+        if (host_frame && !args.render.empty()) {
+            if (!writer.isOpened())
+                writer.open(args.render, cv::VideoWriter::fourcc('m', 'p', '4', 'v'), 25.0, host_frame->size());
+            draw_tracks(*host_frame, tracks);
+            writer.write(*host_frame);
+        }
+    };
     auto account = [&](std::vector<Detection>& dets) {
         metrics.count_frame();
         ++processed;
@@ -161,6 +225,7 @@ void run_stream(const Args& args, const std::map<int, std::string>& names, Strea
             {
                 ScopedTimer t(metrics, PerformanceMetrics::kEndToEnd);
                 dets = detector.detect(gpu);  // synchronises before returning: frame can be recycled
+                track_step(dets, nullptr);
             }
             account(dets);
         }
@@ -204,12 +269,15 @@ void run_stream(const Args& args, const std::map<int, std::string>& names, Strea
             {
                 ScopedTimer t(metrics, PerformanceMetrics::kEndToEnd);
                 dets = detector.detect(frame);
+                track_step(dets, &frame);
             }
             account(dets);
         }
     }
     result.measured_seconds =
         std::chrono::duration<double>(std::chrono::steady_clock::now() - measure_start).count();
+    result.unique_track_ids = args.track ? tracker.next_id() - 1 : 0;
+    if (writer.isOpened()) writer.release();
 }
 
 void print_table(const char* title, const PerformanceMetrics& m) {
@@ -247,6 +315,7 @@ void write_report(const Args& a, const std::vector<StreamResult>& streams, const
     f << "  \"decoder\": \"" << a.decoder << "\",\n";
     f << "  \"streams\": " << a.streams << ",\n";
     f << "  \"mode\": \"" << (a.batched ? "batched" : "independent") << "\",\n";
+    f << "  \"tracking\": " << (a.track ? "true" : "false") << ",\n";
     f << "  \"frames\": " << a.frames << ",\n";
     f << "  \"warmup\": " << a.warmup << ",\n";
     f << "  \"pinned_host_frame\": " << (a.pinned ? "true" : "false") << ",\n";
@@ -290,7 +359,10 @@ int main(int argc, char** argv) try {
     const auto names = args.names.empty() ? load_class_names_for_engine(args.engine) : load_class_names(args.names);
 
     std::vector<StreamResult> results(args.streams);
-    for (int i = 0; i < args.streams; ++i) results[i].source = args.sources[i % args.sources.size()];
+    for (int i = 0; i < args.streams; ++i) {
+        results[i].source = args.sources[i % args.sources.size()];
+        results[i].index = i;
+    }
 
     const auto wall_start = std::chrono::steady_clock::now();
     if (args.batched) {
@@ -364,6 +436,9 @@ int main(int argc, char** argv) try {
         if (r.measured_seconds > 0) aggregate_fps += r.metrics.frame_count() / r.measured_seconds;
     }
 
+    if (args.track)
+        std::printf("tracking: %d unique ids on stream 0 over %d frames%s\n", results[0].unique_track_ids,
+                    args.warmup + args.frames, args.dump_tracks.empty() ? "" : (" -> " + args.dump_tracks).c_str());
     if (args.streams == 1) {
         print_table("backend=cpp_tensorrt", merged);
     } else {

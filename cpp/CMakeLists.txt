@@ -32,6 +32,7 @@ add_library(edgevision_core STATIC
   src/trt_engine.cpp
   src/detector.cpp
   src/batch_pipeline.cpp
+  src/tracker.cpp
   src/video_decoder.cpp
   src/metrics.cpp
   src/names.cpp)
@@ -52,3 +53,6 @@ add_test(NAME letterbox COMMAND test_letterbox)
 add_executable(test_nv12 tests/test_nv12.cpp)
 target_link_libraries(test_nv12 PRIVATE edgevision_core)
 add_test(NAME nv12 COMMAND test_nv12)
+add_executable(test_tracker tests/test_tracker.cpp)
+target_link_libraries(test_tracker PRIVATE edgevision_core)
+add_test(NAME tracker COMMAND test_tracker)

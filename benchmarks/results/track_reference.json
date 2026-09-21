@@ -1,0 +1,12 @@
+{
+  "tracker": "ultralytics-bytetrack",
+  "source": "videos/pedestrian_area_1080p25.webm",
+  "frames": 300,
+  "imgsz": 512,
+  "conf": 0.1,
+  "unique_ids": 85,
+  "mean_track_length_frames": 25.6,
+  "tracks_per_frame": 7.25,
+  "high_conf_dets_per_frame": 5.83,
+  "tracks_longer_than_2s": 15
+}

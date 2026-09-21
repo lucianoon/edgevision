@@ -5,6 +5,12 @@ versions follow [Semantic Versioning](https://semver.org/). Measurements live in
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-21
+
+Quality hardening: no change to what the runtime measures; the repository becomes buildable, testable and
+reviewable by others. Validated on the T4 with `scripts/gpu_check_runtime.sh` (build, CTests, both decoders,
+multi-stream, batched, tracking, parity tests).
+
 ### Added
 - `edgevision` is a pip-installable package with `edgevision` and `edgevision-benchmark` console scripts.
 - `requirements.lock` (exact CPU environment) and `requirements-dev.txt`; the CI installs from them.
@@ -13,6 +19,7 @@ versions follow [Semantic Versioning](https://semver.org/). Measurements live in
 - CI gates: ruff (lint + format), mypy, shellcheck, pytest coverage floor (80%), clang-format, clang-tidy.
 - Unit tests for the Python frame loop, benchmark loop, video source and factory (coverage 96%).
 - `CONTRIBUTING.md`, this changelog, Dependabot, pre-commit and EditorConfig.
+- `scripts/gpu_check_runtime.sh`: build-and-smoke check of the C++ runtime on the GPU box.
 
 ### Changed
 - ONNX graphs and TensorRT engines now define the pre-processing size; `image_size` in `app.yaml`
@@ -49,5 +56,6 @@ input and YOLO26n; raw reports are in `benchmarks/results/`.
   tens of microseconds per frame; tracking demo and annotated frame.
 - MIT license; GitHub Actions CI for the CPU path.
 
-[Unreleased]: https://github.com/lucianoon/edgevision/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/lucianoon/edgevision/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/lucianoon/edgevision/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/lucianoon/edgevision/releases/tag/v0.1.0

@@ -1,0 +1,127 @@
+
+== environment (19:55:02)
+Tesla T4, 595.91.07
+cmake version 3.31.6
+Build cuda_13.2.r13.2/compiler.37668154_0
+(synced tree has no .git; see the commit named in the sync-up log)
+models/tensorrt/yolo26n_fp16.engine
+models/tensorrt/yolo26n_fp32.engine
+models/tensorrt/yolo26n_nms_416_fp16.engine
+models/tensorrt/yolo26n_nms_512_fp16.engine
+models/tensorrt/yolo26n_nms_512_fp16_c10.engine
+models/tensorrt/yolo26n_nms_640_fp16.engine
+models/tensorrt/yolo26n_nms_b12_fp16.engine
+models/tensorrt/yolo26n_nms_b4_fp16.engine
+models/tensorrt/yolo26n_nms_b8_fp16.engine
+models/tensorrt/yolo26n_nms_fp16.engine
+models/tensorrt/yolo26n_nms_fp32.engine
+models/tensorrt/yolo26n_raw_416_int8.engine
+models/tensorrt/yolo26n_raw_512_int8.engine
+models/tensorrt/yolo26n_raw_640_int8.engine
+
+== build (full runtime) with the compiler's warnings visible (19:55:02)
+-- The CXX compiler identification is GNU 13.3.0
+-- The CUDA compiler identification is NVIDIA 13.2.78 with host compiler GNU 13.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Detecting CUDA compiler ABI info
+-- Detecting CUDA compiler ABI info - done
+-- Check for working CUDA compiler: /usr/local/cuda/bin/nvcc - skipped
+-- Detecting CUDA compile features
+-- Detecting CUDA compile features - done
+-- Found CUDAToolkit: /usr/local/cuda/targets/x86_64-linux/include (found version "13.2.78")
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found OpenCV: /usr (found version "4.6.0") found components: core imgproc imgcodecs videoio
+-- Found PkgConfig: /usr/bin/pkg-config (found version "1.8.1")
+-- Checking for modules 'libavformat;libavcodec;libavutil'
+--   Found libavformat, version 60.16.100
+--   Found libavcodec, version 60.31.102
+--   Found libavutil, version 58.29.100
+-- TensorRT headers: /usr/include/x86_64-linux-gnu, lib: /usr/lib/x86_64-linux-gnu/libnvinfer.so
+-- Configuring done (2.7s)
+-- Generating done (0.0s)
+-- Build files have been written to: /workspace/edgevision/cpp/build
+PASS configure
+PASS build
+warnings in build: 0
+
+== CTests: letterbox, nv12, tracker, cli, report (19:55:14)
+Internal ctest changing into directory: /workspace/edgevision/cpp/build
+Test project /workspace/edgevision/cpp/build
+    Start 1: tracker
+1/5 Test #1: tracker ..........................   Passed    0.00 sec
+    Start 2: cli
+2/5 Test #2: cli ..............................   Passed    0.00 sec
+    Start 3: report
+3/5 Test #3: report ...........................   Passed    0.00 sec
+    Start 4: letterbox
+4/5 Test #4: letterbox ........................   Passed    0.39 sec
+    Start 5: nv12
+5/5 Test #5: nv12 .............................   Passed    0.48 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =   0.87 sec
+PASS ctest
+
+== CLI: --help and argument validation (19:55:15)
+PASS help
+PASS bad-arg
+
+== single stream, OpenCV decoder, still image: detections dump + report -> parity test (19:55:15)
+
+backend=cpp_tensorrt  fps=402.7
+stage              mean      p50      p95      max  n
+decode              0.4      0.3      0.5      0.5  3
+preprocess          0.5      0.5      0.5      0.5  3
+inference           2.0      2.0      2.2      2.2  3
+postprocess         0.0      0.0      0.0      0.0  3
+end_to_end          2.5      2.4      2.7      2.7  3
+saved: /tmp/tmp.bfjtL0RCR3/still.json
+detections of first measured frame (stream 0): 5 -> /tmp/tmp.bfjtL0RCR3/dets.json
+PASS still
+report keys: 19 | stages: ['decode', 'preprocess', 'inference', 'postprocess', 'end_to_end']
+.                                                                        [100%]
+1 passed in 3.53s
+PASS parity
+
+== NVDEC, 1 stream and 3 independent streams (short) (19:55:21)
+backend=cpp_tensorrt  fps=538.7
+end_to_end          1.9      1.9      1.9      1.9  60
+PASS nvdec-1
+[TensorRT] WARNING The logger passed into createInferRuntime differs from one already registered for an existing builder, runtime, or refitter. So the current new logger is ignored, and TensorRT will use the existing one which is returned by nvinfer1::getLogger() instead.
+[TensorRT] WARNING The logger passed into createInferRuntime differs from one already registered for an existing builder, runtime, or refitter. So the current new logger is ignored, and TensorRT will use the existing one which is returned by nvinfer1::getLogger() instead.
+streams=3 decoder=nvdec  aggregate=396.0 fps (180 frames, 1.3s wall)
+PASS nvdec-3
+per_stream entries: 3 | mode: independent | decoder: nvdec
+
+== tracking: NVDEC + ByteTrack, then OpenCV + render + JSONL dump (short) (19:55:23)
+tracking: 19 unique ids on stream 0 over 70 frames
+tracking            0.0      0.0      0.0      0.0  60
+end_to_end          2.0      2.0      2.1      2.1  60
+PASS track-nvdec
+tracking: 17 unique ids on stream 0 over 35 frames -> /tmp/tmp.bfjtL0RCR3/tracks.jsonl
+tracking            0.0      0.0      0.0      0.0  30
+PASS track-render
+{
+  "tracker": "edgevision-cpp-bytetrack",
+  "dump": "/tmp/tmp.bfjtL0RCR3/tracks.jsonl",
+  "frames": 30,
+  "unique_ids": 14,
+-rw-r--r-- 1 root root 3056360 Sep 21 19:55 /tmp/tmp.bfjtL0RCR3/tracks.mp4
+
+== batched: 4 streams on the batch-4 engine (short) (19:55:26)
+batched streams=4 decoder=nvdec  aggregate=293.9 fps (40 rounds, 0.5s measured, 1.5s wall)
+PASS batched
+
+== Python suite on the box (TensorRT detector parity included) (19:55:28)
+...........................................................              [100%]
+59 passed in 8.08s
+PASS pytest
+
+== done (19:55:38): 0 failure(s); log: benchmarks/results/gpu_check_runtime_20260921T195502Z.log

@@ -1,3 +1,0 @@
-[console_scripts]
-edgevision = edgevision.main:main
-edgevision-benchmark = edgevision.benchmark:main

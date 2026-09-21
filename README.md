@@ -62,6 +62,8 @@ checked against each other by parity tests.
 | 7 | Accuracy vs speed: input size and INT8, mAP on COCO | 512: +27% throughput for -2.6 mAP; INT8: -3.5 mAP, unbuildable with NMS | Resolution is the cheap lever; INT8 PTQ hurts a nano model |
 | 8 | ByteTrack in C++ | tracking ~0 ms; 45 ids / 300 frames | Fewer, longer tracks than Ultralytics' defaults by threshold choice; IoU-only handovers exist |
 
+![latency per frame across the sprints](docs/latency_by_sprint.png)
+
 Full tables, raw JSON reports and observations: [`benchmarks/README.md`](benchmarks/README.md).
 Every GPU run wrote its report to `benchmarks/results/`, versioned.
 
@@ -113,8 +115,9 @@ access, and a zero-cost standby that removes the instance and its disk between s
   between PyTorch, ONNX Runtime, TensorRT and the C++ runtime; CI on every push.
 - **Infrastructure as code with cost guards**: the GPU box is a CloudFormation template with
   an uptime cap and a standby script; total spend for the whole project was about US$ 8.
-- **Findings reported upstream-ready**: Ultralytics' dynamic-batch NMS export only fills the
-  first image of a batch; TensorRT cannot build INT8 for the NMS-in-graph export.
+- **Findings written down, including the wrong ones**: TensorRT cannot build INT8 for the
+  NMS-in-graph export; and a "bug" in Ultralytics' dynamic-batch NMS export turned out to be
+  a documented requirement (`batch=<max>`) once the warning was read - corrected in the log.
 
 ## Limitations and next steps
 

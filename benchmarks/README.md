@@ -257,11 +257,14 @@ Raw reports: `results/cpp_tensorrt_nvdec_s*_h264_file_*`, `results/cpp_tensorrt_
 a shared `Nx3x640x640` input (two ping-pong buffers) and a coordinator runs ONE
 `enqueueV3` per round on a static-batch engine. Same clip, same T4, FP16.
 
-**Export finding.** Ultralytics `export(nms=True, dynamic=True)` produces a graph whose
-NMS only fills image 0 of a batch (ORT: `[bus, zidane] -> [5, 0]` detections); the
-static `export(nms=True, batch=N)` graphs are correct per image (`[5, 3, 5, 3]`). So one
-engine per batch size (`yolo26n_nms_b{4,8,12}_fp16.engine`); `TrtEngine` keeps dynamic
-support for graphs without NMS.
+**Export pitfall (corrected 2026-09-21).** `export(nms=True, dynamic=True)` with the
+default `batch=1` produces a graph whose NMS only fills image 0 of a batch (ORT:
+`[bus, zidane] -> [5, 0]`). This is not a bug: the exporter unrolls the NMS loop for
+`batch` images at trace time and warns `'dynamic=True' export requires a maximum batch
+size, e.g. 'batch=16'` (a warning we had filtered out). `export(nms=True, dynamic=True,
+batch=4)` is correct for any runtime batch <= 4 (`[5, 3]`, `[5, 3, 5, 3]`, `[3]`), see
+`scripts/check_dynamic_nms_export.py`. Phase B used static `batch=N` engines
+(`yolo26n_nms_b{4,8,12}_fp16.engine`), which are equally correct; `TrtEngine` supports both.
 
 | N  | design      | aggregate FPS | round / e2e mean (ms) | p95  | max  | trtexec batch-N qps x N |
 |---:|-------------|--------------:|----------------------:|-----:|-----:|------------------------:|

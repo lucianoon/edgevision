@@ -132,6 +132,11 @@ access, and a zero-cost standby that removes the instance and its disk between s
   embeddings (BoT-SORT) would fix that where id purity matters.
 - Not yet ported to Jetson: engines are GPU-specific and the aarch64 build needs the device.
 
+## Contributing
+
+`CONTRIBUTING.md` has the setup, the checks the CI runs (and how to run them locally with
+pre-commit), the GPU box workflow and the conventions; `CHANGELOG.md` tracks releases.
+
 ## License
 
 MIT. Benchmark clips are CC0 / CC BY (see `videos/README.md`) and are not part of the repository.

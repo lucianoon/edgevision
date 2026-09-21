@@ -341,3 +341,51 @@ put `$VAR` in an inline `run.sh` command - use a script in the repo.
 
 Raw: `results/sprint7_map.json`, `results/sprint7_exports*.json`, `results/cpp_tensorrt_nvdec*_s7_*`,
 `results/sprint7b_eval.out`.
+
+## 2026-09-21 - Sprint 8: ByteTrack in the C++ runtime
+
+`edgevision_trt --track` runs a ByteTrack tracker per stream (`cpp/src/tracker.cpp`: Kalman
+filter on cx/cy/aspect/h + velocities, Hungarian IoU association in two passes - high-score
+then low-score detections - unconfirmed-track gate, 30-frame lost buffer, class-aware).
+Because the production graph bakes conf 0.5, tracking uses an engine exported with
+**conf 0.1** (`yolo26n_nms_512_fp16_c10`) so the weak detections that give ByteTrack its
+robustness exist. Unit tests (`cpp/tests/test_tracker.cpp`) cover the Hungarian solver,
+Kalman extrapolation, stable ids on two movers, a 10-frame occlusion keeping its id,
+loss beyond the buffer getting a new id, low-score detections sustaining but never creating
+tracks, and class-aware ids.
+
+![tracking on the pedestrian clip](../docs/tracking_frame.jpg)
+
+### Cost of tracking (T4, NVDEC, 512 FP16, 1080p clip)
+
+| run | tracking stage | end_to_end | 1-stream FPS | 12-stream aggregate |
+|---|---:|---:|---:|---:|
+| detection only | - | 1.9 ms | 517 | 675 (Sprint 7) |
+| detection + ByteTrack | 0.0 ms (tens of us) | 2.0 ms | 508 | 677 |
+
+Tracking is free at this scale (<= ~10 objects per frame): the Hungarian solve on a
+10x10 cost matrix and a handful of 8-state Kalman updates cost microseconds.
+
+### Behaviour vs the Ultralytics ByteTrack reference (same clip, 300 frames, imgsz 512, conf 0.1)
+
+| tracker | unique ids | mean track length (frames) | tracks / frame | tracks >= 2 s |
+|---|---:|---:|---:|---:|
+| Ultralytics ByteTrack (`bytetrack.yaml`: high 0.25, new 0.25) | 85 | 25.6 | 7.25 | 15 |
+| edgevision C++ (ByteTrack paper defaults: high 0.5, new 0.6) | 45 | 39.4 | 5.91 | 13 |
+
+Observations:
+
+- **Fewer, longer tracks than the Ultralytics default**, by design of the thresholds: the
+  paper's 0.5/0.6 start fewer tracks on marginal detections than Ultralytics' 0.25. Both
+  find the same ~13-15 persistent pedestrians; the difference is in short-lived tracks on
+  weak detections. `--track-thresh` exposes the knob.
+- **Visual check** (`tracks_render_512.mp4`, frames at n=20/120/250): boxes tight, ids stable
+  across seconds (#4 keeps its number 100 frames later), bicycle tracked as its own class.
+- **Known ByteTrack limitation seen once**: an id (#21) handed over from a pedestrian who
+  left to another who walked through the predicted box of the lost track. IoU-only
+  association cannot tell them apart; appearance embeddings (BoT-SORT/DeepSORT style)
+  would - a possible later step if id purity matters for the use case.
+- `--render` (OpenCV decoder, host frames) writes an annotated mp4 at ~50 fps, bound by
+  the CPU H.264 encode, not by the pipeline.
+
+Raw: `results/cpp_tensorrt_*_s8_*`, `results/tracks_cpp_512.jsonl`, `results/track_reference.json`.

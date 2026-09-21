@@ -3,7 +3,7 @@
 [![ci](https://github.com/lucianoon/edgevision/actions/workflows/ci.yml/badge.svg)](https://github.com/lucianoon/edgevision/actions/workflows/ci.yml) MIT License
 
 Real-time object detection pipeline, evolved in stages:
-PyTorch baseline -> ONNX Runtime -> TensorRT (FP32/FP16) -> C++ runtime -> NVDEC/RTSP -> multi-stream -> accuracy vs speed (INT8, input size) -> Jetson.
+PyTorch baseline -> ONNX Runtime -> TensorRT (FP32/FP16) -> C++ runtime -> NVDEC/RTSP -> multi-stream -> accuracy vs speed (INT8, input size) -> tracking -> Jetson.
 
 ## Setup
 
@@ -128,3 +128,13 @@ exports FP16/INT8 engines at several input sizes (INT8 calibrated on a disjoint 
 T4: 640 -> 512 buys +27% throughput for -2.6 mAP50-95 points; INT8 PTQ costs ~3.5 points at any
 size and cannot be built with NMS in the graph. Production default: **FP16 at 512**. Details in
 `benchmarks/README.md`.
+
+## Tracking (Sprint 8)
+
+`edgevision_trt --track` adds a dependency-free ByteTrack per stream (Kalman + Hungarian,
+two-pass association, lost buffer, class-aware) at no measurable cost: 2.0 ms per frame with
+tracking vs 1.9 without, 677 fps aggregate on 12 streams. Use an engine exported with conf
+0.1 (`scripts/export_engines_ultralytics.py --conf 0.1`) so low-score detections feed the
+second pass. `--render out.mp4` writes an annotated video, `--dump-tracks f.jsonl` the
+tracks; `scripts/track_stats.py` and `scripts/track_reference.py` compare with Ultralytics'
+ByteTrack. Details in `benchmarks/README.md`.

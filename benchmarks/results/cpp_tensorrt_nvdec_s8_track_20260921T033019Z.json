@@ -1,0 +1,30 @@
+{
+  "timestamp_utc": "20260921T033019Z",
+  "backend": "cpp_tensorrt",
+  "label": "s8_track",
+  "model_path": "models/tensorrt/yolo26n_nms_512_fp16_c10.engine",
+  "confidence": 0.5,
+  "source": "videos/pedestrian_area_1080p25_h264.mp4",
+  "decoder": "nvdec",
+  "streams": 1,
+  "mode": "independent",
+  "tracking": true,
+  "frames": 300,
+  "warmup": 30,
+  "pinned_host_frame": true,
+  "stage_timing": true,
+  "fps": 508.071,
+  "aggregate_fps": 372.992,
+  "stages": {
+    "decode": {"mean_ms": 0.459699, "p50_ms": 0.125823, "p95_ms": 1.56937, "max_ms": 1.60806, "samples": 300},
+    "preprocess": {"mean_ms": 0.264984, "p50_ms": 0.266086, "p95_ms": 0.268347, "max_ms": 0.281972, "samples": 300},
+    "inference": {"mean_ms": 1.67894, "p50_ms": 1.67832, "p95_ms": 1.7324, "max_ms": 1.7854, "samples": 300},
+    "postprocess": {"mean_ms": 0.0105702, "p50_ms": 0.010449, "p95_ms": 0.011235, "max_ms": 0.019965, "samples": 300},
+    "tracking": {"mean_ms": 0.0119019, "p50_ms": 0.011095, "p95_ms": 0.016599, "max_ms": 0.048006, "samples": 300},
+    "end_to_end": {"mean_ms": 1.96823, "p50_ms": 1.96917, "p95_ms": 2.02064, "max_ms": 2.07604, "samples": 300}
+  },
+  "per_stream": [
+    {"source": "videos/pedestrian_area_1080p25_h264.mp4", "frames": 300, "measured_seconds": 0.804306, "sustained_fps": 372.992, "e2e_mean_ms": 1.96823}
+  ],
+  "environment": {"tensorrt": "10.16.1", "cuda_runtime": "13.2", "gpu": "Tesla T4", "opencv": "4.6.0"}
+}

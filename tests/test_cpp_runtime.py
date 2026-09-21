@@ -28,9 +28,24 @@ def test_cpp_runtime_matches_onnx_reference(tmp_path):
     dump = tmp_path / "dets.json"
     report = tmp_path / "report.json"
     subprocess.run(
-        [str(BINARY), "--engine", str(ENGINE), "--source", str(ASSETS / "bus.jpg"),
-         "--frames", "3", "--warmup", "1", "--dump-detections", str(dump), "--out", str(report)],
-        check=True, capture_output=True, text=True,
+        [
+            str(BINARY),
+            "--engine",
+            str(ENGINE),
+            "--source",
+            str(ASSETS / "bus.jpg"),
+            "--frames",
+            "3",
+            "--warmup",
+            "1",
+            "--dump-detections",
+            str(dump),
+            "--out",
+            str(report),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
     )
     cpp = json.loads(dump.read_text())
     assert json.loads(report.read_text())["backend"] == "cpp_tensorrt"

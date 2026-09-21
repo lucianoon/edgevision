@@ -1,3 +1,32 @@
 [tool.pytest.ini_options]
 pythonpath = ["python"]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["python", "scripts", "tests"]
+
+[tool.ruff.lint]
+# E/W pycodestyle, F pyflakes, I isort, B bugbear, UP pyupgrade, C4 comprehensions, RUF ruff.
+select = ["E", "W", "F", "I", "B", "UP", "C4", "RUF"]
+ignore = [
+  "RUF012",  # mutable class attributes: not used as defaults here
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests import after pytest.importorskip() on purpose.
+"tests/test_tensorrt_detector.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["edgevision"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["python/edgevision"]
+mypy_path = "python"
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true

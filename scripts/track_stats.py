@@ -1,5 +1,6 @@
 """Summarise a C++ runtime track dump (edgevision_trt --track --dump-tracks file.jsonl):
-one JSON object per frame {"frame": n, "tracks": [{"id", "x1", "y1", "x2", "y2", "score", "class_name"}]}.
+one JSON object per frame:
+{"frame": n, "tracks": [{"id", "x1", "y1", "x2", "y2", "score", "class_name"}]}.
 
     python scripts/track_stats.py benchmarks/results/tracks_*.jsonl
 """
@@ -25,7 +26,9 @@ def summarise(path: str) -> dict:
     unique = len(lengths)
     return {
         "tracker": "edgevision-cpp-bytetrack",
-        "dump": path, "frames": frames, "unique_ids": unique,
+        "dump": path,
+        "frames": frames,
+        "unique_ids": unique,
         "mean_track_length_frames": round(sum(lengths.values()) / unique, 1) if unique else 0,
         "tracks_per_frame": round(tracks_total / frames, 2) if frames else 0,
         "tracks_longer_than_2s": sum(1 for v in lengths.values() if v >= 50),

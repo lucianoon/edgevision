@@ -38,9 +38,7 @@ def draw_detections(frame, detections: list[Detection]):
 
 
 def format_stages(metrics: PerformanceMetrics) -> str:
-    return " ".join(
-        f"{name}={stats['mean_ms']:.1f}ms" for name, stats in metrics.summary().items()
-    )
+    return " ".join(f"{name}={stats['mean_ms']:.1f}ms" for name, stats in metrics.summary().items())
 
 
 def parse_args():

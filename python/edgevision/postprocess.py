@@ -127,5 +127,5 @@ def postprocess(
             class_id=int(class_ids[i]),
             class_name=names[int(class_ids[i])],
         )
-        for box, i in zip(boxes, keep)
+        for box, i in zip(boxes, keep, strict=True)
     ]

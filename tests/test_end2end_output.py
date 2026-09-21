@@ -39,7 +39,12 @@ def test_postprocess_end2end_skips_nms_and_rescales():
     detections = postprocess(out, info, {0: "person"}, conf_threshold=0.5, iou_threshold=0.45)
 
     assert len(detections) == 2
-    assert (detections[0].x1, detections[0].y1, detections[0].x2, detections[0].y2) == (20, 20, 120, 60)
+    assert (detections[0].x1, detections[0].y1, detections[0].x2, detections[0].y2) == (
+        20,
+        20,
+        120,
+        60,
+    )
 
 
 def test_nms_graph_matches_our_nms_on_sample_image():

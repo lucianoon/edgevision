@@ -9,16 +9,22 @@ import pytest
 tensorrt = pytest.importorskip("tensorrt")
 pytest.importorskip("cuda")
 
-from ultralytics.utils import ASSETS  # noqa: E402
+from ultralytics.utils import ASSETS
 
-from edgevision.onnx_detector import OnnxDetector  # noqa: E402
-from edgevision.postprocess import box_iou  # noqa: E402
-from edgevision.tensorrt_detector import TensorRTDetector  # noqa: E402
+from edgevision.onnx_detector import OnnxDetector
+from edgevision.postprocess import box_iou
+from edgevision.tensorrt_detector import TensorRTDetector
 
 ONNX_PATH = "models/onnx/yolo26n.onnx"
-ENGINES = [p for p in ("models/tensorrt/yolo26n_fp32.engine", "models/tensorrt/yolo26n_fp16.engine") if Path(p).exists()]
+ENGINES = [
+    p
+    for p in ("models/tensorrt/yolo26n_fp32.engine", "models/tensorrt/yolo26n_fp16.engine")
+    if Path(p).exists()
+]
 
-pytestmark = pytest.mark.skipif(not ENGINES, reason="no TensorRT engine built (scripts/build_engine.sh)")
+pytestmark = pytest.mark.skipif(
+    not ENGINES, reason="no TensorRT engine built (scripts/build_engine.sh)"
+)
 
 
 @pytest.fixture(scope="module")

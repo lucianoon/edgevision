@@ -4,7 +4,7 @@
 # ByteTrack in the C++ runtime: engine with conf 0.1 (weak detections for the second
 # association), unit tests, annotated video + track dump, tracking cost, 12-stream check.
 set -uo pipefail
-cd /workspace/edgevision
+cd /workspace/edgevision || exit 1
 CLIP=videos/pedestrian_area_1080p25_h264.mp4
 FRAMES=${FRAMES:-300}
 WARMUP=${WARMUP:-30}

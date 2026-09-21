@@ -23,7 +23,7 @@ for N in $BATCHES; do
   if [ ! -f "$E" ]; then
     echo "-- building batch $N"
     trtexec --onnx=models/onnx/yolo26n_nms_b${N}.onnx --saveEngine="$E" --fp16 --warmUp=500 --duration=8 --avgRuns=50 \
-      > benchmarks/results/trtexec_b${N}_fp16_$(date -u +%Y%m%dT%H%M%SZ).log 2>&1
+      > "benchmarks/results/trtexec_b${N}_fp16_$(date -u +%Y%m%dT%H%M%SZ).log" 2>&1
     grep -E "Throughput|GPU Compute Time:|Engine built" benchmarks/results/trtexec_b${N}_fp16_*.log | sed 's/^\[[^]]*\] \[I\] //' | cut -c1-120
     cp models/tensorrt/yolo26n_nms.names.json models/tensorrt/yolo26n_nms_b${N}_fp16.names.json 2>/dev/null || cp models/tensorrt/yolo26n_nms_fp16.names.json models/tensorrt/yolo26n_nms_b${N}_fp16.names.json
   fi

@@ -3,7 +3,7 @@
 # stops the others: INT8 raw engines for mAP, one INT8+NMS attempt with more workspace,
 # mAP table, FP16 speed. Expected ~45 min on a T4.
 set -uo pipefail
-cd /workspace/edgevision
+cd /workspace/edgevision || exit 1
 CLIP=videos/pedestrian_area_1080p25_h264.mp4
 OUT=benchmarks/results
 step() { echo; echo "== $* ($(date -u +%H:%M:%S))"; }

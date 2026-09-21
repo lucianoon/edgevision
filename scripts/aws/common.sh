@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Shared settings for the EdgeVision GPU dev box scripts. Source, don't run.
 # Works from Git Bash (Windows) and WSL/Linux.
 export MSYS_NO_PATHCONV=1
@@ -9,6 +10,7 @@ export PYTHONUTF8=1 PYTHONIOENCODING=utf-8  # aws.exe on Windows chokes on non-A
 export AWS_PROFILE AWS_REGION STACK_NAME
 
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+export REPO_ROOT  # used by the sourcing scripts (deploy, standby, sync-*)
 
 stack_output() {  # stack_output <OutputKey>
     aws cloudformation describe-stacks --stack-name "$STACK_NAME" --region "$AWS_REGION" \

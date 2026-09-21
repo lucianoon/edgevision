@@ -60,6 +60,4 @@ class OnnxDetector:
             output = self.session.run(None, {self.input_name: tensor})[0]
 
         with self._stage("postprocess"):
-            return postprocess(
-                output, info, self.names, self.confidence, self.iou_threshold
-            )
+            return postprocess(output, info, self.names, self.confidence, self.iou_threshold)

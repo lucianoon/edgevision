@@ -29,7 +29,7 @@ SHAPES=()
 if [[ "$STEM" == *dyn* ]]; then
     MAX_BATCH=${MAX_BATCH:-16}
     OPT_BATCH=${OPT_BATCH:-8}
-    SHAPES=(--minShapes=images:1x3x640x640 --optShapes=images:${OPT_BATCH}x3x640x640 --maxShapes=images:${MAX_BATCH}x3x640x640)
+    SHAPES=(--minShapes=images:1x3x640x640 "--optShapes=images:${OPT_BATCH}x3x640x640" "--maxShapes=images:${MAX_BATCH}x3x640x640")
     echo "dynamic batch profile: min 1, opt $OPT_BATCH, max $MAX_BATCH"
 fi
 

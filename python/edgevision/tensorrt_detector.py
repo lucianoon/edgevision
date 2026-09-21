@@ -6,7 +6,7 @@ Requires `tensorrt` and `cuda-python` (only available on NVIDIA hardware).
 """
 
 import ast
-from contextlib import nullcontext
+from contextlib import nullcontext, suppress
 from pathlib import Path
 
 import numpy as np
@@ -85,8 +85,8 @@ class TensorRTDetector:
 
         self.stream = _check(cudart.cudaStreamCreate())
         self.buffers: dict[str, _DeviceBuffer] = {}
-        self.input_name = None
-        self.output_name = None
+        input_name: str | None = None
+        output_name: str | None = None
 
         for i in range(self.engine.num_io_tensors):
             name = self.engine.get_tensor_name(i)
@@ -95,12 +95,14 @@ class TensorRTDetector:
             self.buffers[name] = _DeviceBuffer(shape, dtype)
             self.context.set_tensor_address(name, self.buffers[name].device)
             if self.engine.get_tensor_mode(name) == trt.TensorIOMode.INPUT:
-                self.input_name = name
+                input_name = name
             else:
-                self.output_name = name
+                output_name = name
 
-        if self.input_name is None or self.output_name is None:
+        if input_name is None or output_name is None:
             raise RuntimeError("Engine must have one input and one output tensor")
+        self.input_name: str = input_name
+        self.output_name: str = output_name
 
         self.names = _load_class_names(class_names_path or _sidecar_names(engine_path))
         self.confidence = confidence
@@ -149,10 +151,9 @@ class TensorRTDetector:
             self.stream = 0
 
     def __del__(self):
-        try:
+        # Interpreter teardown may have torn down cudart already; nothing useful to report.
+        with suppress(Exception):
             self.close()
-        except Exception:
-            pass
 
 
 def _sidecar_names(engine_path: str) -> str:

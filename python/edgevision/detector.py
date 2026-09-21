@@ -1,8 +1,12 @@
 from contextlib import nullcontext
 from dataclasses import dataclass
+from typing import Protocol
 
 import numpy as np
 from ultralytics import YOLO
+from ultralytics.engine.results import Results
+
+from edgevision.metrics import PerformanceMetrics
 
 
 @dataclass(frozen=True)
@@ -16,6 +20,15 @@ class Detection:
     class_name: str
 
 
+class Detector(Protocol):
+    """What every backend (PyTorch, ONNX Runtime, TensorRT) exposes to the app and the benchmark."""
+
+    image_size: int
+    metrics: PerformanceMetrics | None
+
+    def detect(self, frame: np.ndarray) -> list[Detection]: ...
+
+
 class YoloDetector:
     def __init__(
         self,
@@ -23,7 +36,7 @@ class YoloDetector:
         confidence: float = 0.5,
         image_size: int = 640,
         device: str | None = None,
-        metrics=None,
+        metrics: PerformanceMetrics | None = None,
     ):
         self.model = YOLO(model_path)
         self.metrics = metrics
@@ -44,29 +57,30 @@ class YoloDetector:
                 verbose=False,
             )
 
-        result = results[0]
+        # predict() returns a list (or a generator when streaming); one frame in, one result out.
+        result = next(iter(results))
+        if not isinstance(result, Results):
+            raise TypeError(f"unexpected Ultralytics result type: {type(result).__name__}")
 
-        if result.boxes is None:
+        if result.boxes is None or len(result.boxes) == 0:
             return []
 
-        detections = []
+        boxes = result.boxes.numpy()
+        xyxy = np.asarray(boxes.xyxy, dtype=np.float64)
+        class_ids = np.asarray(boxes.cls, dtype=np.int64)
+        confidences = np.asarray(boxes.conf, dtype=np.float64)
 
-        for box in result.boxes:
-            x1, y1, x2, y2 = box.xyxy[0].cpu().tolist()
-
-            class_id = int(box.cls[0])
-            confidence = float(box.conf[0])
-
-            detections.append(
-                Detection(
-                    x1=x1,
-                    y1=y1,
-                    x2=x2,
-                    y2=y2,
-                    confidence=confidence,
-                    class_id=class_id,
-                    class_name=result.names[class_id],
-                )
+        return [
+            Detection(
+                x1=float(x1),
+                y1=float(y1),
+                x2=float(x2),
+                y2=float(y2),
+                confidence=float(confidence),
+                class_id=int(class_id),
+                class_name=result.names[int(class_id)],
             )
-
-        return detections
+            for (x1, y1, x2, y2), class_id, confidence in zip(
+                xyxy, class_ids, confidences, strict=True
+            )
+        ]

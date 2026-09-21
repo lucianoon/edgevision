@@ -9,9 +9,10 @@ import argparse
 import json
 import platform
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
+from edgevision.detector import Detector
 from edgevision.factory import build_detector
 from edgevision.main import load_config
 from edgevision.metrics import PerformanceMetrics
@@ -20,7 +21,7 @@ from edgevision.video import VideoSource
 RESULTS_DIR = Path("benchmarks/results")
 
 
-def environment(detector) -> dict:
+def environment(detector: Detector) -> dict:
     import numpy
     import onnxruntime
     import torch
@@ -48,7 +49,7 @@ def _version(module_name: str):
         return None
 
 
-def run(model_cfg: dict, source, frames: int, warmup: int) -> tuple[PerformanceMetrics, object]:
+def run(model_cfg: dict, source, frames: int, warmup: int) -> tuple[PerformanceMetrics, Detector]:
     metrics = PerformanceMetrics(window_size=frames)
     detector = build_detector(model_cfg, metrics)
     video = VideoSource(source)
@@ -94,10 +95,14 @@ def parse_args():
     parser.add_argument("--backend", choices=["pytorch", "onnx", "tensorrt"], required=True)
     parser.add_argument("--model", help="Override model.paths.<backend> (e.g. an FP32 engine)")
     parser.add_argument("--label", default="", help="Suffix for the report file name (e.g. fp32)")
-    parser.add_argument("--source", default="videos/pedestrian_area_1080p25.webm", help="see videos/README.md")
+    parser.add_argument(
+        "--source", default="videos/pedestrian_area_1080p25.webm", help="see videos/README.md"
+    )
     parser.add_argument("--frames", type=int, default=100, help="measured frames")
     parser.add_argument("--warmup", type=int, default=10, help="frames discarded before measuring")
-    parser.add_argument("--out", type=Path, help="JSON path (default: benchmarks/results/<backend>_<utc>.json)")
+    parser.add_argument(
+        "--out", type=Path, help="JSON path (default: benchmarks/results/<backend>_<utc>.json)"
+    )
     return parser.parse_args()
 
 
@@ -114,7 +119,7 @@ def main():
     summary = metrics.summary()
     print_report(args.backend, summary, metrics.fps)
 
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     name = "_".join(filter(None, [args.backend, args.label, stamp]))
     out = args.out or RESULTS_DIR / f"{name}.json"
     out.parent.mkdir(parents=True, exist_ok=True)

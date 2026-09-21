@@ -20,7 +20,7 @@ class PerformanceMetrics:
         self.window_size = window_size
         self.stages: dict[str, deque] = defaultdict(lambda: deque(maxlen=window_size))
         self.frame_count = 0
-        self._start = None
+        self._start: float | None = None
 
     @property
     def latencies(self) -> deque:

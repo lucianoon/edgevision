@@ -1,0 +1,23 @@
+# Static analysis for the C++ runtime. The CI runs it on the CPU-buildable sources
+# (tracker, metrics, names, cli, report and their tests); the CUDA/TensorRT sources are
+# built and tested on the GPU box. Findings are errors so the gate cannot drift.
+Checks: >
+  -*,
+  bugprone-*,
+  performance-*,
+  modernize-*,
+  readability-container-size-empty,
+  readability-redundant-*,
+  readability-else-after-return,
+  -modernize-use-trailing-return-type,
+  -modernize-raw-string-literal,
+  -modernize-avoid-c-arrays,
+  -modernize-use-designated-initializers,
+  -modernize-use-nodiscard,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-narrowing-conversions,
+  -bugprone-exception-escape,
+  -performance-enum-size
+WarningsAsErrors: '*'
+HeaderFilterRegex: 'edgevision/'
+FormatStyle: file

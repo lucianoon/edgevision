@@ -30,14 +30,18 @@ enum AVPixelFormat pick_cuda_format(AVCodecContext*, const enum AVPixelFormat* f
 
 }  // namespace
 
-NvVideoDecoder::NvVideoDecoder(const std::string& url) : url_(url) { open(); }
+NvVideoDecoder::NvVideoDecoder(const std::string& url) : url_(url) {
+    open();
+}
 
-NvVideoDecoder::~NvVideoDecoder() { close(); }
+NvVideoDecoder::~NvVideoDecoder() {
+    close();
+}
 
 void NvVideoDecoder::open() {
     AVDictionary* options = nullptr;
     av_dict_set(&options, "rtsp_transport", "tcp", 0);  // robust RTSP; ignored for files
-    av_dict_set(&options, "stimeout", "5000000", 0);   // 5 s socket timeout (us), RTSP only
+    av_dict_set(&options, "stimeout", "5000000", 0);    // 5 s socket timeout (us), RTSP only
     int rc = avformat_open_input(&format_, url_.c_str(), nullptr, &options);
     av_dict_free(&options);
     if (rc < 0) throw std::runtime_error("avformat_open_input(" + url_ + "): " + av_err(rc));
@@ -107,7 +111,8 @@ bool NvVideoDecoder::next(GpuFrame& out) {
         const int rc = avcodec_receive_frame(codec_, frame_);
         if (rc == 0) {
             if (frame_->format != AV_PIX_FMT_CUDA)
-                throw std::runtime_error(std::string("decoder produced ") + av_get_pix_fmt_name((AVPixelFormat)frame_->format) +
+                throw std::runtime_error(std::string("decoder produced ") +
+                                         av_get_pix_fmt_name((AVPixelFormat)frame_->format) +
                                          " instead of CUDA surfaces (NVDEC unavailable for this codec?)");
             const auto* frames_ctx = reinterpret_cast<AVHWFramesContext*>(frame_->hw_frames_ctx->data);
             if (frames_ctx->sw_format != AV_PIX_FMT_NV12)
@@ -128,9 +133,17 @@ bool NvVideoDecoder::next(GpuFrame& out) {
     }
 }
 
-int NvVideoDecoder::width() const { return codec_ ? codec_->width : 0; }
-int NvVideoDecoder::height() const { return codec_ ? codec_->height : 0; }
-std::string NvVideoDecoder::codec_name() const { return codec_ && codec_->codec ? codec_->codec->name : ""; }
-std::string NvVideoDecoder::hw_pixel_format() const { return "cuda/nv12"; }
+int NvVideoDecoder::width() const {
+    return codec_ ? codec_->width : 0;
+}
+int NvVideoDecoder::height() const {
+    return codec_ ? codec_->height : 0;
+}
+std::string NvVideoDecoder::codec_name() const {
+    return codec_ && codec_->codec ? codec_->codec->name : "";
+}
+std::string NvVideoDecoder::hw_pixel_format() const {
+    return "cuda/nv12";
+}
 
 }  // namespace edgevision

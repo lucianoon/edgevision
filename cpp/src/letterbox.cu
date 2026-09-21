@@ -9,15 +9,18 @@
 namespace edgevision {
 
 LetterboxInfo compute_letterbox(int source_width, int source_height, int size) {
-    const float scale = std::min(size / static_cast<float>(source_height),
-                                 size / static_cast<float>(source_width));
+    const float scale = std::min(size / static_cast<float>(source_height), size / static_cast<float>(source_width));
     const int new_w = static_cast<int>(std::lround(source_width * scale));
     const int new_h = static_cast<int>(std::lround(source_height * scale));
     const float pad_x = (size - new_w) / 2.0f;
     const float pad_y = (size - new_h) / 2.0f;
     // Python: left = round(pad_x - 0.1), top = round(pad_y - 0.1)
-    return LetterboxInfo{scale, static_cast<int>(std::lround(pad_x - 0.1f)),
-                         static_cast<int>(std::lround(pad_y - 0.1f)), source_width, source_height, size};
+    return LetterboxInfo{scale,
+                         static_cast<int>(std::lround(pad_x - 0.1f)),
+                         static_cast<int>(std::lround(pad_y - 0.1f)),
+                         source_width,
+                         source_height,
+                         size};
 }
 
 namespace {
@@ -46,8 +49,8 @@ __host__ __device__ inline Geometry make_geometry(const LetterboxInfo& info, int
 
 // Bilinear sample of channel `c` at continuous coords (sx, sy), OpenCV-style half-pixel
 // centres, edge clamped.
-__host__ __device__ inline float sample_bilinear(const unsigned char* src, const Geometry& g,
-                                                 float sx, float sy, int c) {
+__host__ __device__ inline float sample_bilinear(const unsigned char* src, const Geometry& g, float sx, float sy,
+                                                 int c) {
     int x0 = static_cast<int>(floorf(sx));
     int y0 = static_cast<int>(floorf(sy));
     const float fx = sx - x0;
@@ -65,8 +68,7 @@ __host__ __device__ inline float sample_bilinear(const unsigned char* src, const
 }
 
 // One output pixel: writes R, G, B planes (NCHW) normalised to [0, 1].
-__host__ __device__ inline void letterbox_pixel(const unsigned char* src, const Geometry& g, int x, int y,
-                                                float* dst) {
+__host__ __device__ inline void letterbox_pixel(const unsigned char* src, const Geometry& g, int x, int y, float* dst) {
     float b, gch, r;
     const int rx = x - g.pad_x, ry = y - g.pad_y;
     if (rx < 0 || ry < 0 || rx >= g.new_w || ry >= g.new_h) {
@@ -141,7 +143,9 @@ __host__ __device__ inline float sample_plane(const unsigned char* plane, int pi
     return (v00 * (1.0f - fx) + v01 * fx) * (1.0f - fy) + (v10 * (1.0f - fx) + v11 * fx) * fy;
 }
 
-__host__ __device__ inline float clamp255(float v) { return v < 0.f ? 0.f : (v > 255.f ? 255.f : v); }
+__host__ __device__ inline float clamp255(float v) {
+    return v < 0.f ? 0.f : (v > 255.f ? 255.f : v);
+}
 
 __host__ __device__ inline void nv12_pixel(const Nv12Geometry& g, int x, int y, float* dst) {
     float r, gch, b;

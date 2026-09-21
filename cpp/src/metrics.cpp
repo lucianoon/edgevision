@@ -24,9 +24,8 @@ void PerformanceMetrics::reset() {
 static double percentile(std::vector<double> values, double pct) {
     std::sort(values.begin(), values.end());
     const size_t n = values.size();
-    size_t index = static_cast<size_t>(std::lround(pct / 100.0 * (n - 1)));
-    index = std::min(index, n - 1);
-    return values[index];
+    const auto index = static_cast<size_t>(std::lround(pct / 100.0 * static_cast<double>(n - 1)));
+    return values[std::min(index, n - 1)];
 }
 
 std::map<std::string, StageStats> PerformanceMetrics::summary() const {
@@ -35,7 +34,7 @@ std::map<std::string, StageStats> PerformanceMetrics::summary() const {
         if (values.empty()) continue;
         StageStats s;
         s.samples = values.size();
-        s.mean_ms = std::accumulate(values.begin(), values.end(), 0.0) / values.size();
+        s.mean_ms = std::accumulate(values.begin(), values.end(), 0.0) / static_cast<double>(values.size());
         s.p50_ms = percentile(values, 50.0);
         s.p95_ms = percentile(values, 95.0);
         s.max_ms = *std::max_element(values.begin(), values.end());
@@ -47,7 +46,7 @@ std::map<std::string, StageStats> PerformanceMetrics::summary() const {
 double PerformanceMetrics::average_ms(const std::string& stage) const {
     auto it = stages_.find(stage);
     if (it == stages_.end() || it->second.empty()) return 0.0;
-    return std::accumulate(it->second.begin(), it->second.end(), 0.0) / it->second.size();
+    return std::accumulate(it->second.begin(), it->second.end(), 0.0) / static_cast<double>(it->second.size());
 }
 
 void PerformanceMetrics::merge_into(PerformanceMetrics& other) const {
@@ -59,7 +58,8 @@ void PerformanceMetrics::merge_into(PerformanceMetrics& other) const {
 double PerformanceMetrics::fps() const {
     auto it = stages_.find(kEndToEnd);
     if (it == stages_.end() || it->second.empty()) return 0.0;
-    const double mean = std::accumulate(it->second.begin(), it->second.end(), 0.0) / it->second.size();
+    const double mean =
+        std::accumulate(it->second.begin(), it->second.end(), 0.0) / static_cast<double>(it->second.size());
     return mean > 0 ? 1000.0 / mean : 0.0;
 }
 

@@ -87,14 +87,14 @@ jobs:
 
   cpp-cpu:
     # The GPU runtime needs TensorRT and is built on the GPU box (scripts/gpu_sprint*.sh).
-    # The tracker (ByteTrack: Kalman filter + Hungarian) is dependency-free, so its unit
-    # test runs here on every push with the compiler and CMake of the plain Ubuntu runner.
+    # edgevision_cpu (ByteTrack, metrics, class names, CLI, JSON report) is dependency-free,
+    # so it is built with strict warnings, unit-tested, formatted and linted here on every push.
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure (tracker only, no CUDA / TensorRT)
+      - name: Configure (edgevision_cpu only, no CUDA / TensorRT)
         run: cmake -S cpp -B cpp/build-cpu -DEDGEVISION_CPU_ONLY=ON -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
@@ -102,3 +102,14 @@ jobs:
 
       - name: Test
         run: ctest --test-dir cpp/build-cpu --output-on-failure
+
+      - name: clang-format (whole C++ tree, cpp/.clang-format)
+        run: |
+          clang-format --version
+          clang-format --dry-run --Werror cpp/src/*.cpp cpp/src/*.cu cpp/include/edgevision/*.hpp cpp/tests/*.cpp cpp/tests/*.hpp
+
+      - name: clang-tidy (CPU sources, cpp/.clang-tidy; findings are errors)
+        run: |
+          command -v clang-tidy >/dev/null || sudo apt-get install -y clang-tidy
+          clang-tidy --version
+          clang-tidy cpp/src/tracker.cpp cpp/src/metrics.cpp cpp/src/names.cpp cpp/src/cli.cpp cpp/src/report.cpp                      cpp/tests/test_tracker.cpp cpp/tests/test_cli.cpp cpp/tests/test_report.cpp                      -- -std=c++17 -Icpp/include

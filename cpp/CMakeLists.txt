@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.22)
 
-# EDGEVISION_CPU_ONLY=ON builds only the GPU-free part of the runtime (the ByteTrack
-# tracker and its test). It needs nothing but a C++17 compiler, so the CI runs it on a
-# plain Ubuntu runner; the default OFF builds the full TensorRT/NVDEC runtime.
-option(EDGEVISION_CPU_ONLY "Build only the tracker library and its test (no CUDA, TensorRT, OpenCV, libav)" OFF)
+# EDGEVISION_CPU_ONLY=ON builds the GPU-free part of the runtime (edgevision_cpu: tracker,
+# metrics, class names, CLI parsing, JSON report) and its tests. It needs nothing but a C++17
+# compiler, so the CI runs it on a plain Ubuntu runner; the default OFF builds the full
+# TensorRT/NVDEC runtime on top of it.
+option(EDGEVISION_CPU_ONLY "Build only edgevision_cpu and its tests (no CUDA, TensorRT, OpenCV, libav)" OFF)
 
 if(EDGEVISION_CPU_ONLY)
   project(edgevision_trt LANGUAGES CXX)
@@ -25,17 +26,27 @@ endif()
 
 enable_testing()
 
-# --- tracker: dependency-free, built and tested everywhere -------------------------------
-add_library(edgevision_tracker STATIC src/tracker.cpp)
-target_include_directories(edgevision_tracker PUBLIC include)
-target_compile_options(edgevision_tracker PRIVATE -Wall -Wextra)
+# --- GPU-free library: built, warned strictly and tested everywhere ------------------------
+set(EDGEVISION_STRICT_WARNINGS -Wall -Wextra -Wpedantic -Wshadow -Wconversion)
 
-add_executable(test_tracker tests/test_tracker.cpp)
-target_link_libraries(test_tracker PRIVATE edgevision_tracker)
-add_test(NAME tracker COMMAND test_tracker)
+add_library(edgevision_cpu STATIC
+  src/tracker.cpp
+  src/metrics.cpp
+  src/names.cpp
+  src/cli.cpp
+  src/report.cpp)
+target_include_directories(edgevision_cpu PUBLIC include)
+target_compile_options(edgevision_cpu PRIVATE ${EDGEVISION_STRICT_WARNINGS})
+
+foreach(suite tracker cli report)
+  add_executable(test_${suite} tests/test_${suite}.cpp)
+  target_link_libraries(test_${suite} PRIVATE edgevision_cpu)
+  target_compile_options(test_${suite} PRIVATE ${EDGEVISION_STRICT_WARNINGS})
+  add_test(NAME ${suite} COMMAND test_${suite})
+endforeach()
 
 if(EDGEVISION_CPU_ONLY)
-  message(STATUS "EDGEVISION_CPU_ONLY: building the tracker and its test only")
+  message(STATUS "EDGEVISION_CPU_ONLY: building edgevision_cpu and its tests only")
   return()
 endif()
 
@@ -60,11 +71,10 @@ add_library(edgevision_core STATIC
   src/detector.cpp
   src/batch_pipeline.cpp
   src/video_decoder.cpp
-  src/metrics.cpp
-  src/names.cpp)
+  src/stream_runner.cpp)
 target_include_directories(edgevision_core PUBLIC include ${TENSORRT_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(edgevision_core PUBLIC
-  edgevision_tracker ${NVINFER_LIBRARY} CUDA::cudart ${OpenCV_LIBS} PkgConfig::LIBAV)
+  edgevision_cpu ${NVINFER_LIBRARY} CUDA::cudart ${OpenCV_LIBS} PkgConfig::LIBAV)
 target_compile_options(edgevision_core PRIVATE
   $<$<COMPILE_LANGUAGE:CXX>:-Wall -Wextra>)
 

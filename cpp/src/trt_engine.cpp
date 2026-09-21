@@ -16,14 +16,22 @@ void TrtEngine::Logger::log(Severity severity, const char* msg) noexcept {
 
 size_t element_size(nvinfer1::DataType type) {
     switch (type) {
-        case nvinfer1::DataType::kFLOAT: return 4;
-        case nvinfer1::DataType::kHALF: return 2;
-        case nvinfer1::DataType::kINT8: return 1;
-        case nvinfer1::DataType::kINT32: return 4;
-        case nvinfer1::DataType::kBOOL: return 1;
-        case nvinfer1::DataType::kUINT8: return 1;
-        case nvinfer1::DataType::kINT64: return 8;
-        default: throw std::runtime_error("unsupported TensorRT tensor data type");
+        case nvinfer1::DataType::kFLOAT:
+            return 4;
+        case nvinfer1::DataType::kHALF:
+            return 2;
+        case nvinfer1::DataType::kINT8:
+            return 1;
+        case nvinfer1::DataType::kINT32:
+            return 4;
+        case nvinfer1::DataType::kBOOL:
+            return 1;
+        case nvinfer1::DataType::kUINT8:
+            return 1;
+        case nvinfer1::DataType::kINT64:
+            return 8;
+        default:
+            throw std::runtime_error("unsupported TensorRT tensor data type");
     }
 }
 

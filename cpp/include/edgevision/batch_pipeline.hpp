@@ -22,12 +22,12 @@ struct BatchOptions {
     std::vector<std::string> sources;
     bool nvdec = true;  // false: OpenCV decode + H2D copy per worker
     float confidence = 0.5f;
-    int frames = 300;   // measured rounds (each round = one frame per stream)
+    int frames = 300;  // measured rounds (each round = one frame per stream)
     int warmup = 30;
 };
 
 struct BatchResult {
-    PerformanceMetrics rounds;  // stages: gather, inference, postprocess, end_to_end (per round)
+    PerformanceMetrics rounds;                // stages: gather, inference, postprocess, end_to_end (per round)
     std::vector<PerformanceMetrics> workers;  // per stream: decode, preprocess
     std::vector<std::vector<Detection>> first_measured;  // per stream, first measured round
     double measured_seconds = 0.0;

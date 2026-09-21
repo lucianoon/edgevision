@@ -4,6 +4,25 @@ import cv2
 import numpy as np
 
 PAD_COLOR = (114, 114, 114)
+DEFAULT_IMAGE_SIZE = 640
+
+
+def resolve_input_size(shape, requested: int | None, source: str = "graph") -> int:
+    """Square input size the pre-processing must produce for a graph of input `shape`.
+
+    `shape` is (N, 3, H, W) as reported by ONNX Runtime (ints or symbolic strings) or
+    TensorRT (ints, -1 for dynamic). A static graph fixed H = W at export time and is the
+    single source of truth: the configured `requested` size is ignored for it, so an
+    engine exported at 512 is fed 512 whatever app.yaml says. Only a dynamic graph uses
+    `requested` (or DEFAULT_IMAGE_SIZE).
+    """
+    h, w = shape[-2], shape[-1]
+    static = all(isinstance(d, int) and not isinstance(d, bool) and d > 0 for d in (h, w))
+    if static:
+        if h != w:
+            raise ValueError(f"{source}: non-square input {h}x{w} is not supported")
+        return int(h)
+    return int(requested) if requested is not None else DEFAULT_IMAGE_SIZE
 
 
 @dataclass(frozen=True)

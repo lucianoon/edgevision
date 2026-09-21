@@ -124,7 +124,7 @@ def main():
         "backend": args.backend,
         "label": args.label,
         "model_path": model_cfg["paths"][args.backend],
-        "image_size": model_cfg["image_size"],
+        "image_size": detector.image_size,  # effective size (static graphs override app.yaml)
         "confidence": model_cfg["confidence"],
         "source": str(args.source),
         "frames": args.frames,

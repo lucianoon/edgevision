@@ -1,6 +1,15 @@
 import numpy as np
 
-from edgevision.preprocess import PAD_COLOR, letterbox, preprocess, to_tensor
+import pytest
+
+from edgevision.preprocess import (
+    DEFAULT_IMAGE_SIZE,
+    PAD_COLOR,
+    letterbox,
+    preprocess,
+    resolve_input_size,
+    to_tensor,
+)
 
 
 def test_letterbox_portrait_pads_horizontally():
@@ -55,3 +64,21 @@ def test_preprocess_output_shape():
 
     assert tensor.shape == (1, 3, 640, 640)
     assert info.source_height == 720 and info.source_width == 1280
+
+
+def test_resolve_input_size_static_graph_wins_over_config():
+    # ONNX Runtime reports ints for a static export; the configured size is ignored.
+    assert resolve_input_size([1, 3, 512, 512], 640) == 512
+    # TensorRT reports a tuple of ints for a static engine.
+    assert resolve_input_size((1, 3, 640, 640), None) == 640
+
+
+def test_resolve_input_size_dynamic_graph_uses_config_or_default():
+    # ONNX Runtime: symbolic names; TensorRT: -1 for dynamic dims.
+    assert resolve_input_size(["batch", 3, "height", "width"], 512) == 512
+    assert resolve_input_size((-1, 3, -1, -1), None) == DEFAULT_IMAGE_SIZE
+
+
+def test_resolve_input_size_rejects_non_square_graph():
+    with pytest.raises(ValueError, match="non-square"):
+        resolve_input_size([1, 3, 384, 640], None)

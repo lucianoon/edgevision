@@ -7,7 +7,7 @@ import onnxruntime as ort
 from edgevision.detector import Detection
 from edgevision.metrics import PerformanceMetrics
 from edgevision.postprocess import postprocess
-from edgevision.preprocess import preprocess
+from edgevision.preprocess import preprocess, resolve_input_size
 
 PREFERRED_PROVIDERS = ("CUDAExecutionProvider", "CPUExecutionProvider")
 
@@ -27,7 +27,7 @@ class OnnxDetector:
         model_path: str,
         confidence: float = 0.5,
         iou_threshold: float = 0.45,
-        image_size: int = 640,
+        image_size: int | None = None,
         providers: list[str] | None = None,
         metrics: PerformanceMetrics | None = None,
     ):
@@ -36,11 +36,13 @@ class OnnxDetector:
             providers = [p for p in PREFERRED_PROVIDERS if p in available]
 
         self.session = ort.InferenceSession(model_path, providers=providers)
-        self.input_name = self.session.get_inputs()[0].name
+        graph_input = self.session.get_inputs()[0]
+        self.input_name = graph_input.name
         self.names = _load_class_names(self.session)
         self.confidence = confidence
         self.iou_threshold = iou_threshold
-        self.image_size = image_size
+        # Static graphs carry their size; `image_size` only matters for dynamic exports.
+        self.image_size = resolve_input_size(graph_input.shape, image_size, model_path)
         self.metrics = metrics
 
     @property

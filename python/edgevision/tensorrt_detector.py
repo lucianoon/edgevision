@@ -20,7 +20,7 @@ except ImportError:  # older cuda-python
 from edgevision.detector import Detection
 from edgevision.metrics import PerformanceMetrics
 from edgevision.postprocess import postprocess
-from edgevision.preprocess import preprocess
+from edgevision.preprocess import preprocess, resolve_input_size
 
 
 def _check(result):
@@ -72,7 +72,7 @@ class TensorRTDetector:
         engine_path: str,
         confidence: float = 0.5,
         iou_threshold: float = 0.45,
-        image_size: int = 640,
+        image_size: int | None = None,
         class_names_path: str | None = None,
         metrics: PerformanceMetrics | None = None,
     ):
@@ -105,7 +105,9 @@ class TensorRTDetector:
         self.names = _load_class_names(class_names_path or _sidecar_names(engine_path))
         self.confidence = confidence
         self.iou_threshold = iou_threshold
-        self.image_size = image_size
+        # The engine fixed its input at build time (512 or 640 here); `image_size` is only
+        # a fallback for dynamic-shape engines.
+        self.image_size = resolve_input_size(self.input_shape, image_size, engine_path)
         self.metrics = metrics
 
     @property

@@ -60,3 +60,10 @@ def test_onnx_detector_records_stage_metrics(frame):
     detector.detect(frame)
 
     assert set(metrics.summary()) == {"preprocess", "inference", "postprocess"}
+
+
+def test_onnx_detector_takes_input_size_from_static_graph():
+    # yolo26n.onnx was exported at 640; a conflicting image_size must not reach preprocess
+    # (it would feed a 512 tensor to a 640 graph). The graph is the source of truth.
+    assert OnnxDetector(ONNX_PATH, image_size=512).image_size == 640
+    assert OnnxDetector(ONNX_PATH).image_size == 640

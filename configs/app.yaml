@@ -6,7 +6,8 @@ model:
     tensorrt: models/tensorrt/yolo26n_nms_512_fp16.engine # Sprint 7 default (scripts/export_engines_ultralytics.py); 640: yolo26n_nms_fp16.engine
   confidence: 0.50
   iou_threshold: 0.45       # our NMS (raw-head graphs only); nms graphs bake conf/iou at export time
-  image_size: 640
+  image_size: 640           # pytorch backend (and dynamic-shape graphs) only; static onnx graphs and
+                            # TensorRT engines carry their input size (640 / 512 above) and override this
   device: auto              # pytorch backend only
 
 video:

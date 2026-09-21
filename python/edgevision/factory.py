@@ -6,6 +6,8 @@ def build_detector(model_cfg: dict, metrics: PerformanceMetrics | None = None):
 
     backend: pytorch (Ultralytics, opaque pre/post) | onnx (ONNX Runtime, ours)
              | tensorrt (TensorRT engine, ours).
+    image_size: used by the pytorch backend; onnx/tensorrt graphs exported with a static
+             shape carry their own size and only fall back to it when the graph is dynamic.
     """
     backend = model_cfg["backend"]
     path = model_cfg["paths"][backend]
@@ -29,7 +31,7 @@ def build_detector(model_cfg: dict, metrics: PerformanceMetrics | None = None):
             model_path=path,
             confidence=model_cfg["confidence"],
             iou_threshold=model_cfg["iou_threshold"],
-            image_size=model_cfg["image_size"],
+            image_size=model_cfg.get("image_size"),
             metrics=metrics,
         )
 
@@ -40,7 +42,7 @@ def build_detector(model_cfg: dict, metrics: PerformanceMetrics | None = None):
             engine_path=path,
             confidence=model_cfg["confidence"],
             iou_threshold=model_cfg["iou_threshold"],
-            image_size=model_cfg["image_size"],
+            image_size=model_cfg.get("image_size"),
             metrics=metrics,
         )
 

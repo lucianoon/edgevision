@@ -16,3 +16,4 @@ benchmarks/results/*
 benchmarks/results/*_times.json
 runs/
 cpp/build/
+datasets/

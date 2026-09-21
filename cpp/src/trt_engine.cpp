@@ -1,5 +1,6 @@
 #include "edgevision/trt_engine.hpp"
 
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -39,6 +40,14 @@ TrtEngine::TrtEngine(const std::string& engine_path) {
     std::ifstream file(engine_path, std::ios::binary);
     if (!file) throw std::runtime_error("cannot open engine: " + engine_path);
     std::vector<char> blob((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    // Ultralytics exports prefix the engine with <int32 LE length><JSON metadata>.
+    if (blob.size() > 4) {
+        const auto* h = reinterpret_cast<const unsigned char*>(blob.data());
+        const std::int32_t length = static_cast<std::int32_t>(h[0] | (h[1] << 8) | (h[2] << 16) | (h[3] << 24));
+        if (length > 0 && static_cast<size_t>(length) + 4 < blob.size() && blob[4] == '{')
+            blob.erase(blob.begin(), blob.begin() + 4 + length);
+    }
 
     runtime_.reset(nvinfer1::createInferRuntime(logger_));
     if (!runtime_) throw std::runtime_error("createInferRuntime failed");

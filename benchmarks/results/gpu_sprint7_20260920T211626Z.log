@@ -1,0 +1,226 @@
+== environment
+Tesla T4, 595.91.07
+WARNING ⚠️ user config directory '/root/.config/Ultralytics' is not writable, using '/tmp/Ultralytics'. Set YOLO_CONFIG_DIR to override.
+Creating new Ultralytics Settings v0.0.8 file ✅ 
+View Ultralytics Settings with 'yolo settings' or at '/tmp/Ultralytics/settings.json'
+Update Settings with 'yolo settings key=value', i.e. 'yolo settings runs_dir=path/to/dir'. For help see https://docs.ultralytics.com/usage/settings.
+tensorrt 10.16.1.11 | ultralytics 8.4.157 | torch 2.14.0+cu130 True
+== COCO val2017
+images: 0, labels: 4952, list: 5000
+== build C++ runtime
+[1/14] Building CXX object CMakeFiles/edgevision_core.dir/src/video_decoder.cpp.o
+[2/14] Building CXX object CMakeFiles/edgevision_core.dir/src/trt_engine.cpp.o
+[3/14] Building CXX object CMakeFiles/edgevision_core.dir/src/metrics.cpp.o
+[4/14] Building CXX object CMakeFiles/edgevision_core.dir/src/names.cpp.o
+[5/14] Building CXX object CMakeFiles/edgevision_core.dir/src/detector.cpp.o
+[6/14] Building CUDA object CMakeFiles/edgevision_core.dir/src/letterbox.cu.o
+[7/14] Building CXX object CMakeFiles/edgevision_core.dir/src/batch_pipeline.cpp.o
+[8/14] Linking CXX static library libedgevision_core.a
+[9/14] Building CXX object CMakeFiles/test_letterbox.dir/tests/test_letterbox.cpp.o
+[10/14] Linking CXX executable test_letterbox
+[11/14] Building CXX object CMakeFiles/test_nv12.dir/tests/test_nv12.cpp.o
+[12/14] Linking CXX executable test_nv12
+[13/14] Building CXX object CMakeFiles/edgevision_trt.dir/src/main.cpp.o
+[14/14] Linking CXX executable edgevision_trt
+Test project /workspace/edgevision/cpp/build
+    Start 1: letterbox
+1/2 Test #1: letterbox ........................   Passed    9.86 sec
+    Start 2: nv12
+2/2 Test #2: nv12 .............................   Passed    0.57 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =  10.44 sec
+== engines (Ultralytics export; INT8 calibrated on 10% of val2017)
+[KDownloading https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n.pt to 'models/pytorch/yolo26n.pt': 100% ━━━━━━━━━━━━ 5.3MB 110.6MB/s 0.0s
+WARNING ⚠️ 'int8' is deprecated and will be removed in the future. Use 'quantize' instead.
+WARNING ⚠️ TensorRT requires GPU export, automatically assigning device=0
+Ultralytics 8.4.157 🚀 Python-3.12.3 torch-2.14.0+cu130 CUDA:0 (Tesla T4, 14913MiB)
+💡 ProTip: Export to OpenVINO format for best performance on Intel hardware. Learn more at https://docs.ultralytics.com/integrations/openvino
+YOLO26n summary (fused): 120 layers, 2,408,932 parameters, 0 gradients, 5.5 GFLOPs
+
+[34m[1mPyTorch:[0m starting from 'models/pytorch/yolo26n.pt' with input shape (1, 3, 640, 640) BCHW and output shape(s) (1, 300, 6) (5.3 MB)
+
+[34m[1mONNX:[0m starting export with onnx 1.23.0 opset 18...
+[34m[1mONNX:[0m slimming with onnxslim 0.1.96...
+[34m[1mONNX:[0m export success ✅ 6.5s, saved as 'models/pytorch/yolo26n.onnx' (9.5 MB)
+
+[34m[1mTensorRT:[0m starting export with TensorRT 10.16.1.11...
+[09/20/2026-21:19:20] [TRT] [I] [MemUsageChange] Init CUDA: CPU +0, GPU +0, now: CPU 717, GPU 268 (MiB)
+[09/20/2026-21:19:21] [TRT] [I] ----------------------------------------------------------------
+[09/20/2026-21:19:21] [TRT] [I] Input filename:   models/pytorch/yolo26n.onnx
+[09/20/2026-21:19:21] [TRT] [I] ONNX IR version:  0.0.8
+[09/20/2026-21:19:21] [TRT] [I] Opset version:    18
+[09/20/2026-21:19:21] [TRT] [I] Producer name:    pytorch
+[09/20/2026-21:19:21] [TRT] [I] Producer version: 2.14.0
+[09/20/2026-21:19:21] [TRT] [I] Domain:           
+[09/20/2026-21:19:21] [TRT] [I] Model version:    0
+[09/20/2026-21:19:21] [TRT] [I] Doc string:       
+[09/20/2026-21:19:21] [TRT] [I] ----------------------------------------------------------------
+[34m[1mTensorRT:[0m input "images" with shape(1, 3, 640, 640) DataType.FLOAT
+[34m[1mTensorRT:[0m output "output0" with shape(1, 300, 6) DataType.FLOAT
+[34m[1mTensorRT:[0m building FP16 engine as models/pytorch/yolo26n.engine
+[09/20/2026-21:19:21] [TRT] [I] BuilderFlag::kTF32 is set but hardware does not support TF32. Disabling TF32.
+[09/20/2026-21:19:21] [TRT] [I] [MemUsageChange] Init builder kernel library: CPU +76, GPU +2, now: CPU 1005, GPU 270 (MiB)
+[09/20/2026-21:19:21] [TRT] [I] BuilderFlag::kTF32 is set but hardware does not support TF32. Disabling TF32.
+[09/20/2026-21:19:21] [TRT] [I] Local timing cache in use. Profiling results in this builder pass will not be stored.
+[09/20/2026-21:21:52] [TRT] [I] Compiler backend is used during engine build.
+[09/20/2026-21:23:34] [TRT] [I] Detected 1 inputs and 1 output network tensors.
+[09/20/2026-21:23:36] [TRT] [I] Total Host Persistent Memory: 601280 bytes
+[09/20/2026-21:23:36] [TRT] [I] Total Device Persistent Memory: 671232 bytes
+[09/20/2026-21:23:36] [TRT] [I] Max Scratch Memory: 1382400 bytes
+[09/20/2026-21:23:36] [TRT] [I] [BlockAssignment] Started assigning block shifts. This will take 175 steps to complete.
+[09/20/2026-21:23:36] [TRT] [I] [BlockAssignment] Algorithm ShiftNTopDown took 18.6667ms to assign 11 blocks to 175 nodes requiring 9139200 bytes.
+[09/20/2026-21:23:36] [TRT] [I] Total Activation Memory: 9139200 bytes
+[09/20/2026-21:23:36] [TRT] [I] Total Weights Memory: 4916928 bytes
+[09/20/2026-21:23:36] [TRT] [I] Compiler backend is used during engine execution.
+[09/20/2026-21:23:36] [TRT] [I] Engine generation completed in 254.918 seconds.
+[09/20/2026-21:23:36] [TRT] [I] [MemUsageStats] Peak memory usage of TRT CPU/GPU memory allocators: CPU 0 MiB, GPU 50 MiB
+[34m[1mTensorRT:[0m export success ✅ 262.9s, saved as 'models/pytorch/yolo26n.engine' (6.9 MB)
+
+Export complete (306.4s)
+Results saved to [1m/workspace/edgevision/models/pytorch/yolo26n.engine[0m
+Predict:         yolo predict task=detect model=models/pytorch/yolo26n.engine imgsz=640 quantize=16
+Validate:        yolo val task=detect model=models/pytorch/yolo26n.engine imgsz=640 data=/home/lq/codes/ultralytics/ultralytics/cfg/datasets/coco.yaml quantize=16 
+Visualize:       https://netron.app
+{"engine": "models/tensorrt/yolo26n_nms_640_fp16.engine", "imgsz": 640, "precision": "fp16", "nms": true, "export_seconds": 306.4, "size_mb": 7.2}
+WARNING ⚠️ 'int8' is deprecated and will be removed in the future. Use 'quantize' instead.
+WARNING ⚠️ TensorRT requires GPU export, automatically assigning device=0
+Ultralytics 8.4.157 🚀 Python-3.12.3 torch-2.14.0+cu130 CUDA:0 (Tesla T4, 14913MiB)
+YOLO26n summary (fused): 120 layers, 2,408,932 parameters, 0 gradients, 3.5 GFLOPs
+
+[34m[1mPyTorch:[0m starting from 'models/pytorch/yolo26n.pt' with input shape (1, 3, 512, 512) BCHW and output shape(s) (1, 300, 6) (5.3 MB)
+
+[34m[1mONNX:[0m starting export with onnx 1.23.0 opset 18...
+[34m[1mONNX:[0m slimming with onnxslim 0.1.96...
+[34m[1mONNX:[0m export success ✅ 3.0s, saved as 'models/pytorch/yolo26n.onnx' (9.4 MB)
+
+[34m[1mTensorRT:[0m starting export with TensorRT 10.16.1.11...
+[09/20/2026-21:23:42] [TRT] [I] ----------------------------------------------------------------
+[09/20/2026-21:23:42] [TRT] [I] Input filename:   models/pytorch/yolo26n.onnx
+[09/20/2026-21:23:42] [TRT] [I] ONNX IR version:  0.0.8
+[09/20/2026-21:23:42] [TRT] [I] Opset version:    18
+[09/20/2026-21:23:42] [TRT] [I] Producer name:    pytorch
+[09/20/2026-21:23:42] [TRT] [I] Producer version: 2.14.0
+[09/20/2026-21:23:42] [TRT] [I] Domain:           
+[09/20/2026-21:23:42] [TRT] [I] Model version:    0
+[09/20/2026-21:23:42] [TRT] [I] Doc string:       
+[09/20/2026-21:23:42] [TRT] [I] ----------------------------------------------------------------
+[34m[1mTensorRT:[0m input "images" with shape(1, 3, 512, 512) DataType.FLOAT
+[34m[1mTensorRT:[0m output "output0" with shape(1, 300, 6) DataType.FLOAT
+[34m[1mTensorRT:[0m building FP16 engine as models/pytorch/yolo26n.engine
+[09/20/2026-21:23:42] [TRT] [I] BuilderFlag::kTF32 is set but hardware does not support TF32. Disabling TF32.
+[09/20/2026-21:23:42] [TRT] [I] [MemUsageChange] Init builder kernel library: CPU -89, GPU +0, now: CPU 2524, GPU 330 (MiB)
+[09/20/2026-21:23:42] [TRT] [I] BuilderFlag::kTF32 is set but hardware does not support TF32. Disabling TF32.
+[09/20/2026-21:23:42] [TRT] [I] Local timing cache in use. Profiling results in this builder pass will not be stored.
+[09/20/2026-21:25:12] [TRT] [I] Compiler backend is used during engine build.
+[09/20/2026-21:26:51] [TRT] [I] Detected 1 inputs and 1 output network tensors.
+[09/20/2026-21:26:52] [TRT] [I] Total Host Persistent Memory: 581632 bytes
+[09/20/2026-21:26:52] [TRT] [I] Total Device Persistent Memory: 393216 bytes
+[09/20/2026-21:26:52] [TRT] [I] Max Scratch Memory: 589824 bytes
+[09/20/2026-21:26:52] [TRT] [I] [BlockAssignment] Started assigning block shifts. This will take 197 steps to complete.
+[09/20/2026-21:26:52] [TRT] [I] [BlockAssignment] Algorithm ShiftNTopDown took 19.9471ms to assign 11 blocks to 197 nodes requiring 5750784 bytes.
+[09/20/2026-21:26:52] [TRT] [I] Total Activation Memory: 5750784 bytes
+[09/20/2026-21:26:53] [TRT] [I] Total Weights Memory: 4898624 bytes
+[09/20/2026-21:26:53] [TRT] [I] Compiler backend is used during engine execution.
+[09/20/2026-21:26:53] [TRT] [I] Engine generation completed in 190.325 seconds.
+[09/20/2026-21:26:53] [TRT] [I] [MemUsageStats] Peak memory usage of TRT CPU/GPU memory allocators: CPU 0 MiB, GPU 50 MiB
+[34m[1mTensorRT:[0m export success ✅ 194.1s, saved as 'models/pytorch/yolo26n.engine' (6.8 MB)
+
+Export complete (196.1s)
+Results saved to [1m/workspace/edgevision/models/pytorch/yolo26n.engine[0m
+Predict:         yolo predict task=detect model=models/pytorch/yolo26n.engine imgsz=512 quantize=16
+Validate:        yolo val task=detect model=models/pytorch/yolo26n.engine imgsz=512 data=/home/lq/codes/ultralytics/ultralytics/cfg/datasets/coco.yaml quantize=16 
+Visualize:       https://netron.app
+{"engine": "models/tensorrt/yolo26n_nms_512_fp16.engine", "imgsz": 512, "precision": "fp16", "nms": true, "export_seconds": 196.1, "size_mb": 7.2}
+WARNING ⚠️ 'int8' is deprecated and will be removed in the future. Use 'quantize' instead.
+WARNING ⚠️ TensorRT requires GPU export, automatically assigning device=0
+Ultralytics 8.4.157 🚀 Python-3.12.3 torch-2.14.0+cu130 CUDA:0 (Tesla T4, 14913MiB)
+YOLO26n summary (fused): 120 layers, 2,408,932 parameters, 0 gradients, 2.3 GFLOPs
+
+[34m[1mPyTorch:[0m starting from 'models/pytorch/yolo26n.pt' with input shape (1, 3, 416, 416) BCHW and output shape(s) (1, 300, 6) (5.3 MB)
+
+[34m[1mONNX:[0m starting export with onnx 1.23.0 opset 18...
+[34m[1mONNX:[0m slimming with onnxslim 0.1.96...
+[34m[1mONNX:[0m export success ✅ 1.7s, saved as 'models/pytorch/yolo26n.onnx' (9.4 MB)
+
+[34m[1mTensorRT:[0m starting export with TensorRT 10.16.1.11...
+[09/20/2026-21:26:55] [TRT] [I] ----------------------------------------------------------------
+[09/20/2026-21:26:55] [TRT] [I] Input filename:   models/pytorch/yolo26n.onnx
+[09/20/2026-21:26:55] [TRT] [I] ONNX IR version:  0.0.8
+[09/20/2026-21:26:55] [TRT] [I] Opset version:    18
+[09/20/2026-21:26:55] [TRT] [I] Producer name:    pytorch
+[09/20/2026-21:26:55] [TRT] [I] Producer version: 2.14.0
+[09/20/2026-21:26:55] [TRT] [I] Domain:           
+[09/20/2026-21:26:55] [TRT] [I] Model version:    0
+[09/20/2026-21:26:55] [TRT] [I] Doc string:       
+[09/20/2026-21:26:55] [TRT] [I] ----------------------------------------------------------------
+[34m[1mTensorRT:[0m input "images" with shape(1, 3, 416, 416) DataType.FLOAT
+[34m[1mTensorRT:[0m output "output0" with shape(1, 300, 6) DataType.FLOAT
+[34m[1mTensorRT:[0m building FP16 engine as models/pytorch/yolo26n.engine
+[09/20/2026-21:26:55] [TRT] [I] BuilderFlag::kTF32 is set but hardware does not support TF32. Disabling TF32.
+[09/20/2026-21:26:55] [TRT] [I] [MemUsageChange] Init builder kernel library: CPU -89, GPU +0, now: CPU 2583, GPU 336 (MiB)
+[09/20/2026-21:26:56] [TRT] [I] BuilderFlag::kTF32 is set but hardware does not support TF32. Disabling TF32.
+[09/20/2026-21:26:56] [TRT] [I] Local timing cache in use. Profiling results in this builder pass will not be stored.
+[09/20/2026-21:28:25] [TRT] [I] Compiler backend is used during engine build.
+[09/20/2026-21:30:06] [TRT] [I] Detected 1 inputs and 1 output network tensors.
+[09/20/2026-21:30:07] [TRT] [I] Total Host Persistent Memory: 585904 bytes
+[09/20/2026-21:30:07] [TRT] [I] Total Device Persistent Memory: 182784 bytes
+[09/20/2026-21:30:07] [TRT] [I] Max Scratch Memory: 271872 bytes
+[09/20/2026-21:30:07] [TRT] [I] [BlockAssignment] Started assigning block shifts. This will take 190 steps to complete.
+[09/20/2026-21:30:07] [TRT] [I] [BlockAssignment] Algorithm ShiftNTopDown took 19.8652ms to assign 11 blocks to 190 nodes requiring 3798016 bytes.
+[09/20/2026-21:30:07] [TRT] [I] Total Activation Memory: 3798016 bytes
+[09/20/2026-21:30:07] [TRT] [I] Total Weights Memory: 4887744 bytes
+[09/20/2026-21:30:07] [TRT] [I] Compiler backend is used during engine execution.
+[09/20/2026-21:30:07] [TRT] [I] Engine generation completed in 191.585 seconds.
+[09/20/2026-21:30:07] [TRT] [I] [MemUsageStats] Peak memory usage of TRT CPU/GPU memory allocators: CPU 0 MiB, GPU 50 MiB
+[34m[1mTensorRT:[0m export success ✅ 194.1s, saved as 'models/pytorch/yolo26n.engine' (6.8 MB)
+
+Export complete (194.5s)
+Results saved to [1m/workspace/edgevision/models/pytorch/yolo26n.engine[0m
+Predict:         yolo predict task=detect model=models/pytorch/yolo26n.engine imgsz=416 quantize=16
+Validate:        yolo val task=detect model=models/pytorch/yolo26n.engine imgsz=416 data=/home/lq/codes/ultralytics/ultralytics/cfg/datasets/coco.yaml quantize=16 
+Visualize:       https://netron.app
+{"engine": "models/tensorrt/yolo26n_nms_416_fp16.engine", "imgsz": 416, "precision": "fp16", "nms": true, "export_seconds": 194.5, "size_mb": 7.1}
+summary: benchmarks/results/sprint7_exports.json (3 exports)
+WARNING ⚠️ 'int8' is deprecated and will be removed in the future. Use 'quantize' instead.
+WARNING ⚠️ TensorRT requires GPU export, automatically assigning device=0
+Ultralytics 8.4.157 🚀 Python-3.12.3 torch-2.14.0+cu130 CUDA:0 (Tesla T4, 14913MiB)
+YOLO26n summary (fused): 122 layers, 2,408,932 parameters, 0 gradients, 5.5 GFLOPs
+
+[34m[1mPyTorch:[0m starting from 'models/pytorch/yolo26n.pt' with input shape (1, 3, 640, 640) BCHW and output shape(s) (1, 300, 6) (5.3 MB)
+
+[34m[1mONNX:[0m starting export with onnx 1.23.0 opset 18...
+[34m[1mONNX:[0m slimming with onnxslim 0.1.96...
+[34m[1mONNX:[0m export success ✅ 2.3s, saved as 'models/pytorch/yolo26n.onnx' (9.5 MB)
+[34m[1mTensorRT:[0m collecting INT8 calibration images from 'data=configs/coco_val.yaml'
+ERROR ❌ [34m[1mTensorRT:[0m export failure 2.3s: configs/coco_val.yaml 'train:' key missing ❌.
+'train' and 'val' are required in all data YAMLs.
+Export to TensorRT in the cloud with Ultralytics Platform: https://platform.ultralytics.com
+Traceback (most recent call last):
+  File "/workspace/edgevision/scripts/export_engines_ultralytics.py", line 89, in <module>
+    main()
+  File "/workspace/edgevision/scripts/export_engines_ultralytics.py", line 81, in main
+    results.append(export_one(args.weights, imgsz, precision, family == "nms", args.data, args.fraction,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/edgevision/scripts/export_engines_ultralytics.py", line 28, in export_one
+    model.export(
+  File "/usr/local/lib/python3.12/dist-packages/ultralytics/engine/model.py", line 784, in export
+    return Exporter(overrides=args, _callbacks=self.callbacks)(model=self.model)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/ultralytics/engine/exporter.py", line 976, in __call__
+    f = getattr(self, f"export_{fmt}")()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/ultralytics/engine/exporter.py", line 496, in outer_func
+    f = inner_func(*args, **kwargs)  # exported file/dir or tuple of (file/dir, *)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/ultralytics/engine/exporter.py", line 1409, in export_engine
+    dataset=self.get_int8_calibration_dataloader(prefix) if self.args.quantize == 8 and not self.qat else None,
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/ultralytics/engine/exporter.py", line 1021, in get_int8_calibration_dataloader
+    data = check_det_dataset(self.args.data, split=self.args.split)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/ultralytics/data/utils.py", line 591, in check_det_dataset
+    raise SyntaxError(
+SyntaxError: configs/coco_val.yaml 'train:' key missing ❌.
+'train' and 'val' are required in all data YAMLs.

@@ -1,0 +1,546 @@
+== environment
+Tesla T4, 595.91.07
+WARNING ⚠️ user config directory '/root/.config/Ultralytics' is not writable, using '/tmp/Ultralytics'. Set YOLO_CONFIG_DIR to override.
+Creating new Ultralytics Settings v0.0.8 file ✅ 
+View Ultralytics Settings with 'yolo settings' or at '/tmp/Ultralytics/settings.json'
+Update Settings with 'yolo settings key=value', i.e. 'yolo settings runs_dir=path/to/dir'. For help see https://docs.ultralytics.com/usage/settings.
+tensorrt 10.16.1.11 | ultralytics 8.4.157 | torch 2.14.0+cu130 True
+== COCO val2017
+images: 5000, labels: 4952, calib: 500, eval: 4500
+== build C++ runtime
+ninja: no work to do.
+Test project /workspace/edgevision/cpp/build
+    Start 1: letterbox
+1/2 Test #1: letterbox ........................   Passed    0.85 sec
+    Start 2: nv12
+2/2 Test #2: nv12 .............................   Passed    0.56 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   1.43 sec
+== engines (Ultralytics export; INT8 calibrated on 500 val2017 images disjoint from the 4500 used for mAP)
+exists: models/tensorrt/yolo26n_nms_640_fp16.engine
+exists: models/tensorrt/yolo26n_nms_512_fp16.engine
+exists: models/tensorrt/yolo26n_nms_416_fp16.engine
+summary: benchmarks/results/sprint7_exports.json (0 exports)
+exists: models/tensorrt/yolo26n_raw_640_int8.engine
+WARNING ⚠️ 'int8' is deprecated and will be removed in the future. Use 'quantize' instead.
+WARNING ⚠️ TensorRT requires GPU export, automatically assigning device=0
+Ultralytics 8.4.157 🚀 Python-3.12.3 torch-2.14.0+cu130 CUDA:0 (Tesla T4, 14913MiB)
+💡 ProTip: Export to OpenVINO format for best performance on Intel hardware. Learn more at https://docs.ultralytics.com/integrations/openvino
+YOLO26n summary (fused): 120 layers, 2,408,932 parameters, 0 gradients, 5.5 GFLOPs
+
+[34m[1mPyTorch:[0m starting from 'models/pytorch/yolo26n.pt' with input shape (1, 3, 640, 640) BCHW and output shape(s) (1, 300, 6) (5.3 MB)
+
+[34m[1mONNX:[0m starting export with onnx 1.23.0 opset 18...
+[34m[1mONNX:[0m slimming with onnxslim 0.1.96...
+[34m[1mONNX:[0m export success ✅ 3.2s, saved as 'models/pytorch/yolo26n.onnx' (9.5 MB)
+[34m[1mTensorRT:[0m collecting INT8 calibration images from 'data=configs/coco_calib.yaml'
+[KDownloading https://ultralytics.com/assets/Arial.ttf to '/tmp/Ultralytics/Arial.ttf': 100% ━━━━━━━━━━━━ 755.1KB 30.6MB/s 0.0s
+WARNING ⚠️ [34m[1mval: [0mSlow image access detected (ping: 21.6±47.6 ms, read: 138.6±72.2 MB/s, size: 142.7 KB). Use local storage instead of remote/mounted storage for better performance. See https://docs.ultralytics.com/guides/model-training-tips
+[K[34m[1mval: [0mScanning /workspace/edgevision/datasets/coco/labels/val2017.cache... 496 images, 4 backgrounds, 0 corrupt: 100% ━━━━━━━━━━━━ 500/500 123.4Mit/s 0.0s
+
+[34m[1mTensorRT:[0m starting export with TensorRT 10.16.1.11...
+[09/21/2026-00:08:29] [TRT] [I] [MemUsageChange] Init CUDA: CPU +0, GPU +0, now: CPU 712, GPU 268 (MiB)
+[09/21/2026-00:08:30] [TRT] [I] ----------------------------------------------------------------
+[09/21/2026-00:08:30] [TRT] [I] Input filename:   models/pytorch/yolo26n.onnx
+[09/21/2026-00:08:30] [TRT] [I] ONNX IR version:  0.0.8
+[09/21/2026-00:08:30] [TRT] [I] Opset version:    18
+[09/21/2026-00:08:30] [TRT] [I] Producer name:    pytorch
+[09/21/2026-00:08:30] [TRT] [I] Producer version: 2.14.0
+[09/21/2026-00:08:30] [TRT] [I] Domain:           
+[09/21/2026-00:08:30] [TRT] [I] Model version:    0
+[09/21/2026-00:08:30] [TRT] [I] Doc string:       
+[09/21/2026-00:08:30] [TRT] [I] ----------------------------------------------------------------
+[34m[1mTensorRT:[0m input "images" with shape(1, 3, 640, 640) DataType.FLOAT
+[34m[1mTensorRT:[0m output "output0" with shape(1, 300, 6) DataType.FLOAT
+[34m[1mTensorRT:[0m building INT8 engine as models/pytorch/yolo26n.engine
+[34m[1mTensorRT:[0m keeping 94 head layers out of INT8 for accuracy
+[09/21/2026-00:08:30] [TRT] [I] BuilderFlag::kTF32 is set but hardware does not support TF32. Disabling TF32.
+[09/21/2026-00:08:30] [TRT] [I] [MemUsageChange] Init builder kernel library: CPU +76, GPU +2, now: CPU 1008, GPU 270 (MiB)
+[09/21/2026-00:08:31] [TRT] [I] Reading Calibration Cache for calibrator: MinMaxCalibration
+[09/21/2026-00:08:31] [TRT] [I] Generated calibration scales using calibration cache. Make sure that calibration cache has latest scales.
+[09/21/2026-00:08:31] [TRT] [I] To regenerate calibration cache, please delete the existing one. TensorRT will generate a new calibration cache.
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.0/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.0/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.0/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/Split_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/Split_output_1, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/m.0/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/m.0/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/m.0/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/m.0/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/m.0/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/m.0/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/m.0/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.2/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.3/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.3/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.3/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/Split_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/Split_output_1, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/m.0/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/m.0/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/m.0/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/m.0/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/m.0/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/m.0/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/m.0/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.4/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.5/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.5/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.5/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/Split_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/Split_output_1, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/m/m.0/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/m/m.0/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/m/m.0/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/m/m.0/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/m/m.0/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/m/m.0/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/m/m.0/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/m/m.1/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/m/m.1/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/m/m.1/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/m/m.1/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/m/m.1/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/m/m.1/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/m/m.1/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/cv3/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/cv3/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/m.0/cv3/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.6/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.7/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.7/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.7/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/Split_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/Split_output_1, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/m/m.0/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/m/m.0/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/m/m.0/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/m/m.0/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/m/m.0/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/m/m.0/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/m/m.0/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/m/m.1/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/m/m.1/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/m/m.1/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/m/m.1/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/m/m.1/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/m/m.1/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/m/m.1/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/cv3/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/cv3/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/m.0/cv3/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.8/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.9/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.9/m/MaxPool_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.9/m_1/MaxPool_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.9/m_2/MaxPool_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.9/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.9/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.9/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.9/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.9/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/Split_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/Split_output_1, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/qkv/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/Reshape_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/Split_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/Split_output_1, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/Split_output_2, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/Constant_2_output_0_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/Reshape_2_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/Transpose_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/pe/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/MatMul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/Softmax_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/Softmax_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/Transpose_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/MatMul_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/Reshape_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/proj/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/ffn/ffn.0/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/ffn/ffn.0/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/ffn/ffn.0/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/ffn/ffn.1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/Add_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.11/Resize_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.12/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/Split_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/Split_output_1, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/m/m.0/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/m/m.0/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/m/m.0/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/m/m.0/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/m/m.0/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/m/m.0/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/m/m.0/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/m/m.1/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/m/m.1/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/m/m.1/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/m/m.1/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/m/m.1/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/m/m.1/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/m/m.1/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/cv3/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/cv3/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/m.0/cv3/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.13/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.14/Resize_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.15/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/Split_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/Split_output_1, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/m/m.0/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/m/m.0/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/m/m.0/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/m/m.0/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/m/m.0/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/m/m.0/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/m/m.0/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/m/m.1/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/m/m.1/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/m/m.1/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/m/m.1/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/m/m.1/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/m/m.1/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/m/m.1/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/cv3/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/cv3/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/m.0/cv3/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.16/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.17/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.0/cv2.0.0/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.0/cv3.0.0/cv3.0.0.0/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.17/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.0/cv2.0.0/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.0/cv3.0.0/cv3.0.0.0/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.17/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.0/cv2.0.0/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.0/cv3.0.0/cv3.0.0.0/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.18/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.0/cv2.0.1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.0/cv3.0.0/cv3.0.0.1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.0/cv2.0.1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.0/cv3.0.0/cv3.0.0.1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.0/cv2.0.1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.0/cv3.0.0/cv3.0.0.1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.0/cv2.0.2/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.0/cv3.0.1/cv3.0.1.0/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/Split_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/Split_output_1, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Reshape_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.0/cv3.0.1/cv3.0.1.0/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.0/cv3.0.1/cv3.0.1.0/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.0/cv3.0.1/cv3.0.1.1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.0/cv3.0.1/cv3.0.1.1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/m/m.0/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.0/cv3.0.1/cv3.0.1.1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/m/m.0/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.0/cv3.0.2/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/m/m.0/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Reshape_3_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/m/m.0/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/m/m.0/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/m/m.0/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/m/m.0/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/m/m.1/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/m/m.1/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/m/m.1/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/m/m.1/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/m/m.1/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/m/m.1/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/m/m.1/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/cv3/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/cv3/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/m.0/cv3/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.19/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.20/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.1/cv2.1.0/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.1/cv3.1.0/cv3.1.0.0/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.20/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.1/cv2.1.0/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.1/cv3.1.0/cv3.1.0.0/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.20/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.1/cv2.1.0/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.1/cv3.1.0/cv3.1.0.0/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.21/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.1/cv2.1.1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.1/cv3.1.0/cv3.1.0.1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.1/cv2.1.1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.1/cv3.1.0/cv3.1.0.1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.1/cv2.1.1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.1/cv3.1.0/cv3.1.0.1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.1/cv2.1.2/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.1/cv3.1.1/cv3.1.1.0/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/Split_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/Split_output_1, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Reshape_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.1/cv3.1.1/cv3.1.1.0/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.0/cv1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.1/cv3.1.1/cv3.1.1.0/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.0/cv1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.1/cv3.1.1/cv3.1.1.1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.0/cv1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.1/cv3.1.1/cv3.1.1.1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.0/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.1/cv3.1.1/cv3.1.1.1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.0/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.1/cv3.1.2/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.0/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Reshape_4_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.0/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/qkv/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/Reshape_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/Split_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/Split_output_1, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/Split_output_2, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/Reshape_2_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/Transpose_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/pe/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/MatMul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/Softmax_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/Softmax_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/Transpose_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/MatMul_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/Reshape_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/attn/proj/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/ffn/ffn.0/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/ffn/ffn.0/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/ffn/ffn.0/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/ffn/ffn.1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/m.0/m.0.1/Add_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/cv2/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/cv2/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.22/cv2/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.2/cv2.2.0/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.2/cv3.2.0/cv3.2.0.0/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.2/cv2.2.0/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.2/cv3.2.0/cv3.2.0.0/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.2/cv2.2.0/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.2/cv3.2.0/cv3.2.0.0/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.2/cv2.2.1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.2/cv3.2.0/cv3.2.0.1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.2/cv2.2.1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.2/cv3.2.0/cv3.2.0.1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.2/cv2.2.1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.2/cv3.2.0/cv3.2.0.1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv2.2/cv2.2.2/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.2/cv3.2.1/cv3.2.1.0/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Reshape_2_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.2/cv3.2.1/cv3.2.1.0/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Concat_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.2/cv3.2.1/cv3.2.1.0/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.2/cv3.2.1/cv3.2.1.1/conv/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Gather_5_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Pad_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Mul_output_0_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Constant_54_output_0_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /NonMaxSuppression_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor ONNXTRT_castHelper_355_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Reshape_3_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Constant_6_output_0_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor ONNXTRT_Broadcast_314_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor (Unnamed Layer* 735) [Cast]_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Add_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Slice_4_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Div_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Reshape_2_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Concat_3_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /ArgMax_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Cast_2_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor ONNXTRT_castHelper_225_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor (Unnamed Layer* 632) [Constant]_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /GatherND_2_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Mul_2_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Slice_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor ONNXTRT_castHelper_354_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Slice_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /NonMaxSuppression_317_output (1), expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /ArgMax_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Slice_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor ONNXTRT_castHelper_224_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor ONNXTRT_castHelper_220_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor ONNXTRT_castHelper_353_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor ONNXTRT_castHelper_316_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /GatherND_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Transpose_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Slice_5_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Squeeze_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Cast_4_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Gather_3_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Cast_output_0_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /NonZero_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Reshape_8_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /ReduceMax_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Gather_9_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Gather_2_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Cast_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor ONNXTRT_castHelper_215_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /ArgMax_output (1), expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Gather_8_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor ONNXTRT_squeezeTensor_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Gather_7_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /NonZero[size], expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Reshape_4_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Constant_7_output_0_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Slice_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.2/cv3.2.1/cv3.2.1.1/act/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Constant_12_output_0_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Sub_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Constant_13_output_0_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Add_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.2/cv3.2.1/cv3.2.1.1/act/Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Concat_2_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/cv3.2/cv3.2.2/Conv_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Constant_14_output_0_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Mul_2_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Reshape_5_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Concat_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Sigmoid_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.23/Concat_3_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Transpose_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor ONNXTRT_Broadcast_222_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Greater_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor ONNXTRT_castHelper_223_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /GatherND_3_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Slice_2_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /GatherND_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /model/model.10/m/m.0/attn/Constant_output_0_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Gather_1_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Gather_6_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Slice_3_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Expand_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Constant_9_output_0_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /NonMaxSuppression_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor ONNXTRT_Broadcast_231_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Reshape_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Cast_3_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Gather_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Mul_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor /Concat_2_output_0, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [W] Missing scale and zero-point for tensor ONNXTRT_Broadcast_227_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+[09/21/2026-00:08:31] [TRT] [I] BuilderFlag::kTF32 is set but hardware does not support TF32. Disabling TF32.
+[09/21/2026-00:08:31] [TRT] [I] Local timing cache in use. Profiling results in this builder pass will not be stored.
+[09/21/2026-00:09:54] [TRT] [E] IBuilder::buildSerializedNetwork: Error Code 10: Internal Error (Could not find any implementation for node /model/model.23/cv3.0/cv3.0.0/cv3.0.0.0/conv/Conv + PWN(PWN(/model/model.23/cv3.0/cv3.0.0/cv3.0.0.0/act/Sigmoid), PWN(/model/model.23/cv3.0/cv3.0.0/cv3.0.0.0/act/Mul)). In computeCosts at /_src/optimizer/common/tactic/optimizer.cpp:4265)
+ERROR ❌ [34m[1mTensorRT:[0m export failure 89.5s: TensorRT engine build failed, check logs for errors
+Export to TensorRT in the cloud with Ultralytics Platform: https://platform.ultralytics.com
+Traceback (most recent call last):
+  File "/workspace/edgevision/scripts/export_engines_ultralytics.py", line 89, in <module>
+    main()
+  File "/workspace/edgevision/scripts/export_engines_ultralytics.py", line 81, in main
+    results.append(export_one(args.weights, imgsz, precision, family == "nms", args.data, args.fraction,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/edgevision/scripts/export_engines_ultralytics.py", line 28, in export_one
+    model.export(
+  File "/usr/local/lib/python3.12/dist-packages/ultralytics/engine/model.py", line 784, in export
+    return Exporter(overrides=args, _callbacks=self.callbacks)(model=self.model)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/ultralytics/engine/exporter.py", line 976, in __call__
+    f = getattr(self, f"export_{fmt}")()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/ultralytics/engine/exporter.py", line 496, in outer_func
+    f = inner_func(*args, **kwargs)  # exported file/dir or tuple of (file/dir, *)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/ultralytics/engine/exporter.py", line 1401, in export_engine
+    onnx2engine(
+  File "/usr/local/lib/python3.12/dist-packages/ultralytics/utils/export/engine.py", line 463, in onnx2engine
+    raise RuntimeError("TensorRT engine build failed, check logs for errors")
+RuntimeError: TensorRT engine build failed, check logs for errors

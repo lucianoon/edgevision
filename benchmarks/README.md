@@ -296,3 +296,48 @@ Observations:
 Raw reports: `results/cpp_tensorrt_nvdec_b*_h264_file_*` (batched),
 `results/cpp_tensorrt_nvdec_s*_h264_file_*` (independent), `results/trtexec_b*_fp16_*.log`,
 `results/gpu_sprint6b_*.log`.
+
+## 2026-09-21 - Sprint 7: a cheaper model, with the quality measured
+
+Hypotheses from Sprint 6: to go beyond ~550 frames/s per T4 the *model* must get cheaper.
+Two levers, each measured for accuracy (mAP on COCO val2017) and speed (our C++ runtime,
+NVDEC, T4): **smaller input** (640 -> 512 -> 416) and **INT8** (Ultralytics export,
+calibrated on 500 val2017 images disjoint from the 4500 used for mAP; `configs/coco_*.yaml`,
+`scripts/get_coco_val.sh`, `scripts/export_engines_ultralytics.py`, `scripts/eval_map.py`).
+
+| imgsz | precision (mAP engine)     | mAP50-95 | mAP50 | mAP75 | 1-stream e2e (ms) | 1-stream FPS | 12-stream aggregate FPS |
+|------:|----------------------------|---------:|------:|------:|------------------:|-------------:|------------------------:|
+| 640   | FP32 PyTorch (reference)   | **0.404** | 0.565 | 0.439 | 2.0 (FP16 engine) | 492          | 533                     |
+| 512   | FP32 PyTorch               | 0.378    | 0.532 | 0.403 | 1.8 (FP16 engine) | 558          | **675**                 |
+| 416   | FP32 PyTorch               | 0.350    | 0.497 | 0.376 | 1.7 (FP16 engine) | 594          | 706                     |
+| 640   | INT8 (PTQ, raw head)       | 0.367    | 0.523 | 0.399 | -                 | -            | -                       |
+| 512   | INT8                       | 0.345    | 0.494 | 0.373 | -                 | -            | -                       |
+| 416   | INT8                       | 0.315    | 0.459 | 0.338 | -                 | -            | -                       |
+
+Speed rows use the FP16 NMS-in-graph engines of the same size (FP16 costs no measurable
+mAP vs FP32 for this model). mAP on 4500 images, conf 0.001, iou 0.7, Ultralytics `val`.
+
+Observations:
+
+- **Resolution is the cheap lever.** 640 -> 512 gives +27% aggregate throughput (533 -> 675
+  fps, i.e. ~27 cameras at 25 fps instead of ~21) for -2.6 mAP points; 416 gives +32% for
+  -5.4 points, with diminishing returns: the pipeline is launch-bound at batch 1 (1.7 ms
+  whatever the size), so single-stream latency barely moves.
+- **INT8 post-training quantisation costs ~3.5 mAP points at every size** on this nano model
+  (0.404 -> 0.367 at 640), more than dropping to 512 costs, and its speed gain could not be
+  realised in our pipeline: TensorRT cannot build INT8 for the NMS-in-graph export
+  (`Could not find any implementation for node .../cv3.0/.../Conv`, also with 8 GiB
+  workspace), so INT8 would need NMS back in the runtime plus QAT to recover accuracy.
+  Not worth it here; on a Jetson (INT8-heavy) the calculus changes.
+- **Decision:** production default becomes **FP16 at 512** (`yolo26n_nms_512_fp16`):
+  0.378 mAP50-95, ~675 frames/s aggregate on a T4. Keep 640 when small objects matter.
+- Validation of the harness: the PyTorch 640 reference (0.404) matches Ultralytics' published
+  yolo26n COCO mAP (~0.40), so the split, labels and protocol are right.
+
+Ops lessons that cost ~US$ 1.5 of idle GPU: (1) `curl` without `-f` "downloaded" an HTML
+error page as val2017.zip; (2) Ultralytics needs a `train:` key even to calibrate; (3) the
+PyTorch DataLoader deadlocks in Docker's 64 MB `/dev/shm`: run with `--ipc=host`; (4) never
+put `$VAR` in an inline `run.sh` command - use a script in the repo.
+
+Raw: `results/sprint7_map.json`, `results/sprint7_exports*.json`, `results/cpp_tensorrt_nvdec*_s7_*`,
+`results/sprint7b_eval.out`.

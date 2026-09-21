@@ -3,7 +3,7 @@ model:
   paths:
     pytorch: models/pytorch/yolo26n.pt
     onnx: models/onnx/yolo26n_nms.onnx              # NMS inside the graph (1x300x6); raw head: yolo26n.onnx
-    tensorrt: models/tensorrt/yolo26n_nms_fp16.engine # built by scripts/build_engine.sh from the onnx above
+    tensorrt: models/tensorrt/yolo26n_nms_512_fp16.engine # Sprint 7 default (scripts/export_engines_ultralytics.py); 640: yolo26n_nms_fp16.engine
   confidence: 0.50
   iou_threshold: 0.45       # our NMS (raw-head graphs only); nms graphs bake conf/iou at export time
   image_size: 640

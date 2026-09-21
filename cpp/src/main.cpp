@@ -287,8 +287,7 @@ void dump_detections(const std::vector<Detection>& dets, const std::string& path
 
 int main(int argc, char** argv) try {
     const Args args = parse_args(argc, argv);
-    const std::string names_path = args.names.empty() ? sidecar_names_path(args.engine) : args.names;
-    const auto names = load_class_names(names_path);
+    const auto names = args.names.empty() ? load_class_names_for_engine(args.engine) : load_class_names(args.names);
 
     std::vector<StreamResult> results(args.streams);
     for (int i = 0; i < args.streams; ++i) results[i].source = args.sources[i % args.sources.size()];

@@ -8,3 +8,4 @@ onnxruntime-gpu
 cuda-python
 psutil
 pytest
+onnxslim

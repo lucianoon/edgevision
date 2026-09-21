@@ -1,0 +1,56 @@
+[
+  {
+    "model": "models/pytorch/yolo26n.pt",
+    "imgsz": 640,
+    "precision": "fp32-pytorch",
+    "map50_95": 0.4042,
+    "map50": 0.5645,
+    "map75": 0.4392,
+    "val_inference_ms": 2.61
+  },
+  {
+    "model": "models/pytorch/yolo26n.pt",
+    "imgsz": 512,
+    "precision": "fp32-pytorch",
+    "map50_95": 0.3784,
+    "map50": 0.5325,
+    "map75": 0.4033,
+    "val_inference_ms": 1.68
+  },
+  {
+    "model": "models/pytorch/yolo26n.pt",
+    "imgsz": 416,
+    "precision": "fp32-pytorch",
+    "map50_95": 0.3501,
+    "map50": 0.4972,
+    "map75": 0.3756,
+    "val_inference_ms": 1.17
+  },
+  {
+    "model": "models/tensorrt/yolo26n_raw_416_int8.engine",
+    "imgsz": 416,
+    "precision": "int8",
+    "map50_95": 0.3152,
+    "map50": 0.4589,
+    "map75": 0.3384,
+    "val_inference_ms": 1.36
+  },
+  {
+    "model": "models/tensorrt/yolo26n_raw_512_int8.engine",
+    "imgsz": 512,
+    "precision": "int8",
+    "map50_95": 0.345,
+    "map50": 0.4941,
+    "map75": 0.373,
+    "val_inference_ms": 1.44
+  },
+  {
+    "model": "models/tensorrt/yolo26n_raw_640_int8.engine",
+    "imgsz": 640,
+    "precision": "int8",
+    "map50_95": 0.3668,
+    "map50": 0.5226,
+    "map75": 0.3992,
+    "val_inference_ms": 1.57
+  }
+]

@@ -3,7 +3,7 @@
 [![ci](https://github.com/lucianoon/edgevision/actions/workflows/ci.yml/badge.svg)](https://github.com/lucianoon/edgevision/actions/workflows/ci.yml) MIT License
 
 Real-time object detection pipeline, evolved in stages:
-PyTorch baseline -> ONNX Runtime -> TensorRT (FP32/FP16) -> C++ runtime -> NVDEC/RTSP -> multi-stream -> Jetson.
+PyTorch baseline -> ONNX Runtime -> TensorRT (FP32/FP16) -> C++ runtime -> NVDEC/RTSP -> multi-stream -> accuracy vs speed (INT8, input size) -> Jetson.
 
 ## Setup
 
@@ -120,3 +120,11 @@ Tesla T4: ~540-580 1080p frames/s aggregate whatever the design (that is the GPU
 ceiling of yolo26n FP16, ~1.8 ms/image); batching mainly tightens tail latency (p95
 16 -> 12 ms at 8 streams). 12 live 1080p cameras at 25 fps run with no drops at 48%
 GPU. Details in `benchmarks/README.md`.
+
+## Accuracy vs speed (Sprint 7)
+
+`scripts/get_coco_val.sh` + `scripts/eval_map.py` measure COCO mAP; `scripts/export_engines_ultralytics.py`
+exports FP16/INT8 engines at several input sizes (INT8 calibrated on a disjoint split). On the
+T4: 640 -> 512 buys +27% throughput for -2.6 mAP50-95 points; INT8 PTQ costs ~3.5 points at any
+size and cannot be built with NMS in the graph. Production default: **FP16 at 512**. Details in
+`benchmarks/README.md`.

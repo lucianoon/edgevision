@@ -18,14 +18,15 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: requirements.lock
 
-      - name: Install (CPU torch wheel, then the rest)
+      - name: Install (pinned; CPU torch wheel first, then the lock)
         run: |
           python -m pip install --upgrade pip
-          # torch and torchvision must come from the same index/build (the NMS export imports torchvision.ops.nms)
-          python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install -r requirements.txt
+          # torch and torchvision must come from the same index/build (the NMS export imports
+          # torchvision.ops.nms) and at the versions the lock pins, so the lock never pulls the CUDA build.
+          python -m pip install $(grep -E '^(torch|torchvision)==' requirements.lock) --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -r requirements.lock
 
       - name: Cache model files (weights + exports)
         uses: actions/cache@v4
@@ -58,3 +59,21 @@ jobs:
           EOF
           python -m edgevision.main --backend pytorch --source videos/ci.mp4 --no-display --max-frames 10
           python -m edgevision.main --backend onnx --source videos/ci.mp4 --no-display --max-frames 10
+
+  cpp-cpu:
+    # The GPU runtime needs TensorRT and is built on the GPU box (scripts/gpu_sprint*.sh).
+    # The tracker (ByteTrack: Kalman filter + Hungarian) is dependency-free, so its unit
+    # test runs here on every push with the compiler and CMake of the plain Ubuntu runner.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure (tracker only, no CUDA / TensorRT)
+        run: cmake -S cpp -B cpp/build-cpu -DEDGEVISION_CPU_ONLY=ON -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build cpp/build-cpu --parallel
+
+      - name: Test
+        run: ctest --test-dir cpp/build-cpu --output-on-failure

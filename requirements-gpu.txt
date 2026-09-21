@@ -1,10 +1,14 @@
-# Installed inside docker/Dockerfile.tensorrt (tensorrt + trtexec come from the NGC base image).
-ultralytics
+# Installed inside docker/Dockerfile.tensorrt (tensorrt + trtexec come from the NGC base image
+# nvcr.io/nvidia/tensorrt:26.04-py3: TensorRT 10.16.1.11, torch 2.14.0+cu130, Python 3.12.3).
+# Pinned where the run logs in benchmarks/results/ record the version that produced the numbers
+# (Sprint 3: onnxruntime-gpu 1.30.0; Sprint 7-8: ultralytics 8.4.157); no freeze was captured
+# on the box, so the rest floats. For the CPU path use requirements.lock.
+ultralytics==8.4.157
 opencv-python-headless
 numpy
 pyyaml
 onnx
-onnxruntime-gpu
+onnxruntime-gpu==1.30.0
 cuda-python
 psutil
 pytest

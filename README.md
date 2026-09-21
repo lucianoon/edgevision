@@ -10,7 +10,9 @@ baseline to a C++/CUDA runtime, one measured step at a time.** Every stage of th
 a benchmark, a test and a written conclusion, so each optimisation is justified by the
 bottleneck the previous measurement exposed.
 
-![ByteTrack on the pedestrian clip](docs/tracking_frame.jpg)
+![ByteTrack on the pedestrian clip](docs/tracking_demo.gif)
+
+<sub>6 s of the 1080p pedestrian clip (CC0) tracked by the C++ runtime on a Tesla T4; the full-resolution frame is in `docs/tracking_frame.jpg`.</sub>
 
 ## Highlights (Tesla T4, 1080p H.264, YOLO26n)
 

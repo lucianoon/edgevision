@@ -35,8 +35,8 @@ double ms_between(Clock::time_point a, Clock::time_point b) {
 struct Sync {
     std::mutex m;
     std::condition_variable cv;
-    std::vector<int> ready;   // per round: workers that filled their slot
-    int completed = -1;       // last round whose inference is done (its buffer is free again)
+    std::vector<int> ready;  // per round: workers that filled their slot
+    int completed = -1;      // last round whose inference is done (its buffer is free again)
     bool abort = false;
     std::string error;
 
@@ -51,8 +51,8 @@ struct Sync {
 };
 
 struct SharedBuffers {
-    float* input[2] = {nullptr, nullptr};   // ping-pong, N x 3 x S x S floats each
-    std::vector<LetterboxInfo> info[2];     // per slot, written by workers
+    float* input[2] = {nullptr, nullptr};  // ping-pong, N x 3 x S x S floats each
+    std::vector<LetterboxInfo> info[2];    // per slot, written by workers
     size_t slot_floats = 0;
     int size = 640;
 };
@@ -82,7 +82,7 @@ void worker(int index, const BatchOptions& opt, SharedBuffers& buffers, Sync& sy
     cv::Mat frame;
     for (int round = 0; round < total_rounds; ++round) {
         const int buf = round & 1;
-        {   // the buffer is free once round-2 (same buffer) finished inference
+        {  // the buffer is free once round-2 (same buffer) finished inference
             std::unique_lock<std::mutex> lock(sync.m);
             sync.cv.wait(lock, [&] { return sync.abort || sync.completed >= round - 2; });
             if (sync.abort) break;
@@ -101,7 +101,8 @@ void worker(int index, const BatchOptions& opt, SharedBuffers& buffers, Sync& sy
                     ok = cap.read(frame);
                     if (!ok) {
                         cap.release();
-                        if (!cap.open(opt.sources[index])) throw std::runtime_error("cannot reopen " + opt.sources[index]);
+                        if (!cap.open(opt.sources[index]))
+                            throw std::runtime_error("cannot reopen " + opt.sources[index]);
                     }
                 }
             }
@@ -208,8 +209,8 @@ BatchResult run_batched(const BatchOptions& opt, const std::map<int, std::string
 
             engine.bind_input(buffers.input[buf]);
             engine.enqueue(infer_stream);
-            EV_CUDA_CHECK(cudaMemcpyAsync(host_out, engine.output_device(), engine.output_bytes(), cudaMemcpyDeviceToHost,
-                                          infer_stream));
+            EV_CUDA_CHECK(cudaMemcpyAsync(host_out, engine.output_device(), engine.output_bytes(),
+                                          cudaMemcpyDeviceToHost, infer_stream));
             EV_CUDA_CHECK(cudaStreamSynchronize(infer_stream));
             const std::vector<LetterboxInfo> infos = buffers.info[buf];  // copy before releasing the buffer
             const auto t2 = Clock::now();

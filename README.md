@@ -70,12 +70,14 @@ Every GPU run wrote its report to `benchmarks/results/`, versioned.
 ## Repository layout
 
 ```
-python/edgevision/   detector.py (Ultralytics), onnx_detector.py, tensorrt_detector.py,
+python/edgevision/   pip-installable package (`edgevision`, `edgevision-benchmark` commands):
+                     detector.py (Ultralytics), onnx_detector.py, tensorrt_detector.py,
                      preprocess.py, postprocess.py (decode + NMS), factory.py, metrics.py,
                      benchmark.py, main.py
 cpp/                 CMake project: letterbox.cu, trt_engine.cpp, video_decoder.cpp (NVDEC),
-                     detector.cpp, batch_pipeline.cpp, tracker.cpp, main.cpp; CTests
-                     (-DEDGEVISION_CPU_ONLY=ON builds the tracker + its test without CUDA)
+                     detector.cpp, batch_pipeline.cpp, stream_runner.cpp, tracker.cpp, cli.cpp,
+                     report.cpp, main.cpp (wiring only); CTests. -DEDGEVISION_CPU_ONLY=ON builds
+                     the GPU-free library (tracker, metrics, names, CLI, report) and its tests
 scripts/             ONNX/engine exports, COCO mAP evaluation, tracking reference,
                      gpu_sprint*.sh (one reproducible measurement per sprint)
 scripts/aws/         deploy / resume / standby / run / sync for the GPU box
@@ -91,10 +93,10 @@ configs/             app.yaml (backend, engine paths), COCO val/calibration yaml
 **CPU only (what the CI runs, ~1 min):**
 
 ```bash
-uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.lock  # pinned; requirements.txt is the unpinned list
+uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.lock -e .  # pinned deps + the package
 python scripts/export_onnx.py && python scripts/export_onnx.py --nms
 pytest -q
-PYTHONPATH=python python -m edgevision.benchmark --backend onnx --source <video>
+edgevision-benchmark --backend onnx --source <video>   # or: edgevision --backend onnx --source 0
 ```
 
 **GPU (any machine with an NVIDIA GPU and Docker; the repo used an EC2 g4dn.xlarge):**
@@ -113,8 +115,9 @@ access, and a zero-cost standby that removes the instance and its disk between s
   the number it moved. Two hypotheses were rejected by their own measurements (batching, INT8).
 - **Tests at every layer**: unit tests for the CUDA kernels (against an OpenCV reference), the
   tracker (synthetic scenes with known identities) and the Python pipeline; parity tests
-  between PyTorch, ONNX Runtime, TensorRT and the C++ runtime; CI on every push runs the
-  Python suite against pinned dependencies and builds + tests the C++ tracker on the CPU.
+  between PyTorch, ONNX Runtime, TensorRT and the C++ runtime. CI on every push: ruff, mypy
+  and shellcheck; the Python suite against pinned dependencies with a coverage floor; the
+  GPU-free C++ library built with strict warnings, unit-tested, clang-format and clang-tidy.
 - **Infrastructure as code with cost guards**: the GPU box is a CloudFormation template with
   an uptime cap and a standby script; total spend for the whole project was about US$ 8.
 - **Findings written down, including the wrong ones**: TensorRT cannot build INT8 for the
@@ -128,6 +131,11 @@ access, and a zero-cost standby that removes the instance and its disk between s
 - Identity handovers can happen when tracks cross (IoU-only association); appearance
   embeddings (BoT-SORT) would fix that where id purity matters.
 - Not yet ported to Jetson: engines are GPU-specific and the aarch64 build needs the device.
+
+## Contributing
+
+`CONTRIBUTING.md` has the setup, the checks the CI runs (and how to run them locally with
+pre-commit), the GPU box workflow and the conventions; `CHANGELOG.md` tracks releases.
 
 ## License
 

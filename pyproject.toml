@@ -1,3 +1,77 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "edgevision"
+version = "0.1.0"
+description = "Real-time multi-camera object detection and tracking: PyTorch -> ONNX -> TensorRT -> C++/CUDA"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+# Unpinned on purpose: requirements.lock is the reproducible CPU environment, this is the contract.
+dependencies = [
+  "ultralytics",
+  "opencv-python",
+  "numpy",
+  "pyyaml",
+  "onnx",
+  "onnxruntime",
+  "psutil",
+]
+
+[project.optional-dependencies]
+export = ["onnxslim"]                       # scripts/export_onnx.py
+gpu = ["onnxruntime-gpu", "cuda-python"]    # TensorRT path (tensorrt itself comes from the NGC image)
+dev = ["pytest", "pytest-cov", "ruff", "mypy"]
+
+[project.scripts]
+edgevision = "edgevision.main:main"
+edgevision-benchmark = "edgevision.benchmark:main"
+
+[project.urls]
+Repository = "https://github.com/lucianoon/edgevision"
+
+[tool.setuptools.packages.find]
+where = ["python"]
+
 [tool.pytest.ini_options]
-pythonpath = ["python"]
+pythonpath = ["python"]   # tests work without `pip install -e .` as well
 testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["edgevision"]
+
+[tool.coverage.report]
+show_missing = true
+# tensorrt_detector.py needs a GPU and is covered on the GPU box (tests/test_tensorrt_detector.py).
+omit = ["*/tensorrt_detector.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["python", "scripts", "tests"]
+
+[tool.ruff.lint]
+# E/W pycodestyle, F pyflakes, I isort, B bugbear, UP pyupgrade, C4 comprehensions, RUF ruff.
+select = ["E", "W", "F", "I", "B", "UP", "C4", "RUF"]
+ignore = [
+  "RUF012",  # mutable class attributes: not used as defaults here
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests import after pytest.importorskip() on purpose.
+"tests/test_tensorrt_detector.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["edgevision"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["python/edgevision"]
+mypy_path = "python"
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true

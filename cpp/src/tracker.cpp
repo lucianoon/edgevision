@@ -13,8 +13,12 @@ namespace {
 constexpr double kStdWeightPosition = 1.0 / 20.0;
 constexpr double kStdWeightVelocity = 1.0 / 160.0;
 
-inline double& at(KalmanBox::Mat8& m, int r, int c) { return m[r * 8 + c]; }
-inline double at(const KalmanBox::Mat8& m, int r, int c) { return m[r * 8 + c]; }
+inline double& at(KalmanBox::Mat8& m, int r, int c) {
+    return m[r * 8 + c];
+}
+inline double at(const KalmanBox::Mat8& m, int r, int c) {
+    return m[r * 8 + c];
+}
 
 // Inverse of a symmetric positive-definite 4x4 by Gauss-Jordan (projected covariance).
 std::array<double, 16> inverse4(std::array<double, 16> a) {
@@ -52,9 +56,9 @@ std::array<double, 16> inverse4(std::array<double, 16> a) {
 void KalmanBox::initiate(const std::array<double, 4>& m) {
     mean_ = {m[0], m[1], m[2], m[3], 0, 0, 0, 0};
     const double h = m[3];
-    const std::array<double, 8> std = {2 * kStdWeightPosition * h, 2 * kStdWeightPosition * h, 1e-2,
-                                       2 * kStdWeightPosition * h, 10 * kStdWeightVelocity * h,
-                                       10 * kStdWeightVelocity * h, 1e-5, 10 * kStdWeightVelocity * h};
+    const std::array<double, 8> std = {
+        2 * kStdWeightPosition * h,  2 * kStdWeightPosition * h,  1e-2, 2 * kStdWeightPosition * h,
+        10 * kStdWeightVelocity * h, 10 * kStdWeightVelocity * h, 1e-5, 10 * kStdWeightVelocity * h};
     cov_.fill(0.0);
     for (int i = 0; i < 8; ++i) at(cov_, i, i) = std[i] * std[i];
 }
@@ -197,8 +201,10 @@ double iou(const std::array<float, 4>& a, const Detection& d) {
     const double ix1 = std::max<double>(a[0], d.x1), iy1 = std::max<double>(a[1], d.y1);
     const double ix2 = std::min<double>(a[2], d.x2), iy2 = std::min<double>(a[3], d.y2);
     const double inter = std::max(0.0, ix2 - ix1) * std::max(0.0, iy2 - iy1);
-    const double area_a = std::max(0.0, double(a[2] - a[0])) * std::max(0.0, double(a[3] - a[1]));
-    const double area_d = std::max(0.0, double(d.x2 - d.x1)) * std::max(0.0, double(d.y2 - d.y1));
+    const double area_a =
+        std::max(0.0, static_cast<double>(a[2] - a[0])) * std::max(0.0, static_cast<double>(a[3] - a[1]));
+    const double area_d =
+        std::max(0.0, static_cast<double>(d.x2 - d.x1)) * std::max(0.0, static_cast<double>(d.y2 - d.y1));
     const double uni = area_a + area_d - inter;
     return uni > 0 ? inter / uni : 0.0;
 }
@@ -207,14 +213,14 @@ double iou(const std::array<float, 4>& a, const Detection& d) {
 ByteTracker::ByteTracker(TrackerParams params) : params_(params) {}
 
 std::array<double, 4> ByteTracker::to_xyah(const Detection& d) {
-    const double w = std::max(1e-3, double(d.x2 - d.x1)), h = std::max(1e-3, double(d.y2 - d.y1));
+    const double w = std::max(1e-3, static_cast<double>(d.x2 - d.x1)),
+                 h = std::max(1e-3, static_cast<double>(d.y2 - d.y1));
     return {d.x1 + w / 2, d.y1 + h / 2, w / h, h};
 }
 
 void ByteTracker::associate(const std::vector<int>& track_idx, const std::vector<int>& det_idx,
-                            const std::vector<Detection>& dets, float thresh,
-                            std::vector<std::pair<int, int>>& matches, std::vector<int>& unmatched_tracks,
-                            std::vector<int>& unmatched_dets) const {
+                            const std::vector<Detection>& dets, float thresh, std::vector<std::pair<int, int>>& matches,
+                            std::vector<int>& unmatched_tracks, std::vector<int>& unmatched_dets) const {
     matches.clear();
     unmatched_tracks.clear();
     unmatched_dets.clear();
@@ -329,11 +335,12 @@ std::vector<Track> ByteTracker::update(const std::vector<Detection>& dets) {
     for (const STrack& t : tracks_) {
         if (t.state != State::Tracked || !t.activated) continue;
         const auto b = t.box();
-        out.push_back(Track{t.id, b[0], b[1], b[2], b[3], t.score, t.class_id, t.class_name, frame_id_ - t.start_frame + 1,
-                            t.hits, t.last_frame == frame_id_});
+        out.push_back(Track{t.id, b[0], b[1], b[2], b[3], t.score, t.class_id, t.class_name,
+                            frame_id_ - t.start_frame + 1, t.hits, t.last_frame == frame_id_});
     }
-    tracks_.erase(std::remove_if(tracks_.begin(), tracks_.end(), [](const STrack& t) { return t.state == State::Removed; }),
-                  tracks_.end());
+    tracks_.erase(
+        std::remove_if(tracks_.begin(), tracks_.end(), [](const STrack& t) { return t.state == State::Removed; }),
+        tracks_.end());
     return out;
 }
 

@@ -7,23 +7,15 @@
 #include <vector>
 
 #include "edgevision/tracker.hpp"
+#include "expect.hpp"
 
 using namespace edgevision;
 
 namespace {
-int failures = 0;
-#define EXPECT(cond, ...)                                    \
-    do {                                                     \
-        if (!(cond)) {                                       \
-            ++failures;                                      \
-            std::printf("FAIL %s:%d: ", __FILE__, __LINE__); \
-            std::printf(__VA_ARGS__);                        \
-            std::printf("\n");                               \
-        }                                                    \
-    } while (0)
 
-Detection det(float cx, float cy, float w, float h, float score = 0.9f, int cls = 0) {
-    return Detection{cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2, score, cls, "person"};
+Detection det(double cx, double cy, double w, double h, float score = 0.9f, int cls = 0) {
+    const auto f = [](double v) { return static_cast<float>(v); };
+    return Detection{f(cx - w / 2), f(cy - h / 2), f(cx + w / 2), f(cy + h / 2), score, cls, "person"};
 }
 
 void test_hungarian() {
@@ -62,7 +54,7 @@ void test_stable_ids_two_movers() {
         const auto tracks = tracker.update(dets);
         if (f == 0) EXPECT(tracks.size() == 2, "frame 0 emitted %zu tracks", tracks.size());
         for (const auto& t : tracks) {
-            const float cx = (t.x1 + t.x2) / 2;
+            const double cx = (t.x1 + t.x2) / 2.0;
             const int object = std::fabs(cx - (100 + 4 * f)) < std::fabs(cx - (900 - 6 * f)) ? 0 : 1;
             auto it = id_by_object.find(object);
             if (it == id_by_object.end()) id_by_object[object] = t.id;
@@ -118,9 +110,9 @@ void test_low_score_second_pass() {
     EXPECT(emitted_low_only >= 20, "track should survive on low-score detections (%d/25 frames)", emitted_low_only);
 
     ByteTracker tracker2;
-    int created = 0;
+    size_t created = 0;
     for (int f = 0; f < 10; ++f) created += tracker2.update({det(300, 300, 40, 90, 0.3f)}).size();
-    EXPECT(created == 0 && tracker2.next_id() == 1, "low-score detections must not start tracks (%d)", created);
+    EXPECT(created == 0 && tracker2.next_id() == 1, "low-score detections must not start tracks (%zu)", created);
 }
 
 // Class-aware association: a person and a car at the same place keep different ids.
@@ -143,6 +135,5 @@ int main() {
     test_occlusion_and_buffer();
     test_low_score_second_pass();
     test_class_aware();
-    if (failures == 0) std::printf("tracker tests: OK\n");
-    return failures == 0 ? 0 : 1;
+    return test_result("tracker");
 }

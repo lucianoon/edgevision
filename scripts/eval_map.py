@@ -17,11 +17,22 @@ from ultralytics import YOLO
 
 def evaluate(model_path: str, imgsz: int | None, data: str, batch: int) -> dict:
     model = YOLO(model_path)
-    kwargs = dict(data=data, batch=batch, conf=0.001, iou=0.7, plots=False, verbose=False, device=0, workers=2)
+    kwargs = {
+        "data": data,
+        "batch": batch,
+        "conf": 0.001,
+        "iou": 0.7,
+        "plots": False,
+        "verbose": False,
+        "device": 0,
+        "workers": 2,
+    }
     if imgsz:
         kwargs["imgsz"] = imgsz
     metrics = model.val(**kwargs)
-    speed = metrics.speed  # ms per image: preprocess, inference, postprocess (Ultralytics' own loop)
+    speed = (
+        metrics.speed
+    )  # ms per image: preprocess, inference, postprocess (Ultralytics' own loop)
     stem = Path(model_path).stem
     m = re.search(r"_(\d+)_(fp16|int8|fp32)$", stem)
     row = {
@@ -40,9 +51,13 @@ def evaluate(model_path: str, imgsz: int | None, data: str, batch: int) -> dict:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("models", nargs="+")
-    parser.add_argument("--imgsz", type=int, nargs="*", default=[], help="for .pt weights; engines use their own")
+    parser.add_argument(
+        "--imgsz", type=int, nargs="*", default=[], help="for .pt weights; engines use their own"
+    )
     parser.add_argument("--data", default="configs/coco_val.yaml")
-    parser.add_argument("--batch", type=int, default=1, help="engines are batch 1; .pt can use more")
+    parser.add_argument(
+        "--batch", type=int, default=1, help="engines are batch 1; .pt can use more"
+    )
     parser.add_argument("--out", default="benchmarks/results/sprint7_map.json")
     args = parser.parse_args()
 
@@ -50,7 +65,7 @@ def main():
     rows = json.loads(out.read_text(encoding="utf-8")) if out.exists() else []
     for model_path in args.models:
         if model_path.endswith(".pt"):
-            for imgsz in (args.imgsz or [640]):
+            for imgsz in args.imgsz or [640]:
                 rows.append(evaluate(model_path, imgsz, args.data, max(args.batch, 16)))
         else:
             rows.append(evaluate(model_path, None, args.data, 1))

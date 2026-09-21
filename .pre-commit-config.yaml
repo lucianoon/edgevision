@@ -1,0 +1,35 @@
+# Local mirror of the CI's static checks. Install once with `pre-commit install`
+# (pre-commit itself: `uv tool install pre-commit`). Versions track requirements-dev.txt.
+# Measured artefacts (reports, logs, media) are never rewritten by hooks.
+exclude: ^(benchmarks/results/|docs/|models/)
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        exclude: ^infra/gpu-dev\.yaml$   # CloudFormation intrinsic tags (!Ref, !Equals) are not plain YAML
+      - id: check-added-large-files
+        args: ["--maxkb=4096"]   # the tracking GIF is ~3 MB; engines/models never belong in git
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.8
+    hooks:
+      - id: ruff-check
+        args: ["--fix"]
+      - id: ruff-format
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+        args: ["-S", "warning"]
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v23.1.1
+    hooks:
+      - id: clang-format
+        types_or: [c++, cuda]

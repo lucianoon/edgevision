@@ -7,8 +7,8 @@
 
 namespace edgevision {
 
-TensorRTDetector::TensorRTDetector(const std::string& engine_path, float confidence,
-                                   std::map<int, std::string> names, PerformanceMetrics* metrics)
+TensorRTDetector::TensorRTDetector(const std::string& engine_path, float confidence, std::map<int, std::string> names,
+                                   PerformanceMetrics* metrics)
     : engine_(engine_path),
       confidence_(confidence),
       names_(std::move(names)),
@@ -23,8 +23,7 @@ TensorRTDetector::TensorRTDetector(const std::string& engine_path, float confide
 
     const auto out = engine_.output_dims();
     if (out.nbDims != 3 || out.d[0] != 1 || out.d[2] != 6 || engine_.output_type() != nvinfer1::DataType::kFLOAT)
-        throw std::runtime_error(
-            "engine output must be 1xNx6 FP32: export the ONNX with NMS in the graph (nms=True)");
+        throw std::runtime_error("engine output must be 1xNx6 FP32: export the ONNX with NMS in the graph (nms=True)");
     max_det_ = static_cast<int>(out.d[1]);
 
     EV_CUDA_CHECK(cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking));
@@ -60,7 +59,8 @@ cv::Mat TensorRTDetector::pinned_frame(int rows, int cols) {
 }
 
 std::vector<Detection> TensorRTDetector::detect(const cv::Mat& frame) {
-    if (frame.type() != CV_8UC3 || frame.empty()) throw std::runtime_error("detect() expects a non-empty BGR 8-bit frame");
+    if (frame.type() != CV_8UC3 || frame.empty())
+        throw std::runtime_error("detect() expects a non-empty BGR 8-bit frame");
 
     const size_t frame_bytes = frame.step[0] * static_cast<size_t>(frame.rows);
     const LetterboxInfo info = compute_letterbox(frame.cols, frame.rows, input_size_);
@@ -106,8 +106,8 @@ std::vector<Detection> TensorRTDetector::run_and_collect(const LetterboxInfo& in
     return detections;
 }
 
-std::vector<Detection> collect_detections(const float* rows, int max_det, const LetterboxInfo& info,
-                                          float confidence, const std::map<int, std::string>& names) {
+std::vector<Detection> collect_detections(const float* rows, int max_det, const LetterboxInfo& info, float confidence,
+                                          const std::map<int, std::string>& names) {
     std::vector<Detection> detections;
     const float w = static_cast<float>(info.source_width), h = static_cast<float>(info.source_height);
     for (int i = 0; i < max_det; ++i) {

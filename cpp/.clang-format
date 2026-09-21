@@ -1,0 +1,15 @@
+# Matches the style the runtime was written in: Google base, 4-space indent, 120 columns,
+# `T* p`, short guards on one line. Checked in CI on the CPU sources; run
+# `clang-format -i cpp/src/*.cpp cpp/src/*.cu cpp/include/edgevision/*.hpp cpp/tests/*.cpp cpp/tests/*.hpp`.
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 120
+AccessModifierOffset: -4
+DerivePointerAlignment: false
+PointerAlignment: Left
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortLoopsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortBlocksOnASingleLine: Empty
+IncludeBlocks: Preserve
+SortIncludes: CaseSensitive

@@ -1,7 +1,9 @@
 #include "edgevision/names.hpp"
 
+#include <charconv>
 #include <cstdint>
 #include <fstream>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 
@@ -19,13 +21,24 @@ std::string read_ultralytics_metadata(const std::string& engine_path) {
     if (!file) throw std::runtime_error("cannot open engine: " + engine_path);
     unsigned char head[4];
     if (!file.read(reinterpret_cast<char*>(head), 4)) return "";
-    const std::int32_t length = static_cast<std::int32_t>(head[0] | (head[1] << 8) | (head[2] << 16) | (head[3] << 24));
+    const auto length = static_cast<std::int32_t>(head[0] | (head[1] << 8) | (head[2] << 16) | (head[3] << 24));
     if (length <= 0 || length > (1 << 20)) return "";  // implausible for metadata: plain engine
     std::string json(static_cast<size_t>(length), '\0');
     if (!file.read(json.data(), length)) return "";
     if (json.empty() || json[0] != '{') return "";
     return json;
 }
+
+namespace {
+// Whole-string decimal integer, or nullopt (the JSON also holds non-numeric keys/values).
+std::optional<int> parse_int(const std::string& text) {
+    int value = 0;
+    const char* end = text.data() + text.size();
+    const auto [ptr, ec] = std::from_chars(text.data(), end, value);
+    if (ec != std::errc{} || ptr != end) return std::nullopt;
+    return value;
+}
+}  // namespace
 
 // Extracts consecutive quoted strings as key/value pairs: {"0": "person", "1": "bicycle"}.
 std::map<int, std::string> parse_names_object(const std::string& text) {
@@ -42,10 +55,7 @@ std::map<int, std::string> parse_names_object(const std::string& text) {
             key = token;
             have_key = true;
         } else {
-            try {
-                names[std::stoi(key)] = token;
-            } catch (const std::exception&) {  // not an "int": "name" pair
-            }
+            if (const auto id = parse_int(key)) names[*id] = token;  // skip non-"int": "name" pairs
             have_key = false;
         }
     }
@@ -57,8 +67,9 @@ std::map<int, std::string> load_class_names_for_engine(const std::string& engine
     if (sidecar) return load_class_names(sidecar_names_path(engine_path));
     const std::string meta = read_ultralytics_metadata(engine_path);
     const size_t at = meta.find("\"names\"");
-    if (at == std::string::npos) throw std::runtime_error("no class names: neither " + sidecar_names_path(engine_path) +
-                                                          " nor Ultralytics metadata in " + engine_path);
+    if (at == std::string::npos)
+        throw std::runtime_error("no class names: neither " + sidecar_names_path(engine_path) +
+                                 " nor Ultralytics metadata in " + engine_path);
     const size_t open = meta.find('{', at);
     const size_t close = meta.find('}', open);
     if (open == std::string::npos || close == std::string::npos) throw std::runtime_error("malformed names metadata");

@@ -20,8 +20,18 @@ from pathlib import Path
 from ultralytics import YOLO
 
 
-def export_one(weights: str, imgsz: int, precision: str, nms: bool, data: str, fraction: float,
-               out_dir: Path, conf: float, iou: float, workspace: int = 4) -> dict:
+def export_one(
+    weights: str,
+    imgsz: int,
+    precision: str,
+    nms: bool,
+    data: str,
+    fraction: float,
+    out_dir: Path,
+    conf: float,
+    iou: float,
+    workspace: int = 4,
+) -> dict:
     model = YOLO(weights)
     t0 = time.perf_counter()
     exported = Path(
@@ -43,14 +53,20 @@ def export_one(weights: str, imgsz: int, precision: str, nms: bool, data: str, f
         )
     )
     seconds = time.perf_counter() - t0
-    conf_tag = "" if (not nms or abs(conf - 0.5) < 1e-6) else f"_c{int(round(conf * 100)):02d}"
+    conf_tag = "" if (not nms or abs(conf - 0.5) < 1e-6) else f"_c{round(conf * 100):02d}"
     stem = f"{Path(weights).stem}_{'nms_' if nms else 'raw_'}{imgsz}_{precision}{conf_tag}"
     target = out_dir / f"{stem}.engine"
     shutil.move(str(exported), str(target))
     names_path = out_dir / f"{stem}.names.json"
     names_path.write_text(json.dumps(model.names), encoding="utf-8")
-    info = {"engine": str(target), "imgsz": imgsz, "precision": precision, "nms": nms,
-            "export_seconds": round(seconds, 1), "size_mb": round(target.stat().st_size / 1e6, 1)}
+    info = {
+        "engine": str(target),
+        "imgsz": imgsz,
+        "precision": precision,
+        "nms": nms,
+        "export_seconds": round(seconds, 1),
+        "size_mb": round(target.stat().st_size / 1e6, 1),
+    }
     print(json.dumps(info))
     return info
 
@@ -59,14 +75,24 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--weights", default="models/pytorch/yolo26n.pt")
     parser.add_argument("--imgsz", type=int, nargs="+", default=[640, 512, 416])
-    parser.add_argument("--precision", nargs="+", default=["fp16", "int8"], choices=["fp16", "int8", "fp32"])
+    parser.add_argument(
+        "--precision", nargs="+", default=["fp16", "int8"], choices=["fp16", "int8", "fp32"]
+    )
     parser.add_argument("--families", nargs="+", default=["raw", "nms"], choices=["raw", "nms"])
-    parser.add_argument("--data", default="configs/coco_calib.yaml", help="dataset yaml whose val split is used for INT8 calibration")
-    parser.add_argument("--fraction", type=float, default=1.0, help="fraction of the dataset used for calibration")
+    parser.add_argument(
+        "--data",
+        default="configs/coco_calib.yaml",
+        help="dataset yaml whose val split is used for INT8 calibration",
+    )
+    parser.add_argument(
+        "--fraction", type=float, default=1.0, help="fraction of the dataset used for calibration"
+    )
     parser.add_argument("--conf", type=float, default=0.5)
     parser.add_argument("--iou", type=float, default=0.45)
     parser.add_argument("--out-dir", default="models/tensorrt")
-    parser.add_argument("--workspace", type=int, default=4, help="TensorRT workspace GiB (INT8 + NMS needed more)")
+    parser.add_argument(
+        "--workspace", type=int, default=4, help="TensorRT workspace GiB (INT8 + NMS needed more)"
+    )
     parser.add_argument("--summary", default="benchmarks/results/sprint7_exports.json")
     args = parser.parse_args()
 
@@ -76,13 +102,32 @@ def main():
     for imgsz in args.imgsz:
         for precision in args.precision:
             for family in args.families:
-                conf_tag = "" if (family == "raw" or abs(args.conf - 0.5) < 1e-6) else f"_c{int(round(args.conf * 100)):02d}"
-                target = out_dir / f"{Path(args.weights).stem}_{family}_{imgsz}_{precision}{conf_tag}.engine"
+                conf_tag = (
+                    ""
+                    if (family == "raw" or abs(args.conf - 0.5) < 1e-6)
+                    else f"_c{round(args.conf * 100):02d}"
+                )
+                target = (
+                    out_dir
+                    / f"{Path(args.weights).stem}_{family}_{imgsz}_{precision}{conf_tag}.engine"
+                )
                 if target.exists():
                     print(f"exists: {target}")
                     continue
-                results.append(export_one(args.weights, imgsz, precision, family == "nms", args.data, args.fraction,
-                                          out_dir, args.conf, args.iou, args.workspace))
+                results.append(
+                    export_one(
+                        args.weights,
+                        imgsz,
+                        precision,
+                        family == "nms",
+                        args.data,
+                        args.fraction,
+                        out_dir,
+                        args.conf,
+                        args.iou,
+                        args.workspace,
+                    )
+                )
     Path(args.summary).parent.mkdir(parents=True, exist_ok=True)
     Path(args.summary).write_text(json.dumps(results, indent=2), encoding="utf-8")
     print(f"summary: {args.summary} ({len(results)} exports)")

@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 import pytest
 from ultralytics.utils import ASSETS
 
@@ -6,8 +7,6 @@ from edgevision.detector import YoloDetector
 from edgevision.metrics import PerformanceMetrics
 from edgevision.onnx_detector import OnnxDetector
 from edgevision.postprocess import box_iou
-
-import numpy as np
 
 ONNX_PATH = "models/onnx/yolo26n.onnx"
 PT_PATH = "models/pytorch/yolo26n.pt"
@@ -38,9 +37,7 @@ def test_onnx_detector_finds_people_and_bus(onnx_detections, frame):
 def test_onnx_matches_pytorch_reference(onnx_detections, frame):
     reference = YoloDetector(PT_PATH, confidence=0.5).detect(frame)
 
-    assert sorted(d.class_name for d in onnx_detections) == sorted(
-        d.class_name for d in reference
-    )
+    assert sorted(d.class_name for d in onnx_detections) == sorted(d.class_name for d in reference)
 
     ref_boxes = np.array([[d.x1, d.y1, d.x2, d.y2] for d in reference])
     for d in onnx_detections:

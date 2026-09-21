@@ -21,3 +21,7 @@ datasets/
 /*.pt
 /*.onnx
 /*.engine
+
+# build/test artefacts
+.coverage
+*.egg-info/

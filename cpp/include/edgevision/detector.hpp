@@ -18,8 +18,8 @@ namespace edgevision {
 
 // Rows of one image of an NMS-in-graph output (max_det x 6: x1 y1 x2 y2 score class,
 // letterboxed pixels, zero padded) -> detections in source-frame pixels.
-std::vector<Detection> collect_detections(const float* rows, int max_det, const LetterboxInfo& info,
-                                          float confidence, const std::map<int, std::string>& names);
+std::vector<Detection> collect_detections(const float* rows, int max_det, const LetterboxInfo& info, float confidence,
+                                          const std::map<int, std::string>& names);
 
 // End-to-end GPU detector: BGR frame (host) -> H2D copy -> CUDA letterbox written
 // straight into the engine input -> enqueueV3 -> D2H of the (1, max_det, 6) NMS'd
@@ -30,8 +30,8 @@ class TensorRTDetector {
 public:
     // When `metrics` is given, each stage is synchronised and timed separately
     // (preprocess / inference / postprocess), which costs a little throughput.
-    TensorRTDetector(const std::string& engine_path, float confidence,
-                     std::map<int, std::string> names, PerformanceMetrics* metrics = nullptr);
+    TensorRTDetector(const std::string& engine_path, float confidence, std::map<int, std::string> names,
+                     PerformanceMetrics* metrics = nullptr);
     ~TensorRTDetector();
     TensorRTDetector(const TensorRTDetector&) = delete;
     TensorRTDetector& operator=(const TensorRTDetector&) = delete;

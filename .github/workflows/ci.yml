@@ -6,6 +6,29 @@ on:
   pull_request:
 
 jobs:
+  lint:
+    # Static checks, no model downloads: ruff (lint + format), shellcheck on every script.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff (pinned)
+        run: python -m pip install $(grep -E '^ruff==' requirements-dev.txt)
+
+      - name: ruff check
+        run: ruff check python scripts tests
+
+      - name: ruff format --check
+        run: ruff format --check python scripts tests
+
+      - name: shellcheck
+        run: shellcheck -S warning scripts/*.sh scripts/aws/*.sh
+
   python-cpu:
     # CPU-only checks: the Python pipeline, ONNX exports and all tests that do not need
     # a GPU (TensorRT / C++ runtime tests skip themselves).
@@ -26,7 +49,8 @@ jobs:
           # torch and torchvision must come from the same index/build (the NMS export imports
           # torchvision.ops.nms) and at the versions the lock pins, so the lock never pulls the CUDA build.
           python -m pip install $(grep -E '^(torch|torchvision)==' requirements.lock) --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install -r requirements.lock
+          python -m pip install -r requirements.lock -r requirements-dev.txt
+          python -m pip install -e . --no-deps
 
       - name: Cache model files (weights + exports)
         uses: actions/cache@v4
@@ -42,12 +66,13 @@ jobs:
           test -f models/onnx/yolo26n.onnx || python scripts/export_onnx.py
           test -f models/onnx/yolo26n_nms.onnx || python scripts/export_onnx.py --nms
 
-      - name: Tests
-        run: python -m pytest -q -rs
+      - name: mypy
+        run: python -m mypy
 
-      - name: Smoke run (headless, still image, both backends)
-        env:
-          PYTHONPATH: python
+      - name: Tests (coverage floor 80%; the TensorRT path is GPU-only and excluded)
+        run: python -m pytest -q -rs --cov --cov-report=term-missing --cov-fail-under=80
+
+      - name: Smoke run (headless, still image, both backends, installed console script)
         run: |
           python - <<'EOF'
           import cv2
@@ -57,19 +82,19 @@ jobs:
           for _ in range(20): w.write(img)
           w.release()
           EOF
-          python -m edgevision.main --backend pytorch --source videos/ci.mp4 --no-display --max-frames 10
-          python -m edgevision.main --backend onnx --source videos/ci.mp4 --no-display --max-frames 10
+          edgevision --backend pytorch --source videos/ci.mp4 --no-display --max-frames 10
+          edgevision --backend onnx --source videos/ci.mp4 --no-display --max-frames 10
 
   cpp-cpu:
     # The GPU runtime needs TensorRT and is built on the GPU box (scripts/gpu_sprint*.sh).
-    # The tracker (ByteTrack: Kalman filter + Hungarian) is dependency-free, so its unit
-    # test runs here on every push with the compiler and CMake of the plain Ubuntu runner.
+    # edgevision_cpu (ByteTrack, metrics, class names, CLI, JSON report) is dependency-free,
+    # so it is built with strict warnings, unit-tested, formatted and linted here on every push.
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure (tracker only, no CUDA / TensorRT)
+      - name: Configure (edgevision_cpu only, no CUDA / TensorRT)
         run: cmake -S cpp -B cpp/build-cpu -DEDGEVISION_CPU_ONLY=ON -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
@@ -77,3 +102,14 @@ jobs:
 
       - name: Test
         run: ctest --test-dir cpp/build-cpu --output-on-failure
+
+      - name: clang-format (whole C++ tree, cpp/.clang-format)
+        run: |
+          clang-format --version
+          clang-format --dry-run --Werror cpp/src/*.cpp cpp/src/*.cu cpp/include/edgevision/*.hpp cpp/tests/*.cpp cpp/tests/*.hpp
+
+      - name: clang-tidy (CPU sources, cpp/.clang-tidy; findings are errors)
+        run: |
+          command -v clang-tidy >/dev/null || sudo apt-get install -y clang-tidy
+          clang-tidy --version
+          clang-tidy cpp/src/tracker.cpp cpp/src/metrics.cpp cpp/src/names.cpp cpp/src/cli.cpp cpp/src/report.cpp                      cpp/tests/test_tracker.cpp cpp/tests/test_cli.cpp cpp/tests/test_report.cpp                      -- -std=c++17 -Icpp/include

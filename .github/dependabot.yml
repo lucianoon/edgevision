@@ -1,0 +1,22 @@
+# Weekly update PRs for the pinned Python tooling/lock and the GitHub Actions used by the CI.
+# Model-stack pins (torch, ultralytics, onnxruntime) are deliberately grouped so a bump can be
+# re-measured as one change; see CONTRIBUTING.md.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      model-stack:
+        patterns: ["torch", "torchvision", "ultralytics*", "onnx*"]
+      tooling:
+        patterns: ["ruff", "mypy", "pytest*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday

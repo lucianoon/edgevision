@@ -18,14 +18,14 @@ using namespace edgevision;
 namespace {
 
 int failures = 0;
-#define EXPECT(cond, ...)                                  \
-    do {                                                   \
-        if (!(cond)) {                                     \
-            ++failures;                                    \
+#define EXPECT(cond, ...)                                    \
+    do {                                                     \
+        if (!(cond)) {                                       \
+            ++failures;                                      \
             std::printf("FAIL %s:%d: ", __FILE__, __LINE__); \
-            std::printf(__VA_ARGS__);                      \
-            std::printf("\n");                             \
-        }                                                  \
+            std::printf(__VA_ARGS__);                        \
+            std::printf("\n");                               \
+        }                                                    \
     } while (0)
 
 cv::Mat synthetic_frame(int rows, int cols) {
@@ -33,8 +33,8 @@ cv::Mat synthetic_frame(int rows, int cols) {
     for (int y = 0; y < rows; ++y)
         for (int x = 0; x < cols; ++x) {
             auto& p = img.at<cv::Vec3b>(y, x);
-            p[0] = static_cast<uchar>((x * 255) / cols);            // B gradient
-            p[1] = static_cast<uchar>((y * 255) / rows);            // G gradient
+            p[0] = static_cast<uchar>((x * 255) / cols);               // B gradient
+            p[1] = static_cast<uchar>((y * 255) / rows);               // G gradient
             p[2] = static_cast<uchar>(((x / 16 + y / 16) % 2) * 200);  // R checkerboard
         }
     return img;

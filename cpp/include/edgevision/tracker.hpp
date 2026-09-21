@@ -17,8 +17,8 @@ struct TrackerParams {
     float match_thresh = 0.8f;  // first association accepts cost (1 - IoU) below this
     float low_match_thresh = 0.5f;
     float unconfirmed_match_thresh = 0.7f;
-    int track_buffer = 30;      // frames a lost track is kept before removal
-    bool class_aware = true;    // never associate detections of different classes
+    int track_buffer = 30;    // frames a lost track is kept before removal
+    bool class_aware = true;  // never associate detections of different classes
 };
 
 struct Track {
@@ -27,9 +27,9 @@ struct Track {
     float score;
     int class_id;
     std::string class_name;
-    int age;        // frames since the track was created
-    int hits;       // frames with a matched detection
-    bool fresh;     // matched in this frame (false: predicted only; not emitted by default)
+    int age;     // frames since the track was created
+    int hits;    // frames with a matched detection
+    bool fresh;  // matched in this frame (false: predicted only; not emitted by default)
 };
 
 // Kalman filter on (cx, cy, aspect, h) + velocities, exactly the ByteTrack/SORT variant.

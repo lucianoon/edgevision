@@ -34,20 +34,36 @@ def detections_per_image(onnx_path, batch):
     return [int((out[i, :, 4] > 0).sum()) for i in range(out.shape[0])]
 
 
-print(f"ultralytics {ultralytics.__version__} | torch {torch.__version__} | onnxruntime {ort.__version__}")
+print(
+    f"ultralytics {ultralytics.__version__} | torch {torch.__version__} "
+    f"| onnxruntime {ort.__version__}"
+)
 bus = letterbox(cv2.imread(str(ASSETS / "bus.jpg")))
 zidane = letterbox(cv2.imread(str(ASSETS / "zidane.jpg")))
 model = YOLO("models/pytorch/yolo26n.pt")  # exports land next to the weights (git-ignored)
 
-dyn = model.export(format="onnx", nms=True, dynamic=True, imgsz=640, conf=0.5, iou=0.45, verbose=False)
+dyn = model.export(
+    format="onnx", nms=True, dynamic=True, imgsz=640, conf=0.5, iou=0.45, verbose=False
+)
 print("dynamic=True  [bus]          ->", detections_per_image(dyn, bus))
 print("dynamic=True  [zidane]       ->", detections_per_image(dyn, zidane))
 print("dynamic=True  [bus, zidane]  ->", detections_per_image(dyn, np.concatenate([bus, zidane])))
 print("dynamic=True  [zidane, bus]  ->", detections_per_image(dyn, np.concatenate([zidane, bus])))
 
-static = model.export(format="onnx", nms=True, dynamic=False, batch=2, imgsz=640, conf=0.5, iou=0.45, verbose=False)
-print("static batch=2        [bus, zidane]  ->", detections_per_image(static, np.concatenate([bus, zidane])))
+static = model.export(
+    format="onnx", nms=True, dynamic=False, batch=2, imgsz=640, conf=0.5, iou=0.45, verbose=False
+)
+print(
+    "static batch=2        [bus, zidane]  ->",
+    detections_per_image(static, np.concatenate([bus, zidane])),
+)
 
-fixed = model.export(format="onnx", nms=True, dynamic=True, batch=4, imgsz=640, conf=0.5, iou=0.45, verbose=False)
-print("dynamic=True batch=4  [bus, zidane]  ->", detections_per_image(fixed, np.concatenate([bus, zidane])), "(correct: max batch given)")
+fixed = model.export(
+    format="onnx", nms=True, dynamic=True, batch=4, imgsz=640, conf=0.5, iou=0.45, verbose=False
+)
+print(
+    "dynamic=True batch=4  [bus, zidane]  ->",
+    detections_per_image(fixed, np.concatenate([bus, zidane])),
+    "(correct: max batch given)",
+)
 print("dynamic=True batch=4  [zidane]       ->", detections_per_image(fixed, zidane))

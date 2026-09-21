@@ -1,26 +1,31 @@
 """Measure per-stage latency of a detector backend over a video source.
 
+    edgevision-benchmark --backend onnx --source videos/sample.mp4 --frames 100
     python -m edgevision.benchmark --backend onnx --source videos/sample.mp4 --frames 100
 
-Writes a JSON report to benchmarks/results/ so runs can be compared over time.
+Writes a JSON report to benchmarks/results/ so runs can be compared over time. `measure()`
+holds the loop and `build_report()` the schema; both take plain objects so they are testable
+without models. The C++ runtime (cpp/src/main.cpp) writes the same schema.
 """
 
 import argparse
 import json
 import platform
 import sys
-from datetime import datetime, timezone
+from collections.abc import Callable
+from datetime import UTC, datetime
 from pathlib import Path
 
+from edgevision.detector import Detector
 from edgevision.factory import build_detector
-from edgevision.main import load_config
+from edgevision.main import FrameSource, load_config
 from edgevision.metrics import PerformanceMetrics
 from edgevision.video import VideoSource
 
 RESULTS_DIR = Path("benchmarks/results")
 
 
-def environment(detector) -> dict:
+def environment(detector: Detector) -> dict:
     import numpy
     import onnxruntime
     import torch
@@ -41,17 +46,26 @@ def environment(detector) -> dict:
     }
 
 
-def _version(module_name: str):
+def _version(module_name: str) -> str | None:
     try:
         return __import__(module_name).__version__
     except ImportError:
         return None
 
 
-def run(model_cfg: dict, source, frames: int, warmup: int) -> tuple[PerformanceMetrics, object]:
+def measure(
+    detector: Detector,
+    open_source: Callable[[], FrameSource],
+    frames: int,
+    warmup: int,
+) -> PerformanceMetrics:
+    """Run `warmup` frames, then measure `frames` frames; short clips are reopened and looped.
+
+    The detector's metrics are swapped for a fresh window once warm-up ends, so the returned
+    metrics hold only measured frames (decode, per-stage and end-to-end latencies)."""
     metrics = PerformanceMetrics(window_size=frames)
-    detector = build_detector(model_cfg, metrics)
-    video = VideoSource(source)
+    detector.metrics = metrics
+    video = open_source()
 
     processed = 0
     try:
@@ -61,7 +75,7 @@ def run(model_cfg: dict, source, frames: int, warmup: int) -> tuple[PerformanceM
 
             if not ok:  # loop short clips until enough frames were processed
                 video.release()
-                video = VideoSource(source)
+                video = open_source()
                 continue
 
             metrics.start_frame()
@@ -75,51 +89,24 @@ def run(model_cfg: dict, source, frames: int, warmup: int) -> tuple[PerformanceM
     finally:
         video.release()
 
+    return metrics
+
+
+def run(model_cfg: dict, source, frames: int, warmup: int) -> tuple[PerformanceMetrics, Detector]:
+    detector = build_detector(model_cfg)
+    metrics = measure(detector, lambda: VideoSource(source), frames, warmup)
     return metrics, detector
 
 
-def print_report(backend: str, summary: dict, fps: float):
-    print(f"\nbackend={backend}  fps={fps:.1f}")
-    print(f"{'stage':<14}{'mean':>9}{'p50':>9}{'p95':>9}{'max':>9}  n")
-    for name, s in summary.items():
-        print(
-            f"{name:<14}{s['mean_ms']:>9.1f}{s['p50_ms']:>9.1f}"
-            f"{s['p95_ms']:>9.1f}{s['max_ms']:>9.1f}  {s['samples']}"
-        )
-
-
-def parse_args():
-    parser = argparse.ArgumentParser(description="EdgeVision detector benchmark")
-    parser.add_argument("--config", type=Path, default=Path("configs/app.yaml"))
-    parser.add_argument("--backend", choices=["pytorch", "onnx", "tensorrt"], required=True)
-    parser.add_argument("--model", help="Override model.paths.<backend> (e.g. an FP32 engine)")
-    parser.add_argument("--label", default="", help="Suffix for the report file name (e.g. fp32)")
-    parser.add_argument("--source", default="videos/pedestrian_area_1080p25.webm", help="see videos/README.md")
-    parser.add_argument("--frames", type=int, default=100, help="measured frames")
-    parser.add_argument("--warmup", type=int, default=10, help="frames discarded before measuring")
-    parser.add_argument("--out", type=Path, help="JSON path (default: benchmarks/results/<backend>_<utc>.json)")
-    return parser.parse_args()
-
-
-def main():
-    args = parse_args()
-    model_cfg = load_config(args.config)["model"]
-    model_cfg["backend"] = args.backend
-    if args.model:
-        model_cfg["paths"][args.backend] = args.model
-
-    source = int(args.source) if args.source.isdigit() else args.source
-    metrics, detector = run(model_cfg, source, args.frames, args.warmup)
-
-    summary = metrics.summary()
-    print_report(args.backend, summary, metrics.fps)
-
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    name = "_".join(filter(None, [args.backend, args.label, stamp]))
-    out = args.out or RESULTS_DIR / f"{name}.json"
-    out.parent.mkdir(parents=True, exist_ok=True)
-
-    report = {
+def build_report(
+    args: argparse.Namespace,
+    model_cfg: dict,
+    detector: Detector,
+    metrics: PerformanceMetrics,
+    stamp: str,
+    env: dict,
+) -> dict:
+    return {
         "timestamp_utc": stamp,
         "backend": args.backend,
         "label": args.label,
@@ -130,9 +117,54 @@ def main():
         "frames": args.frames,
         "warmup": args.warmup,
         "fps": metrics.fps,
-        "stages": summary,
-        "environment": environment(detector),
+        "stages": metrics.summary(),
+        "environment": env,
     }
+
+
+def print_report(backend: str, summary: dict, fps: float) -> None:
+    print(f"\nbackend={backend}  fps={fps:.1f}")
+    print(f"{'stage':<14}{'mean':>9}{'p50':>9}{'p95':>9}{'max':>9}  n")
+    for name, s in summary.items():
+        print(
+            f"{name:<14}{s['mean_ms']:>9.1f}{s['p50_ms']:>9.1f}"
+            f"{s['p95_ms']:>9.1f}{s['max_ms']:>9.1f}  {s['samples']}"
+        )
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="EdgeVision detector benchmark")
+    parser.add_argument("--config", type=Path, default=Path("configs/app.yaml"))
+    parser.add_argument("--backend", choices=["pytorch", "onnx", "tensorrt"], required=True)
+    parser.add_argument("--model", help="Override model.paths.<backend> (e.g. an FP32 engine)")
+    parser.add_argument("--label", default="", help="Suffix for the report file name (e.g. fp32)")
+    parser.add_argument(
+        "--source", default="videos/pedestrian_area_1080p25.webm", help="see videos/README.md"
+    )
+    parser.add_argument("--frames", type=int, default=100, help="measured frames")
+    parser.add_argument("--warmup", type=int, default=10, help="frames discarded before measuring")
+    parser.add_argument(
+        "--out", type=Path, help="JSON path (default: benchmarks/results/<backend>_<utc>.json)"
+    )
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = parse_args(argv)
+    model_cfg = load_config(args.config)["model"]
+    model_cfg["backend"] = args.backend
+    if args.model:
+        model_cfg["paths"][args.backend] = args.model
+
+    source = int(args.source) if args.source.isdigit() else args.source
+    metrics, detector = run(model_cfg, source, args.frames, args.warmup)
+    print_report(args.backend, metrics.summary(), metrics.fps)
+
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    name = "_".join(filter(None, [args.backend, args.label, stamp]))
+    out = args.out or RESULTS_DIR / f"{name}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    report = build_report(args, model_cfg, detector, metrics, stamp, environment(detector))
     out.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"\nsaved: {out}")
 

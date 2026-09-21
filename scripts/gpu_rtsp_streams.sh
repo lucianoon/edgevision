@@ -3,7 +3,7 @@
 # pipelines in the container, with GPU / decoder utilisation sampled by nvidia-smi.
 #   scripts/gpu_rtsp_streams.sh [1 4 8 12]
 set -uo pipefail
-cd /opt/edgevision/repo
+cd /opt/edgevision/repo || exit 1
 ENGINE=${ENGINE:-models/tensorrt/yolo26n_nms_fp16.engine}
 MODE=${MODE:-independent}   # independent | batched (ENGINE must then be the batch-N engine)
 RTSP=${RTSP:-rtsp://127.0.0.1:8554/cam}

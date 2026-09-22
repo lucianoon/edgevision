@@ -53,7 +53,7 @@ jobs:
           python -m pip install -e . --no-deps
 
       - name: Cache model files (weights + exports)
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             models/pytorch/yolo26n.pt

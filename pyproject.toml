@@ -28,6 +28,7 @@ dev = ["pytest", "pytest-cov", "ruff", "mypy"]
 [project.scripts]
 edgevision = "edgevision.main:main"
 edgevision-benchmark = "edgevision.benchmark:main"
+edgevision-events = "edgevision.events.cli:main"
 
 [project.urls]
 Repository = "https://github.com/lucianoon/edgevision"

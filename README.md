@@ -67,11 +67,30 @@ checked against each other by parity tests.
 Full tables, raw JSON reports and observations: [`benchmarks/README.md`](benchmarks/README.md).
 Every GPU run wrote its report to `benchmarks/results/`, versioned.
 
+## From tracks to events
+
+Detections and tracks are not what a business buys; counts, occupancy and alerts are. The
+`edgevision-events` command applies a YAML rule file (zones as polygons, counting lines with a
+direction, dwell thresholds, per-class filters) to the track stream the runtime emits and writes
+one JSON event per line, optionally POSTing each to a webhook:
+
+```bash
+edgevision-events benchmarks/results/tracks_cpp_512.jsonl --rules configs/rules.example.yaml --fps 25 --out events.jsonl
+```
+
+On the 12-second pedestrian clip tracked by the C++ runtime (T4, Sprint 8) the example rules
+give: gate crossings 6 east / 8 west, 44 entries into the platform zone, 3 people staying
+longer than 5 s, 105 events in total. Events: `zone_enter`, `zone_exit` (with dwell and reason:
+left / lost / end_of_stream), `dwell_exceeded`, `line_cross` (with direction label). The layer
+is pure Python, dependency-free, fully unit-tested with synthetic trajectories and regression-
+tested on the real dump (`tests/data/`), and reads stdin so the runtime can be piped in live.
+
 ## Repository layout
 
 ```
-python/edgevision/   pip-installable package (`edgevision`, `edgevision-benchmark` commands):
+python/edgevision/   pip-installable package (`edgevision`, `edgevision-benchmark`, `edgevision-events`):
                      detector.py (Ultralytics), onnx_detector.py, tensorrt_detector.py,
+                     events/ (rules.py, geometry.py, engine.py, sinks.py, cli.py),
                      preprocess.py, postprocess.py (decode + NMS), factory.py, metrics.py,
                      benchmark.py, main.py
 cpp/                 CMake project: letterbox.cu, trt_engine.cpp, video_decoder.cpp (NVDEC),
@@ -85,7 +104,7 @@ infra/               CloudFormation for the GPU box, scoped IAM policy, cost not
 docker/              TensorRT container (NGC 26.04 + OpenCV, libav, CMake)
 benchmarks/          README with every result, results/*.json reports and logs
 tests/               pytest: pre/post-processing, parity between backends, C++ runtime
-configs/             app.yaml (backend, engine paths), COCO val/calibration yaml
+configs/             app.yaml (backend, engine paths), rules.example.yaml (events), COCO yaml
 ```
 
 ## Reproduce
@@ -126,8 +145,9 @@ access, and a zero-cost standby that removes the instance and its disk between s
 
 ## Limitations and next steps
 
-- Detects the 80 COCO classes; no faces, plates or behaviour. The natural next layer is rules
-  over tracks (zones, counting, dwell time, alerts) and an event output.
+- Detects the 80 COCO classes; no faces, plates or behaviour. Rules over tracks (zones,
+  counting, dwell, alerts) exist as a post-process on the track dump; feeding them live from the
+  C++ runtime (IPC instead of JSONL) and adding MQTT/Kafka sinks is the next step.
 - Identity handovers can happen when tracks cross (IoU-only association); appearance
   embeddings (BoT-SORT) would fix that where id purity matters.
 - Not yet ported to Jetson: engines are GPU-specific and the aarch64 build needs the device.

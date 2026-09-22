@@ -5,6 +5,13 @@ versions follow [Semantic Versioning](https://semver.org/). Measurements live in
 
 ## [Unreleased]
 
+### Added
+- Events layer (`edgevision.events`, command `edgevision-events`): zones (polygons, per-class,
+  dwell threshold), counting lines with direction labels, lost-track and end-of-stream handling,
+  JSONL / stdout / webhook sinks, YAML rules with validation (`configs/rules.example.yaml`).
+  35 tests on synthetic trajectories plus a regression on the real T4 track dump
+  (`tests/data/tracks_pedestrian_512.jsonl`: 6 east / 8 west gate crossings, 44 zone entries, 3 dwell alerts).
+
 ## [0.2.0] - 2026-09-21
 
 Quality hardening: no change to what the runtime measures; the repository becomes buildable, testable and

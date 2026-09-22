@@ -1,0 +1,20 @@
+# Rules for the events layer (edgevision-events), in source-frame pixels of the camera.
+# This example fits the 1920x1080 pedestrian clip used across the benchmarks: people walk
+# left <-> right on a platform; the gate counts them, the zone measures how long they stay.
+anchor: bottom_center        # point of the box used for geometry: feet (bottom_center) or center
+lost_after_frames: 30        # a track unseen for this long leaves every zone it was in (1.2 s at 25 fps)
+
+zones:
+  - name: platform
+    polygon: [[0, 700], [1920, 700], [1920, 1080], [0, 1080]]
+    classes: [person]        # omit for every class
+    dwell_seconds: 5         # emit dwell_exceeded once per stay after 5 s; omit to disable
+
+lines:
+  - name: gate
+    a: [960, 0]              # a -> b points downwards, so "left" of the line is the west half of the frame
+    b: [960, 1080]
+    classes: [person]
+    labels:
+      left_to_right: east    # crossing from the left side of a->b to the right side
+      right_to_left: west

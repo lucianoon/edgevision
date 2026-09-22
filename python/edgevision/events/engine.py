@@ -15,6 +15,8 @@ from dataclasses import asdict, dataclass, field
 from edgevision.events.geometry import Point, box_anchor, crossing_direction, point_in_polygon
 from edgevision.events.rules import Rules
 
+EVENT_TYPES = ("zone_enter", "zone_exit", "dwell_exceeded", "line_cross")
+
 
 @dataclass(frozen=True)
 class TrackObservation:
@@ -77,6 +79,7 @@ class EventEngine:
         self._frames = 0
         self._last_frame = 0
         self._tracks_seen: set[int] = set()
+        self._event_counts: dict[str, int] = dict.fromkeys(EVENT_TYPES, 0)
 
     # -- public ------------------------------------------------------------------------------
 
@@ -98,6 +101,7 @@ class EventEngine:
             state.last_anchor = anchor
             state.last_frame = frame
         events.extend(self._expire(frame))
+        self._count(events)
         return events
 
     def close(self) -> list[Event]:
@@ -106,7 +110,20 @@ class EventEngine:
         for track_id in sorted(self._states):
             events.extend(self._leave_all(track_id, self._last_frame, "end_of_stream"))
         self._states.clear()
+        self._count(events)
         return events
+
+    @property
+    def active_tracks(self) -> int:
+        return len(self._states)
+
+    @property
+    def event_counts(self) -> dict[str, int]:
+        return dict(self._event_counts)
+
+    def _count(self, events: list[Event]) -> None:
+        for event in events:
+            self._event_counts[event.type] += 1
 
     def summary(self) -> dict:
         occupancy = {
@@ -117,6 +134,8 @@ class EventEngine:
             "frames": self._frames,
             "duration_s": round(self._frames / self.fps, 3),
             "tracks_seen": len(self._tracks_seen),
+            "active_tracks": self.active_tracks,
+            "events": self.event_counts,
             "lines": {name: dict(counts) for name, counts in self._line_counts.items()},
             "zones": {
                 z.name: {

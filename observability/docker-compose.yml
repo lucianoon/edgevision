@@ -1,0 +1,31 @@
+# Prometheus + Grafana for the EdgeVision metrics endpoint (edgevision --metrics-port 9108,
+# edgevision-events --metrics-port 9109). Development stack: anonymous admin, no persistence.
+#
+#   docker compose -f observability/docker-compose.yml up
+#   Grafana: http://localhost:3000  (dashboard "EdgeVision" is provisioned)
+#   Prometheus: http://localhost:9090
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=2d"]
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # Linux; Docker Desktop resolves it natively
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/edgevision.json
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus

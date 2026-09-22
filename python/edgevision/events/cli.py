@@ -18,6 +18,7 @@ from typing import IO
 from edgevision.events.engine import EventEngine, TrackObservation
 from edgevision.events.rules import load_rules
 from edgevision.events.sinks import JsonlSink, MultiSink, Sink, WebhookSink
+from edgevision.observability import MetricsExporter, MetricsServer
 
 
 def read_dump(lines: Iterable[str]) -> Iterator[tuple[int, list[TrackObservation]]]:
@@ -58,6 +59,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--no-summary", action="store_true", help="do not print the summary at the end"
     )
+    parser.add_argument(
+        "--metrics-port",
+        type=int,
+        help="serve Prometheus metrics (/metrics, /healthz) on this port while running; "
+        "0 = any free port",
+    )
     return parser.parse_args(argv)
 
 
@@ -73,8 +80,17 @@ def main(argv: list[str] | None = None) -> None:
         source = sys.stdin
     else:
         source = open(args.tracks, encoding="utf-8")
-    with source:
-        summary = run(engine, source, MultiSink(sinks))
+    server = None
+    if args.metrics_port is not None:
+        exporter = MetricsExporter(events=engine, labels={"source": args.tracks})
+        server = MetricsServer(exporter.render, port=args.metrics_port).start()
+        print(f"metrics: {server.url}", file=sys.stderr)
+    try:
+        with source:
+            summary = run(engine, source, MultiSink(sinks))
+    finally:
+        if server is not None:
+            server.stop()
 
     if not args.no_summary:
         out = (

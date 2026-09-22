@@ -11,6 +11,10 @@ versions follow [Semantic Versioning](https://semver.org/). Measurements live in
   JSONL / stdout / webhook sinks, YAML rules with validation (`configs/rules.example.yaml`).
   35 tests on synthetic trajectories plus a regression on the real T4 track dump
   (`tests/data/tracks_pedestrian_512.jsonl`: 6 east / 8 west gate crossings, 44 zone entries, 3 dwell alerts).
+- Observability: `--metrics-port` on `edgevision` and `edgevision-events` serves Prometheus metrics
+  (`/metrics`, `/healthz`) from a dependency-free exporter (`edgevision.observability`); `observability/`
+  holds a Prometheus + Grafana compose stack with a provisioned dashboard (fps, latency window, stage
+  breakdown, detections rate, line crossings, zone occupancy, events by type).
 
 ## [0.2.0] - 2026-09-21
 

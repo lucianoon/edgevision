@@ -8,6 +8,7 @@ be driven by tests with fake sources and detectors; `main()` wires the real ones
 """
 
 import argparse
+import importlib.metadata
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Protocol
@@ -19,9 +20,26 @@ import yaml
 from edgevision.detector import Detection, Detector
 from edgevision.factory import build_detector
 from edgevision.metrics import PerformanceMetrics
+from edgevision.observability import (
+    MetricsExporter,
+    MetricsServer,
+    StreamCounters,
+    compose_callbacks,
+    counting_callback,
+)
 from edgevision.video import VideoSource
 
 DEFAULT_CONFIG = Path("configs/app.yaml")
+
+
+def _version() -> str:
+    try:
+        return importlib.metadata.version("edgevision")
+    except importlib.metadata.PackageNotFoundError:  # running from PYTHONPATH without an install
+        return "0.0.0"
+
+
+__version__ = _version()
 BOX_COLOR = (0, 255, 0)
 
 
@@ -153,6 +171,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=0,
         help="Stop after N frames (0 = run until source ends or 'q')",
     )
+    parser.add_argument(
+        "--metrics-port",
+        type=int,
+        help="serve Prometheus metrics (/metrics, /healthz) on this port; 0 = any free port",
+    )
     return parser.parse_args(argv)
 
 
@@ -171,6 +194,19 @@ def main(argv: list[str] | None = None) -> None:
     source = parse_source(video_cfg["source"] if args.source is None else args.source)
     display = video_cfg["display"] and not args.no_display
 
+    counters = StreamCounters()
+    callbacks: list[FrameCallback] = [counting_callback(counters)]
+    if display:
+        callbacks.append(display_callback(backend, metrics))
+
+    server = None
+    if args.metrics_port is not None:
+        exporter = MetricsExporter(
+            metrics=metrics, counters=counters, labels={"backend": backend}, version=__version__
+        )
+        server = MetricsServer(exporter.render, port=args.metrics_port).start()
+        print(f"metrics: {server.url}")
+
     try:
         process_stream(
             detector,
@@ -178,9 +214,11 @@ def main(argv: list[str] | None = None) -> None:
             metrics,
             max_frames=args.max_frames,
             log_interval=config["metrics"]["log_interval_frames"],
-            on_frame=display_callback(backend, metrics) if display else None,
+            on_frame=compose_callbacks(*callbacks),
         )
     finally:
+        if server is not None:
+            server.stop()
         cv2.destroyAllWindows()
 
     print(

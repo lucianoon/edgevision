@@ -85,12 +85,27 @@ left / lost / end_of_stream), `dwell_exceeded`, `line_cross` (with direction lab
 is pure Python, dependency-free, fully unit-tested with synthetic trajectories and regression-
 tested on the real dump (`tests/data/`), and reads stdin so the runtime can be piped in live.
 
+## Observability
+
+Both commands serve Prometheus metrics while they run (`--metrics-port`): fps, per-stage latency
+of the current window (mean/p50/p95/max), frames and detections totals from the app; line
+crossings, zone entries and occupancy, dwell alerts, active tracks and events per type from the
+events layer. `observability/` has a Prometheus + Grafana stack with a provisioned dashboard:
+
+```bash
+edgevision --backend onnx --source <video> --no-display --metrics-port 9108
+docker compose -f observability/docker-compose.yml up      # Grafana on :3000, dashboard "EdgeVision"
+```
+
+The exporter is dependency-free (text exposition over `http.server`, daemon thread, never on the
+frame path); `/healthz` answers while the process runs. Details in `observability/README.md`.
+
 ## Repository layout
 
 ```
 python/edgevision/   pip-installable package (`edgevision`, `edgevision-benchmark`, `edgevision-events`):
                      detector.py (Ultralytics), onnx_detector.py, tensorrt_detector.py,
-                     events/ (rules.py, geometry.py, engine.py, sinks.py, cli.py),
+                     events/ (rules.py, geometry.py, engine.py, sinks.py, cli.py), observability.py,
                      preprocess.py, postprocess.py (decode + NMS), factory.py, metrics.py,
                      benchmark.py, main.py
 cpp/                 CMake project: letterbox.cu, trt_engine.cpp, video_decoder.cpp (NVDEC),
@@ -105,6 +120,7 @@ docker/              TensorRT container (NGC 26.04 + OpenCV, libav, CMake)
 benchmarks/          README with every result, results/*.json reports and logs
 tests/               pytest: pre/post-processing, parity between backends, C++ runtime
 configs/             app.yaml (backend, engine paths), rules.example.yaml (events), COCO yaml
+observability/       Prometheus + Grafana compose stack, scrape config, provisioned dashboard
 ```
 
 ## Reproduce

@@ -1,3 +1,4 @@
+import os
 from contextlib import nullcontext
 from dataclasses import dataclass
 from typing import Protocol
@@ -42,7 +43,9 @@ class YoloDetector:
         self.metrics = metrics
         self.confidence = confidence
         self.image_size = image_size
-        self.device = device
+        # EDGEVISION_TORCH_DEVICE forces the device when none is given, e.g. cpu on a g5g where
+        # the aarch64 torch wheel has no sm_75 kernels for the T4G.
+        self.device = device or os.environ.get("EDGEVISION_TORCH_DEVICE") or None
 
     def detect(self, frame: np.ndarray) -> list[Detection]:
         # Ultralytics does its own pre/post-processing inside predict(), so the

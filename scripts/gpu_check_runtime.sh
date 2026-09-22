@@ -6,6 +6,14 @@
 # and that the parity tests against the Python backends hold. A few minutes on a T4.
 # Engines are expected in models/tensorrt (scripts/aws/sync-down.sh / S3); missing ones skip their step.
 set -uo pipefail
+# onnxruntime-gpu and torch for aarch64 ship no sm_75 kernels (T4G on g5g): run the Python
+# references on the CPU there. TensorRT and the C++ runtime still use the GPU.
+if [ "$(uname -m)" = aarch64 ] && [ -z "${EDGEVISION_ORT_PROVIDERS:-}" ]; then
+    export EDGEVISION_ORT_PROVIDERS=CPUExecutionProvider
+fi
+if [ "$(uname -m)" = aarch64 ] && [ -z "${EDGEVISION_TORCH_DEVICE:-}" ]; then
+    export EDGEVISION_TORCH_DEVICE=cpu
+fi
 cd /workspace/edgevision || exit 1
 CLIP=videos/pedestrian_area_1080p25_h264.mp4
 ENGINE=${ENGINE:-models/tensorrt/yolo26n_nms_512_fp16.engine}

@@ -21,8 +21,11 @@ Parameters:
   InstanceType:
     Type: String
     Default: g4dn.xlarge
-    AllowedValues: [g4dn.xlarge, g4dn.2xlarge, g5.xlarge, g6.xlarge]
-    Description: NVIDIA GPU instance. g4dn.xlarge (T4) is the cheapest that fits.
+    AllowedValues: [g4dn.xlarge, g4dn.2xlarge, g5.xlarge, g6.xlarge, g5g.xlarge]
+    Description: >-
+      NVIDIA GPU instance. g4dn.xlarge (T4) is the cheapest that fits. g5g.xlarge
+      (Graviton2 + T4G, arm64) validates the aarch64 build, the Jetson target; it needs
+      the arm64 AMI (AmiId=/aws/service/deeplearning/ami/arm64/...).
   AmiId:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/deeplearning/ami/x86_64/base-oss-nvidia-driver-gpu-ubuntu-24.04/latest/ami-id

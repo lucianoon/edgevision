@@ -30,7 +30,8 @@ def test_unknown_backend_is_rejected():
         build_detector({"backend": "openvino", "paths": {"openvino": "x"}})
 
 
-def test_pytorch_backend_maps_auto_device_to_none():
+def test_pytorch_backend_maps_auto_device_to_none(monkeypatch):
+    monkeypatch.delenv("EDGEVISION_TORCH_DEVICE", raising=False)  # set on aarch64 GPU boxes
     metrics = PerformanceMetrics()
 
     detector = build_detector(config("pytorch"), metrics)

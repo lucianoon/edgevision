@@ -6,6 +6,11 @@ versions follow [Semantic Versioning](https://semver.org/). Measurements live in
 ## [Unreleased]
 
 ### Added
+- aarch64 validated on an EC2 g5g (Graviton2 + T4G): `InstanceType=g5g.xlarge` with the arm64 Deep
+  Learning AMI; `scripts/gpu_build_engines_trtexec.sh` builds the check engines with trtexec only (no
+  CUDA torch needed); `scripts/gpu_check_runtime.sh` passes with 0 failures (102 Python tests, 5 CTests).
+- `EDGEVISION_ORT_PROVIDERS` and `EDGEVISION_TORCH_DEVICE` override the ONNX Runtime providers and the
+  PyTorch device; set to CPU automatically on aarch64 by the check script.
 - Events layer (`edgevision.events`, command `edgevision-events`): zones (polygons, per-class,
   dwell threshold), counting lines with direction labels, lost-track and end-of-stream handling,
   JSONL / stdout / webhook sinks, YAML rules with validation (`configs/rules.example.yaml`).
@@ -43,6 +48,7 @@ multi-stream, batched, tracking, parity tests).
 - Whole Python and C++ trees formatted (`ruff format`, `cpp/.clang-format`).
 
 ### Fixed
+- `resume.sh` waits for cloud-init before pushing code (SSM came online before `/opt/edgevision` existed).
 - The Python TensorRT path pre-processed at 640 for the default 512 engine (upload would fail on reshape).
 - Six shellcheck warnings in the GPU and AWS scripts; a raw carriage return in `infra/README.md`.
 

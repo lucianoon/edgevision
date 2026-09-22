@@ -29,3 +29,11 @@ def test_detects_people_and_bus_in_sample_image(detector):
         assert 0.5 <= d.confidence <= 1.0
         assert 0 <= d.x1 < d.x2 <= w
         assert 0 <= d.y1 < d.y2 <= h
+
+
+def test_device_can_be_forced_from_the_environment(monkeypatch):
+    monkeypatch.setenv("EDGEVISION_TORCH_DEVICE", "cpu")
+    assert YoloDetector(model_path=MODEL_PATH).device == "cpu"
+    assert YoloDetector(model_path=MODEL_PATH, device="cuda:0").device == "cuda:0"
+    monkeypatch.delenv("EDGEVISION_TORCH_DEVICE")
+    assert YoloDetector(model_path=MODEL_PATH).device is None

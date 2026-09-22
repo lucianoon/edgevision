@@ -1,4 +1,5 @@
 import ast
+import os
 from contextlib import nullcontext
 
 import numpy as np
@@ -10,6 +11,16 @@ from edgevision.postprocess import postprocess
 from edgevision.preprocess import preprocess, resolve_input_size
 
 PREFERRED_PROVIDERS = ("CUDAExecutionProvider", "CPUExecutionProvider")
+PROVIDERS_ENV = "EDGEVISION_ORT_PROVIDERS"
+
+
+def providers_from_env() -> list[str] | None:
+    """Comma-separated override, e.g. EDGEVISION_ORT_PROVIDERS=CPUExecutionProvider.
+
+    Needed where onnxruntime-gpu has no kernels for the GPU: the aarch64 wheel lacks sm_75,
+    so on a g5g (T4G) every CUDA node fails with cudaErrorNoKernelImageForDevice."""
+    value = os.environ.get(PROVIDERS_ENV, "").strip()
+    return [p.strip() for p in value.split(",") if p.strip()] or None
 
 
 def _load_class_names(session: ort.InferenceSession) -> dict[int, str]:
@@ -33,7 +44,7 @@ class OnnxDetector:
     ):
         available = ort.get_available_providers()
         if providers is None:
-            providers = [p for p in PREFERRED_PROVIDERS if p in available]
+            providers = providers_from_env() or [p for p in PREFERRED_PROVIDERS if p in available]
 
         self.session = ort.InferenceSession(model_path, providers=providers)
         graph_input = self.session.get_inputs()[0]

@@ -166,7 +166,11 @@ access, and a zero-cost standby that removes the instance and its disk between s
   C++ runtime (IPC instead of JSONL) and adding MQTT/Kafka sinks is the next step.
 - Identity handovers can happen when tracks cross (IoU-only association); appearance
   embeddings (BoT-SORT) would fix that where id purity matters.
-- Not yet ported to Jetson: engines are GPU-specific and the aarch64 build needs the device.
+- Not yet on a Jetson itself. The aarch64 build is validated on an EC2 g5g (Graviton2 + T4G, the
+  same ISA and TensorRT stack as JetPack): full runtime, five CTests, NVDEC, multi-stream, batched
+  and tracking pass (`scripts/gpu_check_runtime.sh`, log in `benchmarks/results/`). There the
+  Python references (onnxruntime-gpu, torch) run on the CPU: their aarch64 wheels ship no sm_75
+  kernels, so `EDGEVISION_ORT_PROVIDERS` / `EDGEVISION_TORCH_DEVICE` force the CPU.
 
 ## Contributing
 

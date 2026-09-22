@@ -44,6 +44,19 @@ aws iam attach-user-policy --user-name <iam-user> \
 Instances of the G family also need vCPU quota (`L-DB2E81BA`, "Running On-Demand
 G and VT instances"); new accounts often start at 0 and must request >= 4.
 
+## aarch64 (g5g) sessions
+
+`scripts/aws/resume.sh InstanceType=g5g.xlarge AmiId=/aws/service/deeplearning/ami/arm64/base-oss-nvidia-driver-gpu-ubuntu-24.04/latest/ami-id`
+launches a Graviton2 + T4G box. Two things to know:
+
+- `cloudformation deploy` keeps previous parameter values: after standby, redeploy with
+  `LaunchInstance=false InstanceType=g4dn.xlarge AmiId=/aws/service/deeplearning/ami/x86_64/...`
+  or the next plain `resume.sh` launches a g5g again.
+- Engines are GPU- and architecture-specific but share names, and `sync-down.sh` uploads the
+  box's `models/tensorrt` to S3. After a g5g session the S3 copies are the T4G builds; on the next
+  g4dn session rebuild them with `FORCE=1 scripts/gpu_build_engines_trtexec.sh` (the bucket is
+  versioned, so the x86 builds also remain as previous versions).
+
 ## Lifecycle (from Git Bash or WSL, in the repo root)
 
 | step | command |

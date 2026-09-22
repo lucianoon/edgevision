@@ -64,3 +64,13 @@ def test_onnx_detector_takes_input_size_from_static_graph():
     # (it would feed a 512 tensor to a 640 graph). The graph is the source of truth.
     assert OnnxDetector(ONNX_PATH, image_size=512).image_size == 640
     assert OnnxDetector(ONNX_PATH).image_size == 640
+
+
+def test_providers_can_be_forced_from_the_environment(monkeypatch):
+    from edgevision.onnx_detector import providers_from_env
+
+    monkeypatch.delenv("EDGEVISION_ORT_PROVIDERS", raising=False)
+    assert providers_from_env() is None
+    monkeypatch.setenv("EDGEVISION_ORT_PROVIDERS", " CPUExecutionProvider , ")
+    assert providers_from_env() == ["CPUExecutionProvider"]
+    assert OnnxDetector(ONNX_PATH).providers == ["CPUExecutionProvider"]

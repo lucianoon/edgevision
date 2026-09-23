@@ -1,0 +1,17 @@
+benchmarks/results/mot17/ultralytics_bytetrack_on_trt_engine_512_fp16/data/MOT17-02-FRCNN.txt: 4557 rows
+benchmarks/results/mot17/ultralytics_bytetrack_on_trt_engine_512_fp16/data/MOT17-04-FRCNN.txt: 11787 rows
+benchmarks/results/mot17/ultralytics_bytetrack_on_trt_engine_512_fp16/data/MOT17-05-FRCNN.txt: 4598 rows
+benchmarks/results/mot17/ultralytics_bytetrack_on_trt_engine_512_fp16/data/MOT17-09-FRCNN.txt: 3753 rows
+benchmarks/results/mot17/ultralytics_bytetrack_on_trt_engine_512_fp16/data/MOT17-10-FRCNN.txt: 4442 rows
+benchmarks/results/mot17/ultralytics_bytetrack_on_trt_engine_512_fp16/data/MOT17-11-FRCNN.txt: 5953 rows
+benchmarks/results/mot17/ultralytics_bytetrack_on_trt_engine_512_fp16/data/MOT17-13-FRCNN.txt: 2456 rows
+cpp_bytetrack_512_fp16 {"HOTA": 26.94, "DetA": 16.61, "AssA": 43.87, "MOTA": 18.6, "IDF1": 27.43, "IDSW": 136, "FP": 1396, "FN": 89873}
+cpp_bytetrack_512_fp16_iou07_th025 {"HOTA": 27.3, "DetA": 17.35, "AssA": 43.16, "MOTA": 19.26, "IDF1": 27.94, "IDSW": 184, "FP": 1641, "FN": 88846}
+cpp_bytetrack_512_fp16_iou07_th05 {"HOTA": 26.88, "DetA": 16.6, "AssA": 43.7, "MOTA": 18.56, "IDF1": 27.18, "IDSW": 138, "FP": 1420, "FN": 89892}
+cpp_bytetrack_512_fp16_th025 {"HOTA": 27.35, "DetA": 17.34, "AssA": 43.32, "MOTA": 19.27, "IDF1": 28.12, "IDSW": 185, "FP": 1611, "FN": 88857}
+cpp_bytetrack_512_fp16_th035 {"HOTA": 27.35, "DetA": 17.34, "AssA": 43.32, "MOTA": 19.27, "IDF1": 28.12, "IDSW": 185, "FP": 1611, "FN": 88857}
+cpp_bytetrack_512_fp16_th045 {"HOTA": 27.21, "DetA": 17.08, "AssA": 43.54, "MOTA": 19.0, "IDF1": 27.88, "IDSW": 157, "FP": 1567, "FN": 89237}
+cpp_bytetrack_512_fp16_th06 {"HOTA": 24.37, "DetA": 13.33, "AssA": 44.65, "MOTA": 14.94, "IDF1": 23.32, "IDSW": 78, "FP": 1044, "FN": 94400}
+ultralytics_bytetrack_512_fp32 {"HOTA": 31.16, "DetA": 23.28, "AssA": 42.07, "MOTA": 25.21, "IDF1": 34.02, "IDSW": 387, "FP": 3766, "FN": 79831}
+ultralytics_bytetrack_on_trt_engine_512_fp16 {"HOTA": 31.76, "DetA": 24.14, "AssA": 42.22, "MOTA": 26.58, "IDF1": 35.23, "IDSW": 358, "FP": 3363, "FN": 78728}
+== isolate done (02:59:24)

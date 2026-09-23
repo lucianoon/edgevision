@@ -317,8 +317,10 @@ calibrated on 500 val2017 images disjoint from the 4500 used for mAP; `configs/c
 | 512   | INT8                       | 0.345    | 0.494 | 0.373 | -                 | -            | -                       |
 | 416   | INT8                       | 0.315    | 0.459 | 0.338 | -                 | -            | -                       |
 
-Speed rows use the FP16 NMS-in-graph engines of the same size (FP16 costs no measurable
-mAP vs FP32 for this model). mAP on 4500 images, conf 0.001, iou 0.7, Ultralytics `val`.
+Speed rows use the FP16 NMS-in-graph engines of the same size. mAP on 4500 images, conf 0.001,
+iou 0.7, Ultralytics `val`. **Correction (Sprint 9):** this section used to say FP16 costs no
+measurable mAP; that was never measured here. Measured in Sprint 9, the FP16 engines lose
+0.6-0.7 points (0.399 @ 640, 0.372 @ 512), see below.
 
 Observations:
 
@@ -392,3 +394,68 @@ Observations:
   the CPU H.264 encode, not by the pipeline.
 
 Raw: `results/cpp_tensorrt_*_s8_*`, `results/tracks_cpp_512.jsonl`, `results/track_reference.json`.
+
+**Note (Sprint 9):** the C++ side of this table ran with the `--confidence 0.5` default still
+applied under `--track`, so detections between 0.1 and 0.5 never reached the tracker. Part of the
+"fewer tracks" difference above was that bug, not the thresholds. Fixed in Sprint 9.
+
+## 2026-09-22 - Sprint 9: accuracy of what actually ships
+
+Two claims in this file had no artefact behind them: the mAP of the FP16 engines that run in
+production, and any tracking accuracy at all (Sprint 8 only counted ids). One T4 session
+(~1 h 45 min, about US$ 1) measured both. Scripts: `scripts/gpu_sprint9*.sh`,
+`scripts/get_mot17.sh`, `scripts/mot17_eval.py`.
+
+### mAP of the TensorRT FP16 engines (COCO val2017, same 4500 images and protocol as Sprint 7)
+
+| engine | mAP50-95 | mAP50 | vs FP32 reference |
+|---|---:|---:|---:|
+| raw head, FP16 @ 640 | 0.399 | 0.554 | -0.6 (0.404) |
+| raw head, FP16 @ 512 | **0.372** | 0.522 | -0.7 (0.378) |
+| NMS in graph, FP16 @ 512, conf 0.5 (detection default) | 0.257 | 0.326 | operating point |
+| NMS in graph, FP16 @ 512, conf 0.1 (tracking engine) | 0.339 | 0.471 | operating point |
+
+FP16 costs 0.6-0.7 points, not zero. The two NMS rows are not comparable with the protocol rows:
+the confidence baked into the graph (0.5 / 0.1) truncates the precision-recall curve that mAP
+integrates at conf 0.001. They are there to show what the operating point gives up.
+
+### Tracking accuracy: MOT17 train, TrackEval (HOTA / CLEAR / Identity), pedestrians
+
+The 7 MOT17 train sequences (5316 frames; FRCNN copies, the frames are identical in the three),
+encoded to near-lossless H.264 for the runtime. Same engine (512, FP16, NMS in graph, conf 0.1).
+
+| tracker | HOTA | DetA | AssA | MOTA | IDF1 | IDSW |
+|---|---:|---:|---:|---:|---:|---:|
+| edgevision C++, before the fix (track_thresh 0.5) | 26.9 | 16.6 | 43.9 | 18.6 | 27.4 | 136 |
+| Ultralytics ByteTrack, `yolo26n.pt` FP32 | 31.2 | 23.3 | 42.1 | 25.2 | 34.0 | 387 |
+| Ultralytics ByteTrack on the same TensorRT engine | 31.8 | 24.1 | 42.2 | 26.6 | 35.2 | 358 |
+| edgevision C++, fixed, track_thresh 0.5 (paper) | 29.4 | 18.5 | **47.2** | 20.5 | 30.3 | **137** |
+| edgevision C++, fixed, track_thresh 0.25 | **32.7** | **24.6** | 44.1 | **27.1** | **37.2** | 275 |
+
+How the gap was found, in order (each step is a versioned log):
+
+1. **track_thresh sweep** (0.25-0.6, `sprint9_sweep.log`): HOTA moved by less than half a point,
+   and 0.25 and 0.35 gave *identical* results, which is only possible if no detection scored
+   between 0.25 and 0.5.
+2. **NMS IoU 0.45 -> 0.7** (Ultralytics' tracking default, `sprint9_iou.log`): no change.
+3. **Isolation** (`sprint9_isolate.log`): Ultralytics' ByteTrack on the very engine the C++
+   runtime uses scored HOTA 31.8, so the detector and the engine were fine and the gap was in the
+   runtime.
+4. **Root cause:** `edgevision_trt` kept its `--confidence 0.5` default under `--track`, dropping
+   every detection below 0.5 before ByteTrack; the second association (low-score detections) was
+   always empty. `--track` now defaults `--confidence` to the tracker's low threshold (0.1), an
+   explicit `--confidence` still wins and warns when it starves the second association
+   (`cpp/src/cli.cpp`, CTest `test_cli`).
+
+Observations:
+
+- With the fix, the C++ tracker beats Ultralytics' ByteTrack on the same detections on every
+  combined metric, with fewer identity switches (275 vs 358).
+- The paper's 0.5 keeps the best association and the fewest switches (AssA 47.2, 137 IDSW) at the
+  cost of detection recall; 0.25 matches Ultralytics' default. It was chosen on the evaluation
+  split itself, with no held-out set: read the table as a sensitivity analysis.
+- Absolute numbers are modest because the detector is a COCO nano model at 512 never trained on
+  MOT17's crowded, small pedestrians (DetA ~24). MOT17-05 (640x480, closer people) reaches
+  HOTA 42.7 / IDF1 57.3.
+
+Raw: `results/sprint9_map.json`, `results/mot17_eval.json` (per sequence), `results/sprint9*.log`.

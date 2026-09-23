@@ -1,0 +1,34 @@
+[
+  {
+    "engine": "models/tensorrt/yolo26n_raw_640_fp16.engine",
+    "imgsz": 640,
+    "precision": "fp16",
+    "nms": false,
+    "export_seconds": 280.2,
+    "size_mb": 7.4
+  },
+  {
+    "engine": "models/tensorrt/yolo26n_nms_640_fp16.engine",
+    "imgsz": 640,
+    "precision": "fp16",
+    "nms": true,
+    "export_seconds": 217.8,
+    "size_mb": 7.5
+  },
+  {
+    "engine": "models/tensorrt/yolo26n_raw_512_fp16.engine",
+    "imgsz": 512,
+    "precision": "fp16",
+    "nms": false,
+    "export_seconds": 194.1,
+    "size_mb": 7.1
+  },
+  {
+    "engine": "models/tensorrt/yolo26n_nms_512_fp16.engine",
+    "imgsz": 512,
+    "precision": "fp16",
+    "nms": true,
+    "export_seconds": 189.8,
+    "size_mb": 7.2
+  }
+]

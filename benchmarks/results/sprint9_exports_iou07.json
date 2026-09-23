@@ -1,0 +1,10 @@
+[
+  {
+    "engine": "models/tensorrt/iou07/yolo26n_nms_512_fp16_c10.engine",
+    "imgsz": 512,
+    "precision": "fp16",
+    "nms": true,
+    "export_seconds": 258.5,
+    "size_mb": 7.2
+  }
+]

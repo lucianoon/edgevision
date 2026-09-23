@@ -18,7 +18,10 @@ struct Args {
     int frames = 300;
     int warmup = 30;
     int streams = 1;
+    // Detection score filter. With --track and no explicit --confidence it drops to the
+    // tracker's low threshold (kTrackLowThresh): ByteTrack needs the weak detections.
     float confidence = 0.5f;
+    bool confidence_set = false;  // --confidence given explicitly
     bool pinned = true;
     bool stage_timing = true;
     bool batched = false;  // phase B: one batch-N inference per round for all streams

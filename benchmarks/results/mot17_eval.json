@@ -1,0 +1,930 @@
+{
+  "benchmark": "MOT17 train (FRCNN copies, 7 sequences), class pedestrian",
+  "trackeval": "git",
+  "trackers": {
+    "cpp_bytetrack_512_fp16": {
+      "combined": {
+        "HOTA": 26.94,
+        "DetA": 16.61,
+        "AssA": 43.87,
+        "MOTA": 18.6,
+        "IDF1": 27.43,
+        "IDSW": 136,
+        "FP": 1396,
+        "FN": 89873
+      },
+      "per_sequence": {
+        "MOT17-02-FRCNN": {
+          "HOTA": 23.63,
+          "DetA": 11.69,
+          "AssA": 47.74,
+          "MOTA": 13.6,
+          "IDF1": 21.47,
+          "IDSW": 9,
+          "FP": 53,
+          "FN": 15992
+        },
+        "MOT17-04-FRCNN": {
+          "HOTA": 19.24,
+          "DetA": 9.49,
+          "AssA": 39.21,
+          "MOTA": 10.0,
+          "IDF1": 15.9,
+          "IDSW": 7,
+          "FP": 413,
+          "FN": 42381
+        },
+        "MOT17-05-FRCNN": {
+          "HOTA": 41.15,
+          "DetA": 38.11,
+          "AssA": 44.56,
+          "MOTA": 44.27,
+          "IDF1": 54.86,
+          "IDSW": 58,
+          "FP": 390,
+          "FN": 3407
+        },
+        "MOT17-09-FRCNN": {
+          "HOTA": 39.01,
+          "DetA": 39.39,
+          "AssA": 38.73,
+          "MOTA": 46.5,
+          "IDF1": 49.38,
+          "IDSW": 25,
+          "FP": 131,
+          "FN": 2693
+        },
+        "MOT17-10-FRCNN": {
+          "HOTA": 23.1,
+          "DetA": 15.64,
+          "AssA": 34.13,
+          "MOTA": 18.69,
+          "IDF1": 27.27,
+          "IDSW": 16,
+          "FP": 78,
+          "FN": 10345
+        },
+        "MOT17-11-FRCNN": {
+          "HOTA": 47.68,
+          "DetA": 43.96,
+          "AssA": 51.95,
+          "MOTA": 49.65,
+          "IDF1": 56.14,
+          "IDSW": 11,
+          "FP": 250,
+          "FN": 4490
+        },
+        "MOT17-13-FRCNN": {
+          "HOTA": 17.47,
+          "DetA": 7.66,
+          "AssA": 39.99,
+          "MOTA": 8.47,
+          "IDF1": 15.55,
+          "IDSW": 10,
+          "FP": 81,
+          "FN": 10565
+        }
+      }
+    },
+    "cpp_bytetrack_512_fp16_fixed_th025": {
+      "combined": {
+        "HOTA": 32.73,
+        "DetA": 24.57,
+        "AssA": 44.08,
+        "MOTA": 27.08,
+        "IDF1": 37.19,
+        "IDSW": 275,
+        "FP": 3813,
+        "FN": 77797
+      },
+      "per_sequence": {
+        "MOT17-02-FRCNN": {
+          "HOTA": 23.41,
+          "DetA": 16.51,
+          "AssA": 33.31,
+          "MOTA": 17.9,
+          "IDF1": 25.08,
+          "IDSW": 27,
+          "FP": 489,
+          "FN": 14739
+        },
+        "MOT17-04-FRCNN": {
+          "HOTA": 31.69,
+          "DetA": 18.77,
+          "AssA": 53.76,
+          "MOTA": 20.3,
+          "IDF1": 33.41,
+          "IDSW": 13,
+          "FP": 870,
+          "FN": 37022
+        },
+        "MOT17-05-FRCNN": {
+          "HOTA": 42.66,
+          "DetA": 41.89,
+          "AssA": 43.71,
+          "MOTA": 46.35,
+          "IDF1": 57.32,
+          "IDSW": 86,
+          "FP": 813,
+          "FN": 2812
+        },
+        "MOT17-09-FRCNN": {
+          "HOTA": 39.66,
+          "DetA": 47.56,
+          "AssA": 33.37,
+          "MOTA": 54.93,
+          "IDF1": 48.28,
+          "IDSW": 55,
+          "FP": 371,
+          "FN": 1974
+        },
+        "MOT17-10-FRCNN": {
+          "HOTA": 26.84,
+          "DetA": 26.58,
+          "AssA": 27.25,
+          "MOTA": 30.89,
+          "IDF1": 33.34,
+          "IDSW": 40,
+          "FP": 420,
+          "FN": 8413
+        },
+        "MOT17-11-FRCNN": {
+          "HOTA": 48.82,
+          "DetA": 47.87,
+          "AssA": 50.17,
+          "MOTA": 53.58,
+          "IDF1": 57.73,
+          "IDSW": 22,
+          "FP": 483,
+          "FN": 3875
+        },
+        "MOT17-13-FRCNN": {
+          "HOTA": 26.06,
+          "DetA": 17.3,
+          "AssA": 39.87,
+          "MOTA": 19.59,
+          "IDF1": 31.21,
+          "IDSW": 32,
+          "FP": 367,
+          "FN": 8962
+        }
+      }
+    },
+    "cpp_bytetrack_512_fp16_fixed_th05": {
+      "combined": {
+        "HOTA": 29.43,
+        "DetA": 18.49,
+        "AssA": 47.15,
+        "MOTA": 20.53,
+        "IDF1": 30.32,
+        "IDSW": 137,
+        "FP": 1963,
+        "FN": 87142
+      },
+      "per_sequence": {
+        "MOT17-02-FRCNN": {
+          "HOTA": 24.83,
+          "DetA": 12.68,
+          "AssA": 48.61,
+          "MOTA": 14.76,
+          "IDF1": 22.8,
+          "IDSW": 9,
+          "FP": 83,
+          "FN": 15747
+        },
+        "MOT17-04-FRCNN": {
+          "HOTA": 25.31,
+          "DetA": 11.67,
+          "AssA": 55.07,
+          "MOTA": 12.06,
+          "IDF1": 22.0,
+          "IDSW": 2,
+          "FP": 646,
+          "FN": 41175
+        },
+        "MOT17-05-FRCNN": {
+          "HOTA": 41.93,
+          "DetA": 39.04,
+          "AssA": 45.16,
+          "MOTA": 44.82,
+          "IDF1": 56.51,
+          "IDSW": 60,
+          "FP": 445,
+          "FN": 3312
+        },
+        "MOT17-09-FRCNN": {
+          "HOTA": 38.54,
+          "DetA": 42.72,
+          "AssA": 34.98,
+          "MOTA": 50.65,
+          "IDF1": 47.47,
+          "IDSW": 31,
+          "FP": 191,
+          "FN": 2406
+        },
+        "MOT17-10-FRCNN": {
+          "HOTA": 23.25,
+          "DetA": 18.14,
+          "AssA": 29.87,
+          "MOTA": 21.04,
+          "IDF1": 26.86,
+          "IDSW": 15,
+          "FP": 196,
+          "FN": 9927
+        },
+        "MOT17-11-FRCNN": {
+          "HOTA": 48.37,
+          "DetA": 44.81,
+          "AssA": 52.47,
+          "MOTA": 50.63,
+          "IDF1": 56.48,
+          "IDSW": 12,
+          "FP": 290,
+          "FN": 4357
+        },
+        "MOT17-13-FRCNN": {
+          "HOTA": 19.65,
+          "DetA": 9.69,
+          "AssA": 40.13,
+          "MOTA": 11.2,
+          "IDF1": 19.08,
+          "IDSW": 8,
+          "FP": 112,
+          "FN": 10218
+        }
+      }
+    },
+    "cpp_bytetrack_512_fp16_iou07_th025": {
+      "combined": {
+        "HOTA": 27.3,
+        "DetA": 17.35,
+        "AssA": 43.16,
+        "MOTA": 19.26,
+        "IDF1": 27.94,
+        "IDSW": 184,
+        "FP": 1641,
+        "FN": 88846
+      },
+      "per_sequence": {
+        "MOT17-02-FRCNN": {
+          "HOTA": 23.63,
+          "DetA": 12.02,
+          "AssA": 46.47,
+          "MOTA": 13.91,
+          "IDF1": 21.36,
+          "IDSW": 13,
+          "FP": 70,
+          "FN": 15914
+        },
+        "MOT17-04-FRCNN": {
+          "HOTA": 19.82,
+          "DetA": 10.3,
+          "AssA": 38.3,
+          "MOTA": 10.58,
+          "IDF1": 16.24,
+          "IDSW": 18,
+          "FP": 542,
+          "FN": 41964
+        },
+        "MOT17-05-FRCNN": {
+          "HOTA": 41.48,
+          "DetA": 38.72,
+          "AssA": 44.58,
+          "MOTA": 44.44,
+          "IDF1": 56.06,
+          "IDSW": 55,
+          "FP": 441,
+          "FN": 3347
+        },
+        "MOT17-09-FRCNN": {
+          "HOTA": 39.43,
+          "DetA": 40.04,
+          "AssA": 38.93,
+          "MOTA": 47.19,
+          "IDF1": 49.91,
+          "IDSW": 30,
+          "FP": 139,
+          "FN": 2643
+        },
+        "MOT17-10-FRCNN": {
+          "HOTA": 23.5,
+          "DetA": 16.61,
+          "AssA": 33.3,
+          "MOTA": 19.69,
+          "IDF1": 27.95,
+          "IDSW": 30,
+          "FP": 108,
+          "FN": 10173
+        },
+        "MOT17-11-FRCNN": {
+          "HOTA": 47.86,
+          "DetA": 44.54,
+          "AssA": 51.67,
+          "MOTA": 50.38,
+          "IDF1": 56.37,
+          "IDSW": 16,
+          "FP": 262,
+          "FN": 4404
+        },
+        "MOT17-13-FRCNN": {
+          "HOTA": 18.3,
+          "DetA": 8.71,
+          "AssA": 38.7,
+          "MOTA": 9.79,
+          "IDF1": 17.34,
+          "IDSW": 22,
+          "FP": 79,
+          "FN": 10401
+        }
+      }
+    },
+    "cpp_bytetrack_512_fp16_iou07_th05": {
+      "combined": {
+        "HOTA": 26.88,
+        "DetA": 16.6,
+        "AssA": 43.7,
+        "MOTA": 18.56,
+        "IDF1": 27.18,
+        "IDSW": 138,
+        "FP": 1420,
+        "FN": 89892
+      },
+      "per_sequence": {
+        "MOT17-02-FRCNN": {
+          "HOTA": 23.67,
+          "DetA": 11.71,
+          "AssA": 47.84,
+          "MOTA": 13.63,
+          "IDF1": 21.51,
+          "IDSW": 9,
+          "FP": 53,
+          "FN": 15987
+        },
+        "MOT17-04-FRCNN": {
+          "HOTA": 19.05,
+          "DetA": 9.47,
+          "AssA": 38.52,
+          "MOTA": 10.0,
+          "IDF1": 15.34,
+          "IDSW": 8,
+          "FP": 407,
+          "FN": 42385
+        },
+        "MOT17-05-FRCNN": {
+          "HOTA": 41.13,
+          "DetA": 38.01,
+          "AssA": 44.62,
+          "MOTA": 43.75,
+          "IDF1": 54.61,
+          "IDSW": 56,
+          "FP": 413,
+          "FN": 3422
+        },
+        "MOT17-09-FRCNN": {
+          "HOTA": 38.95,
+          "DetA": 39.3,
+          "AssA": 38.7,
+          "MOTA": 46.33,
+          "IDF1": 49.19,
+          "IDSW": 27,
+          "FP": 132,
+          "FN": 2699
+        },
+        "MOT17-10-FRCNN": {
+          "HOTA": 23.03,
+          "DetA": 15.64,
+          "AssA": 33.94,
+          "MOTA": 18.65,
+          "IDF1": 27.16,
+          "IDSW": 17,
+          "FP": 80,
+          "FN": 10347
+        },
+        "MOT17-11-FRCNN": {
+          "HOTA": 47.67,
+          "DetA": 43.97,
+          "AssA": 51.91,
+          "MOTA": 49.63,
+          "IDF1": 56.14,
+          "IDSW": 11,
+          "FP": 254,
+          "FN": 4488
+        },
+        "MOT17-13-FRCNN": {
+          "HOTA": 17.48,
+          "DetA": 7.67,
+          "AssA": 39.99,
+          "MOTA": 8.48,
+          "IDF1": 15.55,
+          "IDSW": 10,
+          "FP": 81,
+          "FN": 10564
+        }
+      }
+    },
+    "cpp_bytetrack_512_fp16_th025": {
+      "combined": {
+        "HOTA": 27.35,
+        "DetA": 17.34,
+        "AssA": 43.32,
+        "MOTA": 19.27,
+        "IDF1": 28.12,
+        "IDSW": 185,
+        "FP": 1611,
+        "FN": 88857
+      },
+      "per_sequence": {
+        "MOT17-02-FRCNN": {
+          "HOTA": 23.59,
+          "DetA": 11.98,
+          "AssA": 46.42,
+          "MOTA": 13.88,
+          "IDF1": 21.31,
+          "IDSW": 12,
+          "FP": 69,
+          "FN": 15921
+        },
+        "MOT17-04-FRCNN": {
+          "HOTA": 20.0,
+          "DetA": 10.3,
+          "AssA": 39.02,
+          "MOTA": 10.56,
+          "IDF1": 16.75,
+          "IDSW": 18,
+          "FP": 545,
+          "FN": 41972
+        },
+        "MOT17-05-FRCNN": {
+          "HOTA": 41.41,
+          "DetA": 38.78,
+          "AssA": 44.33,
+          "MOTA": 44.77,
+          "IDF1": 55.71,
+          "IDSW": 61,
+          "FP": 416,
+          "FN": 3343
+        },
+        "MOT17-09-FRCNN": {
+          "HOTA": 39.42,
+          "DetA": 40.07,
+          "AssA": 38.89,
+          "MOTA": 47.25,
+          "IDF1": 49.9,
+          "IDSW": 28,
+          "FP": 138,
+          "FN": 2643
+        },
+        "MOT17-10-FRCNN": {
+          "HOTA": 23.56,
+          "DetA": 16.61,
+          "AssA": 33.46,
+          "MOTA": 19.72,
+          "IDF1": 28.04,
+          "IDSW": 29,
+          "FP": 106,
+          "FN": 10172
+        },
+        "MOT17-11-FRCNN": {
+          "HOTA": 47.87,
+          "DetA": 44.52,
+          "AssA": 51.71,
+          "MOTA": 50.39,
+          "IDF1": 56.4,
+          "IDSW": 16,
+          "FP": 258,
+          "FN": 4407
+        },
+        "MOT17-13-FRCNN": {
+          "HOTA": 18.32,
+          "DetA": 8.71,
+          "AssA": 38.77,
+          "MOTA": 9.82,
+          "IDF1": 17.46,
+          "IDSW": 21,
+          "FP": 79,
+          "FN": 10399
+        }
+      }
+    },
+    "cpp_bytetrack_512_fp16_th035": {
+      "combined": {
+        "HOTA": 27.35,
+        "DetA": 17.34,
+        "AssA": 43.32,
+        "MOTA": 19.27,
+        "IDF1": 28.12,
+        "IDSW": 185,
+        "FP": 1611,
+        "FN": 88857
+      },
+      "per_sequence": {
+        "MOT17-02-FRCNN": {
+          "HOTA": 23.59,
+          "DetA": 11.98,
+          "AssA": 46.42,
+          "MOTA": 13.88,
+          "IDF1": 21.31,
+          "IDSW": 12,
+          "FP": 69,
+          "FN": 15921
+        },
+        "MOT17-04-FRCNN": {
+          "HOTA": 20.0,
+          "DetA": 10.3,
+          "AssA": 39.02,
+          "MOTA": 10.56,
+          "IDF1": 16.75,
+          "IDSW": 18,
+          "FP": 545,
+          "FN": 41972
+        },
+        "MOT17-05-FRCNN": {
+          "HOTA": 41.41,
+          "DetA": 38.78,
+          "AssA": 44.33,
+          "MOTA": 44.77,
+          "IDF1": 55.71,
+          "IDSW": 61,
+          "FP": 416,
+          "FN": 3343
+        },
+        "MOT17-09-FRCNN": {
+          "HOTA": 39.42,
+          "DetA": 40.07,
+          "AssA": 38.89,
+          "MOTA": 47.25,
+          "IDF1": 49.9,
+          "IDSW": 28,
+          "FP": 138,
+          "FN": 2643
+        },
+        "MOT17-10-FRCNN": {
+          "HOTA": 23.56,
+          "DetA": 16.61,
+          "AssA": 33.46,
+          "MOTA": 19.72,
+          "IDF1": 28.04,
+          "IDSW": 29,
+          "FP": 106,
+          "FN": 10172
+        },
+        "MOT17-11-FRCNN": {
+          "HOTA": 47.87,
+          "DetA": 44.52,
+          "AssA": 51.71,
+          "MOTA": 50.39,
+          "IDF1": 56.4,
+          "IDSW": 16,
+          "FP": 258,
+          "FN": 4407
+        },
+        "MOT17-13-FRCNN": {
+          "HOTA": 18.32,
+          "DetA": 8.71,
+          "AssA": 38.77,
+          "MOTA": 9.82,
+          "IDF1": 17.46,
+          "IDSW": 21,
+          "FP": 79,
+          "FN": 10399
+        }
+      }
+    },
+    "cpp_bytetrack_512_fp16_th045": {
+      "combined": {
+        "HOTA": 27.21,
+        "DetA": 17.08,
+        "AssA": 43.54,
+        "MOTA": 19.0,
+        "IDF1": 27.88,
+        "IDSW": 157,
+        "FP": 1567,
+        "FN": 89237
+      },
+      "per_sequence": {
+        "MOT17-02-FRCNN": {
+          "HOTA": 23.47,
+          "DetA": 11.86,
+          "AssA": 46.42,
+          "MOTA": 13.77,
+          "IDF1": 21.23,
+          "IDSW": 11,
+          "FP": 62,
+          "FN": 15949
+        },
+        "MOT17-04-FRCNN": {
+          "HOTA": 19.82,
+          "DetA": 10.02,
+          "AssA": 39.39,
+          "MOTA": 10.28,
+          "IDF1": 16.55,
+          "IDSW": 11,
+          "FP": 532,
+          "FN": 42124
+        },
+        "MOT17-05-FRCNN": {
+          "HOTA": 41.18,
+          "DetA": 38.45,
+          "AssA": 44.22,
+          "MOTA": 44.63,
+          "IDF1": 55.03,
+          "IDSW": 60,
+          "FP": 403,
+          "FN": 3367
+        },
+        "MOT17-09-FRCNN": {
+          "HOTA": 39.19,
+          "DetA": 39.77,
+          "AssA": 38.71,
+          "MOTA": 46.89,
+          "IDF1": 49.61,
+          "IDSW": 27,
+          "FP": 135,
+          "FN": 2666
+        },
+        "MOT17-10-FRCNN": {
+          "HOTA": 23.65,
+          "DetA": 16.32,
+          "AssA": 34.3,
+          "MOTA": 19.41,
+          "IDF1": 28.05,
+          "IDSW": 21,
+          "FP": 100,
+          "FN": 10226
+        },
+        "MOT17-11-FRCNN": {
+          "HOTA": 47.83,
+          "DetA": 44.38,
+          "AssA": 51.8,
+          "MOTA": 50.24,
+          "IDF1": 56.36,
+          "IDSW": 11,
+          "FP": 254,
+          "FN": 4430
+        },
+        "MOT17-13-FRCNN": {
+          "HOTA": 17.84,
+          "DetA": 8.25,
+          "AssA": 38.78,
+          "MOTA": 9.19,
+          "IDF1": 16.68,
+          "IDSW": 16,
+          "FP": 81,
+          "FN": 10475
+        }
+      }
+    },
+    "cpp_bytetrack_512_fp16_th06": {
+      "combined": {
+        "HOTA": 24.37,
+        "DetA": 13.33,
+        "AssA": 44.65,
+        "MOTA": 14.94,
+        "IDF1": 23.32,
+        "IDSW": 78,
+        "FP": 1044,
+        "FN": 94400
+      },
+      "per_sequence": {
+        "MOT17-02-FRCNN": {
+          "HOTA": 22.85,
+          "DetA": 10.28,
+          "AssA": 50.78,
+          "MOTA": 11.96,
+          "IDF1": 20.49,
+          "IDSW": 5,
+          "FP": 42,
+          "FN": 16312
+        },
+        "MOT17-04-FRCNN": {
+          "HOTA": 14.28,
+          "DetA": 5.85,
+          "AssA": 35.11,
+          "MOTA": 6.19,
+          "IDF1": 10.51,
+          "IDSW": 7,
+          "FP": 293,
+          "FN": 44313
+        },
+        "MOT17-05-FRCNN": {
+          "HOTA": 41.23,
+          "DetA": 35.62,
+          "AssA": 47.78,
+          "MOTA": 41.91,
+          "IDF1": 54.7,
+          "IDSW": 37,
+          "FP": 300,
+          "FN": 3681
+        },
+        "MOT17-09-FRCNN": {
+          "HOTA": 38.17,
+          "DetA": 35.74,
+          "AssA": 40.81,
+          "MOTA": 41.65,
+          "IDF1": 44.21,
+          "IDSW": 13,
+          "FP": 90,
+          "FN": 3004
+        },
+        "MOT17-10-FRCNN": {
+          "HOTA": 18.61,
+          "DetA": 10.67,
+          "AssA": 32.47,
+          "MOTA": 12.87,
+          "IDF1": 20.11,
+          "IDSW": 2,
+          "FP": 27,
+          "FN": 11158
+        },
+        "MOT17-11-FRCNN": {
+          "HOTA": 45.75,
+          "DetA": 41.16,
+          "AssA": 51.03,
+          "MOTA": 46.22,
+          "IDF1": 54.9,
+          "IDSW": 8,
+          "FP": 229,
+          "FN": 4838
+        },
+        "MOT17-13-FRCNN": {
+          "HOTA": 12.9,
+          "DetA": 4.09,
+          "AssA": 40.77,
+          "MOTA": 4.11,
+          "IDF1": 8.65,
+          "IDSW": 6,
+          "FP": 63,
+          "FN": 11094
+        }
+      }
+    },
+    "ultralytics_bytetrack_512_fp32": {
+      "combined": {
+        "HOTA": 31.16,
+        "DetA": 23.28,
+        "AssA": 42.07,
+        "MOTA": 25.21,
+        "IDF1": 34.02,
+        "IDSW": 387,
+        "FP": 3766,
+        "FN": 79831
+      },
+      "per_sequence": {
+        "MOT17-02-FRCNN": {
+          "HOTA": 24.67,
+          "DetA": 15.83,
+          "AssA": 38.53,
+          "MOTA": 15.87,
+          "IDF1": 24.09,
+          "IDSW": 45,
+          "FP": 659,
+          "FN": 14928
+        },
+        "MOT17-04-FRCNN": {
+          "HOTA": 28.12,
+          "DetA": 17.76,
+          "AssA": 44.8,
+          "MOTA": 18.98,
+          "IDF1": 27.67,
+          "IDSW": 30,
+          "FP": 860,
+          "FN": 37643
+        },
+        "MOT17-05-FRCNN": {
+          "HOTA": 42.87,
+          "DetA": 40.54,
+          "AssA": 45.56,
+          "MOTA": 43.17,
+          "IDF1": 57.97,
+          "IDSW": 84,
+          "FP": 835,
+          "FN": 3012
+        },
+        "MOT17-09-FRCNN": {
+          "HOTA": 43.61,
+          "DetA": 46.83,
+          "AssA": 40.92,
+          "MOTA": 54.37,
+          "IDF1": 53.24,
+          "IDSW": 58,
+          "FP": 365,
+          "FN": 2007
+        },
+        "MOT17-10-FRCNN": {
+          "HOTA": 26.24,
+          "DetA": 24.61,
+          "AssA": 28.11,
+          "MOTA": 27.96,
+          "IDF1": 31.37,
+          "IDSW": 83,
+          "FP": 381,
+          "FN": 8785
+        },
+        "MOT17-11-FRCNN": {
+          "HOTA": 46.85,
+          "DetA": 46.9,
+          "AssA": 47.02,
+          "MOTA": 52.5,
+          "IDF1": 54.04,
+          "IDSW": 32,
+          "FP": 439,
+          "FN": 4011
+        },
+        "MOT17-13-FRCNN": {
+          "HOTA": 22.14,
+          "DetA": 14.14,
+          "AssA": 35.35,
+          "MOTA": 16.45,
+          "IDF1": 25.85,
+          "IDSW": 55,
+          "FP": 227,
+          "FN": 9445
+        }
+      }
+    },
+    "ultralytics_bytetrack_on_trt_engine_512_fp16": {
+      "combined": {
+        "HOTA": 31.76,
+        "DetA": 24.14,
+        "AssA": 42.22,
+        "MOTA": 26.58,
+        "IDF1": 35.23,
+        "IDSW": 358,
+        "FP": 3363,
+        "FN": 78728
+      },
+      "per_sequence": {
+        "MOT17-02-FRCNN": {
+          "HOTA": 26.38,
+          "DetA": 16.67,
+          "AssA": 41.86,
+          "MOTA": 18.26,
+          "IDF1": 27.94,
+          "IDSW": 28,
+          "FP": 415,
+          "FN": 14746
+        },
+        "MOT17-04-FRCNN": {
+          "HOTA": 29.74,
+          "DetA": 19.46,
+          "AssA": 45.82,
+          "MOTA": 21.04,
+          "IDF1": 30.49,
+          "IDSW": 32,
+          "FP": 874,
+          "FN": 36644
+        },
+        "MOT17-05-FRCNN": {
+          "HOTA": 43.09,
+          "DetA": 40.5,
+          "AssA": 46.14,
+          "MOTA": 44.18,
+          "IDF1": 58.54,
+          "IDSW": 95,
+          "FP": 721,
+          "FN": 3045
+        },
+        "MOT17-09-FRCNN": {
+          "HOTA": 40.94,
+          "DetA": 46.19,
+          "AssA": 36.56,
+          "MOTA": 54.07,
+          "IDF1": 50.49,
+          "IDSW": 49,
+          "FP": 308,
+          "FN": 2089
+        },
+        "MOT17-10-FRCNN": {
+          "HOTA": 25.36,
+          "DetA": 24.68,
+          "AssA": 26.21,
+          "MOTA": 28.29,
+          "IDF1": 30.08,
+          "IDSW": 74,
+          "FP": 344,
+          "FN": 8789
+        },
+        "MOT17-11-FRCNN": {
+          "HOTA": 47.31,
+          "DetA": 47.4,
+          "AssA": 47.45,
+          "MOTA": 52.85,
+          "IDF1": 54.25,
+          "IDSW": 22,
+          "FP": 457,
+          "FN": 3970
+        },
+        "MOT17-13-FRCNN": {
+          "HOTA": 21.47,
+          "DetA": 14.26,
+          "AssA": 32.95,
+          "MOTA": 16.28,
+          "IDF1": 23.97,
+          "IDSW": 58,
+          "FP": 244,
+          "FN": 9445
+        }
+      }
+    }
+  }
+}

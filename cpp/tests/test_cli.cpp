@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "edgevision/cli.hpp"
+#include "edgevision/tracker.hpp"
 #include "expect.hpp"
 
 using namespace edgevision;
@@ -67,6 +68,16 @@ void test_every_flag() {
     EXPECT(!a.pinned && !a.stage_timing && a.batched && a.track, "toggles");
 }
 
+void test_track_lowers_default_confidence() {
+    // ByteTrack's second association needs the weak detections: with --track the default
+    // score filter drops to the tracker's low threshold, an explicit --confidence wins.
+    EXPECT(parse({"--engine", "e", "--track"}).confidence == kTrackLowThresh, "--track default confidence");
+    EXPECT(parse({"--engine", "e", "--render", "o.mp4"}).confidence == kTrackLowThresh, "--render implies it");
+    const Args explicit_conf = parse({"--engine", "e", "--track", "--confidence", "0.3"});
+    EXPECT(explicit_conf.confidence == 0.3f && explicit_conf.confidence_set, "explicit --confidence kept");
+    EXPECT(parse({"--engine", "e"}).confidence == 0.5f, "no tracking: detection default unchanged");
+}
+
 void test_render_implies_track_and_needs_opencv() {
     const Args a = parse({"--engine", "e", "--render", "out.mp4"});
     EXPECT(a.track && a.render == "out.mp4", "--render turns tracking on");
@@ -109,6 +120,7 @@ void test_default_report_path() {
 int main() {
     test_defaults();
     test_every_flag();
+    test_track_lowers_default_confidence();
     test_render_implies_track_and_needs_opencv();
     test_help_stops_parsing_without_validation();
     test_validation();

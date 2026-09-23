@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "edgevision/tracker.hpp"
+
 namespace edgevision {
 
 const char* usage() {
@@ -11,7 +13,8 @@ const char* usage() {
            "       [--dump-detections dets.json] [--confidence 0.5] [--no-pinned] [--no-stage-timing]\n"
            "  --batched: all streams share one batch-N engine (engine exported with batch=N)\n"
            "  --track [--track-thresh 0.5] [--track-buffer 30] [--dump-tracks f.jsonl] [--render out.mp4]\n"
-           "           ByteTrack per stream; use an engine exported with conf 0.1 so weak detections exist\n";
+           "           ByteTrack per stream; use an engine exported with conf 0.1 so weak detections exist\n"
+           "           (--confidence then defaults to 0.1: the second association needs them)\n";
 }
 
 Args parse_args(int argc, const char* const* argv) {
@@ -32,8 +35,10 @@ Args parse_args(int argc, const char* const* argv) {
         else if (k == "--frames") a.frames = std::stoi(next("--frames"));
         else if (k == "--warmup") a.warmup = std::stoi(next("--warmup"));
         else if (k == "--streams") a.streams = std::stoi(next("--streams"));
-        else if (k == "--confidence") a.confidence = std::stof(next("--confidence"));
-        else if (k == "--no-pinned") a.pinned = false;
+        else if (k == "--confidence") {
+            a.confidence = std::stof(next("--confidence"));
+            a.confidence_set = true;
+        } else if (k == "--no-pinned") a.pinned = false;
         else if (k == "--no-stage-timing") a.stage_timing = false;
         else if (k == "--batched") a.batched = true;
         else if (k == "--track") a.track = true;
@@ -55,6 +60,7 @@ Args parse_args(int argc, const char* const* argv) {
     if (!a.render.empty() && a.decoder != "opencv")
         throw std::runtime_error("--render needs --decoder opencv (host frames)");
     if (!a.render.empty() && !a.track) a.track = true;
+    if (a.track && !a.confidence_set) a.confidence = kTrackLowThresh;
     return a;
 }
 

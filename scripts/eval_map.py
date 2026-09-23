@@ -34,7 +34,8 @@ def evaluate(model_path: str, imgsz: int | None, data: str, batch: int) -> dict:
         metrics.speed
     )  # ms per image: preprocess, inference, postprocess (Ultralytics' own loop)
     stem = Path(model_path).stem
-    m = re.search(r"_(\d+)_(fp16|int8|fp32)$", stem)
+    # Engine stems end in _<imgsz>_<precision>, optionally followed by _cNN (baked-in conf).
+    m = re.search(r"_(\d+)_(fp16|int8|fp32)(?:_c\d+)?$", stem)
     row = {
         "model": model_path,
         "imgsz": imgsz or (int(m.group(1)) if m else None),

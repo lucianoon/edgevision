@@ -21,10 +21,11 @@ bottleneck the previous measurement exposed.
 | End-to-end latency per frame (decode on NVDEC, CUDA pre-processing, TensorRT FP16, NMS in graph, tracking) | **2.0 ms + 0.4 ms decode wait** |
 | Aggregate throughput, 12 independent streams | **675 frames/s** (compute ceiling of the model on this GPU) |
 | Live RTSP cameras at 25 fps with zero dropped frames | **12 tested**, ~27 extrapolated, GPU at 48% |
-| Accuracy on COCO val2017 (mAP50-95) | 0.404 @ 640 (matches the published figure), **0.378 @ 512** (production default) |
+| Accuracy on COCO val2017 (mAP50-95) | FP32 reference 0.404 @ 640 (matches the published figure); **shipped TensorRT FP16 engine 0.372 @ 512** (FP16 costs 0.6-0.7 points) |
+| Tracking accuracy, MOT17 train (TrackEval, pedestrians) | **HOTA 32.7, IDF1 37.2, MOTA 27.1** with `--track-thresh 0.25`: above Ultralytics' ByteTrack on the same engine (31.8 / 35.2 / 26.6) |
 | Speed-up vs the Python/PyTorch baseline on the same GPU | 12.4 ms -> 2.0 ms per frame (**6x**); vs the CPU baseline 48 ms (**24x**) |
 | Tracking cost (ByteTrack, C++, dependency-free) | tens of microseconds per frame |
-| Total cloud spend for all GPU measurements | about **US$ 8** (g4dn.xlarge, auto-stopped, zero-cost standby) |
+| Total cloud spend for all GPU measurements | about **US$ 9** (g4dn.xlarge, auto-stopped, zero-cost standby) |
 
 ## Architecture
 
@@ -60,7 +61,8 @@ checked against each other by parity tests.
 | 6A | N independent streams, live RTSP sweep | 540 fps aggregate ceiling; 12 cameras at 48% GPU | Latency grows 1.6 ms per extra stream; NVDEC is not the limit |
 | 6B | Batched inference (static-batch engines, ping-pong buffers) | 552-578 fps (+4-8%) | Batching only tightens tail latency: the model's compute is the ceiling |
 | 7 | Accuracy vs speed: input size and INT8, mAP on COCO | 512: +27% throughput for -2.6 mAP; INT8: -3.5 mAP, unbuildable with NMS | Resolution is the cheap lever; INT8 PTQ hurts a nano model |
-| 8 | ByteTrack in C++ | tracking ~0 ms; 45 ids / 300 frames | Fewer, longer tracks than Ultralytics' defaults by threshold choice; IoU-only handovers exist |
+| 8 | ByteTrack in C++ | tracking ~0 ms; 45 ids / 300 frames | Cheap on the GPU budget; its accuracy was not measured yet (and was hurt by a bug, see 9) |
+| 9 | Accuracy of what ships: FP16 engine mAP, MOT17 HOTA/IDF1 | FP16 -0.7 mAP; HOTA 26.9 -> 32.7 after a fix | Measuring found a real bug: `--track` kept the 0.5 score filter, so ByteTrack's second association never saw a detection |
 
 ![latency per frame across the sprints](docs/latency_by_sprint.png)
 
@@ -166,6 +168,9 @@ access, and a zero-cost standby that removes the instance and its disk between s
   C++ runtime (IPC instead of JSONL) and adding MQTT/Kafka sinks is the next step.
 - Identity handovers can happen when tracks cross (IoU-only association); appearance
   embeddings (BoT-SORT) would fix that where id purity matters.
+- The MOT17 numbers are a sanity check, not a leaderboard entry: train split (test ground truth is
+  private), a COCO nano detector never trained on MOT17, and `track_thresh` 0.25 (Ultralytics'
+  default; the paper's 0.5 gives HOTA 29.4) picked on that same split, with no held-out set.
 - Not yet on a Jetson itself. The aarch64 build is validated on an EC2 g5g (Graviton2 + T4G, the
   same ISA and TensorRT stack as JetPack): full runtime, five CTests, NVDEC, multi-stream, batched
   and tracking pass (`scripts/gpu_check_runtime.sh`, log in `benchmarks/results/`). There the

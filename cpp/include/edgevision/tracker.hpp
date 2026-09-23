@@ -11,10 +11,15 @@ namespace edgevision {
 // ByteTrack (Zhang et al., 2022) with a constant-velocity Kalman filter, IoU association
 // solved by the Hungarian algorithm, a second pass on low-score detections and a
 // lost-track buffer. Dependency-free; per-frame cost is a few tens of microseconds.
+
+// Lowest detection score ByteTrack still uses (second association). The detector must not
+// filter below it, or the second association never sees a detection.
+inline constexpr float kTrackLowThresh = 0.1f;
+
 struct TrackerParams {
-    float track_thresh = 0.5f;  // detections >= this are "high"; new tracks need >= track_thresh + 0.1
-    float low_thresh = 0.1f;    // low_thresh <= score < track_thresh are "low" (second association)
-    float match_thresh = 0.8f;  // first association accepts cost (1 - IoU) below this
+    float track_thresh = 0.5f;           // detections >= this are "high"; new tracks need >= track_thresh + 0.1
+    float low_thresh = kTrackLowThresh;  // low_thresh <= score < track_thresh are "low" (second association)
+    float match_thresh = 0.8f;           // first association accepts cost (1 - IoU) below this
     float low_match_thresh = 0.5f;
     float unconfirmed_match_thresh = 0.7f;
     int track_buffer = 30;    // frames a lost track is kept before removal

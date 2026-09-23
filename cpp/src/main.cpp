@@ -29,6 +29,7 @@
 #include "edgevision/names.hpp"
 #include "edgevision/report.hpp"
 #include "edgevision/stream_runner.hpp"
+#include "edgevision/tracker.hpp"
 
 using namespace edgevision;
 
@@ -142,6 +143,11 @@ int main(int argc, char** argv) try {
         std::cout << usage();
         return 0;
     }
+    if (args.track && args.confidence > kTrackLowThresh)
+        std::fprintf(stderr,
+                     "warning: --confidence %.2f filters detections ByteTrack uses in its second association "
+                     "(it needs >= %.2f)\n",
+                     static_cast<double>(args.confidence), static_cast<double>(kTrackLowThresh));
     const auto names = args.names.empty() ? load_class_names_for_engine(args.engine) : load_class_names(args.names);
 
     std::vector<StreamResult> results(static_cast<size_t>(args.streams));

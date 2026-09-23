@@ -1,0 +1,38 @@
+[
+  {
+    "model": "models/tensorrt/yolo26n_raw_640_fp16.engine",
+    "imgsz": 640,
+    "precision": "fp16",
+    "map50_95": 0.3985,
+    "map50": 0.5535,
+    "map75": 0.4321,
+    "val_inference_ms": 1.66
+  },
+  {
+    "model": "models/tensorrt/yolo26n_raw_512_fp16.engine",
+    "imgsz": 512,
+    "precision": "fp16",
+    "map50_95": 0.3716,
+    "map50": 0.5221,
+    "map75": 0.3966,
+    "val_inference_ms": 1.39
+  },
+  {
+    "model": "models/tensorrt/yolo26n_nms_512_fp16.engine",
+    "imgsz": 512,
+    "precision": "fp16",
+    "map50_95": 0.2573,
+    "map50": 0.3257,
+    "map75": 0.2828,
+    "val_inference_ms": 1.94
+  },
+  {
+    "model": "models/tensorrt/yolo26n_nms_512_fp16_c10.engine",
+    "imgsz": 512,
+    "precision": "fp16",
+    "map50_95": 0.3394,
+    "map50": 0.4705,
+    "map75": 0.3618,
+    "val_inference_ms": 1.97
+  }
+]

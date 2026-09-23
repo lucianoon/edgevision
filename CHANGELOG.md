@@ -5,7 +5,19 @@ versions follow [Semantic Versioning](https://semver.org/). Measurements live in
 
 ## [Unreleased]
 
+### Fixed
+- `edgevision_trt --track` kept the `--confidence 0.5` default, so every detection below 0.5 was
+  dropped before ByteTrack and its second association (low-score detections) was always empty.
+  `--track` now defaults `--confidence` to the tracker's low threshold (`kTrackLowThresh`, 0.1); an
+  explicit `--confidence` still wins and prints a warning when it starves the second association.
+  MOT17 HOTA 26.9 -> 29.4 (paper thresholds) / 32.7 (`--track-thresh 0.25`).
+- `scripts/eval_map.py` parsed engines with a baked-in conf suffix (`_c10`) as FP32 PyTorch.
+- `benchmarks/README.md` claimed FP16 costs no measurable mAP; measured, it costs 0.6-0.7 points.
+
 ### Added
+- Sprint 9: mAP of the shipped TensorRT FP16 engines and MOT17 tracking accuracy with TrackEval
+  (`scripts/gpu_sprint9*.sh`, `scripts/get_mot17.sh`, `scripts/mot17_eval.py`), including the
+  Ultralytics ByteTrack references and the diagnosis steps; results in `benchmarks/results/`.
 - aarch64 validated on an EC2 g5g (Graviton2 + T4G): `InstanceType=g5g.xlarge` with the arm64 Deep
   Learning AMI; `scripts/gpu_build_engines_trtexec.sh` builds the check engines with trtexec only (no
   CUDA torch needed); `scripts/gpu_check_runtime.sh` passes with 0 failures (102 Python tests, 5 CTests).

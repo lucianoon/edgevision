@@ -21,7 +21,7 @@ bottleneck the previous measurement exposed.
 | End-to-end latency per frame (decode on NVDEC, CUDA pre-processing, TensorRT FP16, NMS in graph, tracking) | **2.0 ms + 0.4 ms decode wait** |
 | Aggregate throughput, 12 independent streams | **675 frames/s** (compute ceiling of the model on this GPU) |
 | Live RTSP cameras at 25 fps with zero dropped frames | **12 tested**, ~27 extrapolated, GPU at 48% |
-| Accuracy on COCO val2017 (mAP50-95) | FP32 reference 0.404 @ 640 (matches the published figure); **shipped TensorRT FP16 engine 0.372 @ 512** (FP16 costs 0.6-0.7 points) |
+| Accuracy on COCO val2017 (mAP50-95) | FP32 reference 0.404 @ 640 (matches the published figure); **TensorRT FP16 @ 512: 0.372** under the standard protocol (FP16 costs 0.6-0.7 points). The deployed engine bakes NMS into the graph at conf 0.5, where it scores 0.257: that operating point truncates the curve mAP integrates |
 | Tracking accuracy, MOT17 train (TrackEval, pedestrians) | **HOTA 32.7, IDF1 37.2, MOTA 27.1** with `--track-thresh 0.25`: above Ultralytics' ByteTrack on the same engine (31.8 / 35.2 / 26.6) |
 | Speed-up vs the Python/PyTorch baseline on the same GPU | 12.4 ms -> 2.0 ms per frame (**6x**); vs the CPU baseline 48 ms (**24x**) |
 | Tracking cost (ByteTrack, C++, dependency-free) | tens of microseconds per frame |
@@ -156,7 +156,7 @@ access, and a zero-cost standby that removes the instance and its disk between s
   and shellcheck; the Python suite against pinned dependencies with a coverage floor; the
   GPU-free C++ library built with strict warnings, unit-tested, clang-format and clang-tidy.
 - **Infrastructure as code with cost guards**: the GPU box is a CloudFormation template with
-  an uptime cap and a standby script; total spend for the whole project was about US$ 8.
+  an uptime cap and a standby script; total spend for the whole project was about US$ 9.
 - **Findings written down, including the wrong ones**: TensorRT cannot build INT8 for the
   NMS-in-graph export; and a "bug" in Ultralytics' dynamic-batch NMS export turned out to be
   a documented requirement (`batch=<max>`) once the warning was read - corrected in the log.

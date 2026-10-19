@@ -1,5 +1,5 @@
 # Tooling for development and the CI (on top of requirements.lock). shellcheck comes from the
 # system package (preinstalled on the GitHub runner; `apt install shellcheck` elsewhere).
-ruff==0.16.8
-mypy==2.3.1
+ruff==0.16.10
+mypy==2.4.0
 pytest-cov==7.1.0

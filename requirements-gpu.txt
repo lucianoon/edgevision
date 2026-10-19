@@ -3,12 +3,12 @@
 # Pinned where the run logs in benchmarks/results/ record the version that produced the numbers
 # (Sprint 3: onnxruntime-gpu 1.30.0; Sprint 7-8: ultralytics 8.4.157); no freeze was captured
 # on the box, so the rest floats. For the CPU path use requirements.lock.
-ultralytics==8.4.157
+ultralytics==8.4.175
 opencv-python-headless
 numpy
 pyyaml
 onnx
-onnxruntime-gpu==1.30.0
+onnxruntime-gpu==1.31.0
 cuda-python
 psutil
 pytest
